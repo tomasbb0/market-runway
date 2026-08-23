@@ -19,7 +19,7 @@
 </style>
 <style>
  .wrap{max-width:800px;margin:0 auto;padding:34px 20px 120px;display:flex;flex-direction:column;gap:16px}
- h1{font-size:26px;margin:0;letter-spacing:-.02em} h1 em{font-family:'Noto Serif',serif;font-style:italic;color:var(--acc)}
+ h1{font-size:26px;margin:0;letter-spacing:-.02em} h1 em{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;color:var(--acc)}
  .msg{border-radius:14px;padding:12px 16px;max-width:88%;font-size:14.5px;white-space:pre-wrap}
  .msg.user{background:var(--deep);color:#fff;align-self:flex-end}
  .msg.ai{background:var(--sf);border:1px solid var(--line);align-self:flex-start}
@@ -36,7 +36,7 @@
  <div><div class="eyebrow">Helix Optics · ask the data</div>
  <h1>Chat with the <em>validated</em> dataset</h1>
  <p class="hint">Answers come only from the pipeline's validated output (embedded in this page). Your API key stays
- in your browser — calls go straight from here to Anthropic, no server in between. This static edition is read-only;
+ in your browser; calls go straight from here to Anthropic, no server in between. This static edition is read-only;
  the local app can additionally apply overrides and re-run the pipeline.</p></div>
  <div id="msgs"></div>
 </div>

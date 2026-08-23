@@ -50,30 +50,37 @@ def landing(st) -> str:
         (f"€{man['llm_cost_eur']:.2f}", "AI spend (0 calls needed)"),
     ]
     chip_html = "".join(f'<div class="chip"><b>{a}</b><span>{b}</span></div>' for a, b in chips)
-    return f"""<!doctype html><html lang="en"><head><title>Runway — Helix market entry</title>{HEAD}
+    return f"""<!doctype html><html lang="en"><head><title>Runway, the market-entry desk</title>{HEAD}
 <style>
  .hero{{min-height:72vh;display:grid;place-content:center;text-align:center;padding:60px 22px 30px;gap:22px}}
  h1{{font-size:clamp(34px,6vw,58px);margin:0;letter-spacing:-.025em;font-weight:650;line-height:1.08;max-width:17ch}}
- h1 em{{font-family:'Noto Serif',serif;font-style:italic;font-weight:600;color:var(--acc)}}
+ h1 em{{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;color:var(--acc)}}
  .sub{{color:var(--soft);max-width:56ch;margin:0 auto;font-size:17px}}
  .ctas{{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:8px}}
  .chips{{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;padding:10px 22px 70px}}
  .chip{{background:var(--sf);border:1px solid var(--line);border-radius:12px;padding:14px 20px;min-width:150px}}
  .chip b{{display:block;font-size:22px;letter-spacing:-.01em}}
  .chip span{{font-size:12.5px;color:var(--soft)}}
- .how{{max-width:860px;margin:0 auto;padding:0 22px 80px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}}
- .step{{background:var(--sf);border:1px solid var(--line);border-radius:14px;padding:18px}}
- .step .n{{font-family:'IBM Plex Mono',monospace;color:var(--acc);font-size:12px}}
- .step b{{display:block;margin:6px 0 4px}} .step p{{margin:0;font-size:13.5px;color:var(--soft)}}
+ .rail{{max-width:960px;margin:0 auto 80px;padding:0 22px}}
+ .rail-strip{{background:var(--sf);border:1px solid var(--line);border-radius:14px;padding:6px 10px;
+   display:flex;align-items:stretch;overflow-x:auto}}
+ .stage{{flex:1;min-width:150px;padding:16px 14px;position:relative}}
+ .stage+.stage{{border-left:1px dashed var(--line)}}
+ .stage+.stage::before{{content:"→";position:absolute;left:-8px;top:18px;background:var(--sf);
+   color:var(--acc);font-weight:700;padding:0 2px}}
+ .stage .n{{font-family:'IBM Plex Mono',monospace;color:var(--acc);font-size:11px;letter-spacing:.08em}}
+ .stage b{{display:block;margin:6px 0 3px;font-size:14.5px;letter-spacing:-.01em}}
+ .stage p{{margin:0;font-size:12.5px;color:var(--soft);line-height:1.5}}
+ .rail-caption{{text-align:center;font-size:13px;color:var(--soft);margin-top:12px}}
  footer{{text-align:center;padding:30px;color:var(--soft);font:12px 'IBM Plex Mono',monospace}}
  .dot{{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--acc);margin-right:8px}}
 </style></head><body>
 <div class="hero">
- <div class="eyebrow"><span class="dot"></span>Runway · market-entry copilot · Helix Optics case</div>
+ <div class="eyebrow"><span class="dot"></span>Runway · the market-entry desk · Helix Optics case</div>
  <h1>Four markets in, <em>one answer out.</em></h1>
  <p class="sub">A seven-stage pipeline reads the raw pack in its native formats, validates every figure,
  deduplicates 3,236 register records into {fac['unique_facilities']} real facilities, catches the planted
- impossibilities — and recommends <b>the {rec}</b>: break-even in Year {nl['break_even_year']},
+ impossibilities. The recommendation: <b>the {rec}</b>, break-even in Year {nl['break_even_year']},
  cash trough €{nl['min_cash']/1e6:.1f}M, the only market that survives the €4.0M runway.</p>
  <div class="ctas">
   <a class="btn primary" href="deck/">View the deck →</a>
@@ -82,17 +89,21 @@ def landing(st) -> str:
  </div>
 </div>
 <div class="chips">{chip_html}</div>
-<div class="how">
- <div class="step"><span class="n">01 · read</span><b>Native formats, zero retyping</b>
-  <p>PDF, XLSX, HTML and CSV readers; every file's fate shown on the ingestion board.</p></div>
- <div class="step"><span class="n">02–03 · extract & unify</span><b>Deterministic first, AI at the edges</b>
-  <p>Patterns resolve 74/74 fields on this pack; a schema-guarded AI tier absorbs messier markets. Every value carries provenance.</p></div>
- <div class="step"><span class="n">04–06 · verify</span><b>Nothing silent</b>
-  <p>Facility dedup with a stated rule, a source-agreement matrix, and arithmetic checks that reject the competitor's impossible 300k claim.</p></div>
- <div class="step"><span class="n">07 · conclude</span><b>The model decides</b>
-  <p>The same five-year engine runs all four markets, ranks them, and feeds the live Excel model.</p></div>
-</div>
-<footer>closed-world analysis — the pack is the sole source of truth · deterministic core, AI at the edges, evidence everywhere</footer>
+<div class="rail"><div class="rail-strip">
+ <div class="stage"><span class="n">01 READ</span><b>Native formats</b>
+  <p>PDF, XLSX, HTML, CSV. Zero retyping; every file's fate on the ingestion board.</p></div>
+ <div class="stage"><span class="n">02 EXTRACT</span><b>Deterministic first</b>
+  <p>Patterns resolve 74/74 fields here; a schema-guarded AI tier absorbs messier markets.</p></div>
+ <div class="stage"><span class="n">03 UNIFY</span><b>One schema</b>
+  <p>Provenance on every value: source, method, pattern.</p></div>
+ <div class="stage"><span class="n">04 DEDUPE</span><b>3,236 → 228</b>
+  <p>One row per real facility, rule stated, conflicts surfaced.</p></div>
+ <div class="stage"><span class="n">05–06 CHECK</span><b>Nothing silent</b>
+  <p>Source agreement plus arithmetic; the impossible 300k claim dies here.</p></div>
+ <div class="stage"><span class="n">07 CONCLUDE</span><b>The model decides</b>
+  <p>One five-year engine, four markets, one ranking; it also feeds the Excel.</p></div>
+</div><div class="rail-caption">The seven stages the brief asks for, in the order they run.</div></div>
+<footer>closed-world analysis: the pack is the sole source of truth. deterministic core · AI at the edges · evidence on every number</footer>
 </body></html>"""
 
 
@@ -121,25 +132,25 @@ def deck(st) -> str:
         <div class="eyebrow">Helix Optics · first European market · board recommendation</div>
         <h1>Enter the <em>Netherlands</em> first.</h1>
         <div class="stats">
-         <div><b>Break-even Y{nl['break_even_year']}</b><span>company EBITDA positive — second reimbursed year</span></div>
-         <div><b>€{nl['min_cash']/1e6:.2f}M</b><span>cash trough — the runway is never exhausted</span></div>
-         <div><b>{nl['params']['addressable_fit_positive']:,.0f}/yr</b><span>addressable FIT-positives — 92% of Germany's volume, none of its barriers</span></div>
-         <div><b>€{nl.get('system_saving_per_100',0):,} saved</b><span>per 100 patients triaged — the payer wants this</span></div>
+         <div><b>Break-even Y{nl['break_even_year']}</b><span>company EBITDA positive in the second reimbursed year</span></div>
+         <div><b>€{nl['min_cash']/1e6:.2f}M</b><span>cash trough: the runway is never exhausted</span></div>
+         <div><b>{nl['params']['addressable_fit_positive']:,.0f}/yr</b><span>addressable FIT-positives: 92% of Germany's volume, none of its barriers</span></div>
+         <div><b>€{nl.get('system_saving_per_100',0):,} saved</b><span>per 100 patients triaged. The payer wants this</span></div>
         </div>
-        <img src="assets/cash_curves.png" alt="Five-year cash position of all four markets">
+        <img src="assets/cash_curves.png" width="1560" height="860" alt="Five-year cash position of all four markets">
         </div></section>""",
         # S2
         f"""<section class="slide"><div class="in">
         <div class="eyebrow">Why not the biggest market first</div>
         <h2>Germany is the prize — and the certain death of the runway.</h2>
         <div class="cols"><ul>
-         <li><b>24 months to reimbursed revenue.</b> Procedural — investigators, lab partners and prior studies do <i>not</i> shorten it (its own national report says so).</li>
+         <li><b>24 months to reimbursed revenue.</b> Procedural: investigators, lab partners and prior studies do <i>not</i> shorten it. Its own national report says so.</li>
          <li><b>Pre-reimbursement revenue ≈ €0.</b> Selective contracts and self-pay: "negligible volume".</li>
-         <li><b>The runway dies first.</b> Cash bottoms at {de['min_cash']/1e6:.1f}M — insolvent before the first reimbursed euro.</li>
-         <li><b>An incumbent owns the channel.</b> OncoStream: ~3 years reimbursed, 35–40% share, framework agreements.</li>
-         <li><b>Its 300k tests/yr claim is impossible</b> — 1.7× the entire organised addressable market (174,240/yr). Rejected by pipeline check CHK-02.</li>
-        </ul><img src="assets/trough.png" alt="Cash trough by market"></div>
-        <p class="note">Right market later, unaffordable market now: file the German application early — the clock is procedural — and enter once NL cash flow or new capital funds the wait.</p>
+         <li><b>The runway dies first.</b> Cash bottoms at {de['min_cash']/1e6:.1f}M, insolvent before the first reimbursed euro.</li>
+         <li><b>An incumbent owns the channel.</b> OncoStream has ~3 reimbursed years, 35–40% share, framework agreements.</li>
+         <li><b>Its 300k tests/yr claim is impossible:</b> 1.7× the entire organised addressable market (174,240/yr). Rejected by pipeline check CHK-02.</li>
+        </ul><img src="assets/trough.png" width="1240" height="840" alt="Cash trough by market"></div>
+        <p class="note">Right market later, unaffordable market now. File the German application early (the clock is procedural) and enter once NL cash flow or new capital funds the wait.</p>
         </div></section>""",
         # S3
         f"""<section class="slide"><div class="in">
@@ -151,7 +162,7 @@ def deck(st) -> str:
          <li><b>Open field.</b> No competitor active; second-highest price (€215).</li>
          <li><b>Capacity pressure is policy.</b> Referrals run at ~103% of national endoscopy capacity (deduplicated registers).</li>
          <li><b>The economics clear.</b> 76% unit margin by Y3; five-year end cash €{nl['end_cash']/1e6:.1f}M.</li>
-        </ul><img src="assets/nl_model.png" alt="Netherlands EBITDA and cash"></div>
+        </ul><img src="assets/nl_model.png" width="1280" height="840" alt="Netherlands EBITDA and cash"></div>
         <p class="note">What must be true: reimbursement ≈ month 12 · ramp ~13% of addressable by the second reimbursed year · price holds near €215.</p>
         </div></section>""",
         # S4
@@ -160,13 +171,13 @@ def deck(st) -> str:
         <h2>Where the case bends — and where it breaks.</h2>
         <div class="cols">
         <ul>
-         <li><b>Ramp is the sensitive input.</b> At half the benchmark the trough falls to ≈€0.2M — survival with nothing spare.</li>
-         <li><b>Delay is the killer when combined.</b> Half-ramp <i>and</i> 24 months → −€2.1M: insolvent. Either alone is survivable.</li>
-         <li><b>Price is the cushion.</b> Every €10 ≈ €0.2–0.3M of annual EBITDA at scale.</li>
-         <li><b>Kill condition, stated up front.</b> No reimbursement by month 18 → cut in-market spend and bridge.</li>
+         <li><b>Ramp alone can sink it.</b> At half the benchmark the trough grazes €0 (−€0.0M): the case fails without help.</li>
+         <li><b>Delay alone breaks it too.</b> Any slip past month 12 puts the trough at −€0.8M on the base ramp (the annual model rounds delays up, deliberately conservative).</li>
+         <li><b>Together, decisively fatal.</b> Half-ramp + 24 months → −€2.1M.</li>
+         <li><b>Price is the cushion; month 15 is the tripwire.</b> Every €10 ≈ €0.2–0.3M annual EBITDA at scale; no reimbursement signal by month 15 → cut in-market spend and bridge before the trough.</li>
         </ul>
         <div><table class="grid"><tr><th>cash trough<br>ramp ↓ delay →</th><th>12 mo</th><th>18 mo</th><th>24 mo</th></tr>{grid_rows}</table>
-        <p class="note">The same grid lives as formulas in the Excel — assumptions change, everything recalculates.</p></div>
+        <p class="note">The same grid lives as formulas in the Excel: change an assumption, everything recalculates.</p></div>
         </div></div></section>""",
         # S5
         f"""<section class="slide"><div class="in">
@@ -174,21 +185,22 @@ def deck(st) -> str:
         <h2>Sequence, triggers, and what we <em>refuse</em> to do.</h2>
         <div class="steps">
          <div><span>NOW→Y1</span><b>Netherlands entry</b><p>€200k entry · file reimbursement immediately · first revenue ~month 13</p></div>
-         <div><span>Y1</span><b>Start Germany's clock</b><p>the 24-month pathway is procedural — file while NL scales, spend €0</p></div>
+         <div><span>Y1</span><b>Start Germany's clock</b><p>the 24-month pathway is procedural: file while NL scales, spend €0</p></div>
          <div><span>Y2</span><b>Portugal</b><p>€120k entry, home turf, contribution-positive add-on</p></div>
          <div><span>Y3+</span><b>Germany, funded</b><p>enter once the wait is funded · Poland stays parked (€115 price)</p></div>
         </div>
         <ul>
-         <li><b>Accelerate</b> — NL year-1 penetration ≥7% and price ≥€200 → pull Portugal forward, raise on proven uptake.</li>
-         <li><b>Delay</b> — reimbursement past month 15 or ramp &lt; half plan → freeze Portugal, cut burn.</li>
-         <li><b>Abandon</b> — nothing by month 18 → stop-loss; the German filing and the Portuguese R&D base (€500k grant, R&D-only) keep two doors open.</li>
-         <li><b>Refuse</b> — chasing Germany's volume with an unfunded 24-month gap, or booking the R&D grant as launch money.</li>
+         <li><b>Accelerate:</b> NL year-1 penetration ≥7% and price ≥€200 → pull Portugal forward, raise on proven uptake.</li>
+         <li><b>Delay:</b> reimbursement past month 15 or ramp &lt; half plan → freeze Portugal, cut burn.</li>
+         <li><b>Abandon:</b> nothing by month 18 → stop-loss. The German filing and the Portuguese R&D base (€500k grant, R&D-only) keep two doors open.</li>
+         <li><b>Refuse:</b> chasing Germany's volume with an unfunded 24-month gap, or booking the R&D grant as launch money.</li>
         </ul>
-        <p class="note">{man['extraction']['deterministic']} values extracted deterministically · {man['llm_calls']} AI calls · eval 28/28 · {man['total_s']}s end-to-end — markets 5–14 are a config entry away.</p>
+        <p class="note">{man['extraction']['deterministic']} values extracted deterministically · {man['llm_calls']} AI calls · eval 28/28 · {man['total_s']}s end-to-end. Markets 5–14 are a config entry away.</p>
         </div></section>""",
     ]
     dots = "".join(f'<a href="#s{i+1}" data-i="{i}"></a>' for i in range(5))
-    body = "".join(f'<div id="s{i+1}"></div>{s}' for i, s in enumerate(slides))
+    body = "".join(s.replace('<section class="slide', f'<section id="s{i+1}" class="slide', 1)
+                   for i, s in enumerate(slides))
     return f"""<!doctype html><html lang="en"><head><title>Helix — the deck</title>{HEAD}
 <style>
  html{{scroll-snap-type:y proximity;scroll-behavior:smooth}}
@@ -196,11 +208,11 @@ def deck(st) -> str:
  .in{{max-width:1020px;display:flex;flex-direction:column;gap:18px}}
  h1{{font-size:clamp(36px,6vw,60px);margin:0;letter-spacing:-.025em;line-height:1.05;font-weight:650}}
  h2{{font-size:clamp(26px,3.6vw,38px);margin:0;letter-spacing:-.02em;line-height:1.15;font-weight:650}}
- h1 em,h2 em{{font-family:'Noto Serif',serif;font-style:italic;font-weight:600;color:var(--acc)}}
+ h1 em,h2 em{{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;color:var(--acc)}}
  .stats{{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}}
  .stats div{{background:var(--sf);border:1px solid var(--line);border-radius:12px;padding:14px 16px}}
  .stats b{{display:block;font-size:22px;letter-spacing:-.01em}} .stats span{{font-size:12.5px;color:var(--soft)}}
- img{{max-width:100%;border-radius:12px;border:1px solid var(--line);background:#fff}}
+ img{{max-width:100%;height:auto;border-radius:12px;border:1px solid var(--line);background:#fff}}
  .cols{{display:grid;grid-template-columns:1.05fr 1fr;gap:26px;align-items:center}}
  @media(max-width:880px){{.cols{{grid-template-columns:1fr}}}}
  ul{{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}}
@@ -256,7 +268,7 @@ def chat(st) -> tuple[str, str]:
     page = f"""<!doctype html><html lang="en"><head><title>Ask the data — Helix</title>{HEAD}
 <style>
  .wrap{{max-width:800px;margin:0 auto;padding:34px 20px 120px;display:flex;flex-direction:column;gap:16px}}
- h1{{font-size:26px;margin:0;letter-spacing:-.02em}} h1 em{{font-family:'Noto Serif',serif;font-style:italic;color:var(--acc)}}
+ h1{{font-size:26px;margin:0;letter-spacing:-.02em}} h1 em{{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;color:var(--acc)}}
  .msg{{border-radius:14px;padding:12px 16px;max-width:88%;font-size:14.5px;white-space:pre-wrap}}
  .msg.user{{background:var(--deep);color:#fff;align-self:flex-end}}
  .msg.ai{{background:var(--sf);border:1px solid var(--line);align-self:flex-start}}
@@ -273,7 +285,7 @@ def chat(st) -> tuple[str, str]:
  <div><div class="eyebrow">Helix Optics · ask the data</div>
  <h1>Chat with the <em>validated</em> dataset</h1>
  <p class="hint">Answers come only from the pipeline's validated output (embedded in this page). Your API key stays
- in your browser — calls go straight from here to Anthropic, no server in between. This static edition is read-only;
+ in your browser; calls go straight from here to Anthropic, no server in between. This static edition is read-only;
  the local app can additionally apply overrides and re-run the pipeline.</p></div>
  <div id="msgs"></div>
 </div>

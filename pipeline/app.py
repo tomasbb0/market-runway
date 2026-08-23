@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Runway — the market-entry copilot. Local product UI over the pipeline.
+"""Runway, the market-entry desk. Local product UI over the pipeline.
 
     .venv/bin/python app.py      →  http://127.0.0.1:8765
 
@@ -60,7 +60,7 @@ STYLE = """
  nav .right{margin-left:auto;display:flex;gap:14px;align-items:center;font-size:13.5px}
  .wrap{max-width:1060px;margin:0 auto;padding:34px 24px 80px;display:flex;flex-direction:column;gap:22px}
  h1{font-size:32px;margin:0;letter-spacing:-.02em;font-weight:650}
- h1 em{font-family:'Noto Serif',serif;font-style:italic;font-weight:600;color:var(--acc)}
+ h1 em{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;color:var(--acc)}
  h2{font-size:16px;margin:0 0 12px;letter-spacing:-.01em}
  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--tan)}
  .card{background:var(--sf);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
@@ -159,10 +159,10 @@ def home():
               '<div class="tab" style="background:var(--line)"></div><div class="body" style="display:grid;place-content:center">'
               '<b>+ New search</b><div class="meta">start a market assessment</div></div></a>')
     body = f"""
-    <div><div class="eyebrow">Runway · market-entry copilot</div>
+    <div><div class="eyebrow">Runway · the market-entry desk</div>
     <h1>Every market, <em>one folder away.</em></h1>
     <p class="hint" style="max-width:60ch">Drop a market pack into a workspace, run the seven-stage pipeline,
-    and get a validated dataset, a ranked recommendation and a full evidence report — deterministic first,
+    and get a validated dataset, a ranked recommendation and a full evidence report. Deterministic first;
     AI only where it earns its place.</p></div>
     <div class="grid">{cards}</div>
     <dialog id="newws" style="border:1px solid var(--line);border-radius:14px;padding:22px;max-width:380px">

@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><title>Runway — Helix market entry</title><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!doctype html><html lang="en"><head><title>Runway, the market-entry desk</title><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Noto+Serif:ital,wght@0,400;0,600;1,400;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -20,26 +20,33 @@
 <style>
  .hero{min-height:72vh;display:grid;place-content:center;text-align:center;padding:60px 22px 30px;gap:22px}
  h1{font-size:clamp(34px,6vw,58px);margin:0;letter-spacing:-.025em;font-weight:650;line-height:1.08;max-width:17ch}
- h1 em{font-family:'Noto Serif',serif;font-style:italic;font-weight:600;color:var(--acc)}
+ h1 em{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;color:var(--acc)}
  .sub{color:var(--soft);max-width:56ch;margin:0 auto;font-size:17px}
  .ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:8px}
  .chips{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;padding:10px 22px 70px}
  .chip{background:var(--sf);border:1px solid var(--line);border-radius:12px;padding:14px 20px;min-width:150px}
  .chip b{display:block;font-size:22px;letter-spacing:-.01em}
  .chip span{font-size:12.5px;color:var(--soft)}
- .how{max-width:860px;margin:0 auto;padding:0 22px 80px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
- .step{background:var(--sf);border:1px solid var(--line);border-radius:14px;padding:18px}
- .step .n{font-family:'IBM Plex Mono',monospace;color:var(--acc);font-size:12px}
- .step b{display:block;margin:6px 0 4px} .step p{margin:0;font-size:13.5px;color:var(--soft)}
+ .rail{max-width:960px;margin:0 auto 80px;padding:0 22px}
+ .rail-strip{background:var(--sf);border:1px solid var(--line);border-radius:14px;padding:6px 10px;
+   display:flex;align-items:stretch;overflow-x:auto}
+ .stage{flex:1;min-width:150px;padding:16px 14px;position:relative}
+ .stage+.stage{border-left:1px dashed var(--line)}
+ .stage+.stage::before{content:"→";position:absolute;left:-8px;top:18px;background:var(--sf);
+   color:var(--acc);font-weight:700;padding:0 2px}
+ .stage .n{font-family:'IBM Plex Mono',monospace;color:var(--acc);font-size:11px;letter-spacing:.08em}
+ .stage b{display:block;margin:6px 0 3px;font-size:14.5px;letter-spacing:-.01em}
+ .stage p{margin:0;font-size:12.5px;color:var(--soft);line-height:1.5}
+ .rail-caption{text-align:center;font-size:13px;color:var(--soft);margin-top:12px}
  footer{text-align:center;padding:30px;color:var(--soft);font:12px 'IBM Plex Mono',monospace}
  .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--acc);margin-right:8px}
 </style></head><body>
 <div class="hero">
- <div class="eyebrow"><span class="dot"></span>Runway · market-entry copilot · Helix Optics case</div>
+ <div class="eyebrow"><span class="dot"></span>Runway · the market-entry desk · Helix Optics case</div>
  <h1>Four markets in, <em>one answer out.</em></h1>
  <p class="sub">A seven-stage pipeline reads the raw pack in its native formats, validates every figure,
  deduplicates 3,236 register records into 228 real facilities, catches the planted
- impossibilities — and recommends <b>the Netherlands</b>: break-even in Year 3,
+ impossibilities. The recommendation: <b>the Netherlands</b>, break-even in Year 3,
  cash trough €1.3M, the only market that survives the €4.0M runway.</p>
  <div class="ctas">
   <a class="btn primary" href="deck/">View the deck →</a>
@@ -48,15 +55,19 @@
  </div>
 </div>
 <div class="chips"><div class="chip"><b>0.9s</b><span>full pipeline run</span></div><div class="chip"><b>28 / 28</b><span>golden-eval fields correct</span></div><div class="chip"><b>3,236 → 228</b><span>register records deduplicated</span></div><div class="chip"><b>€0.00</b><span>AI spend (0 calls needed)</span></div></div>
-<div class="how">
- <div class="step"><span class="n">01 · read</span><b>Native formats, zero retyping</b>
-  <p>PDF, XLSX, HTML and CSV readers; every file's fate shown on the ingestion board.</p></div>
- <div class="step"><span class="n">02–03 · extract & unify</span><b>Deterministic first, AI at the edges</b>
-  <p>Patterns resolve 74/74 fields on this pack; a schema-guarded AI tier absorbs messier markets. Every value carries provenance.</p></div>
- <div class="step"><span class="n">04–06 · verify</span><b>Nothing silent</b>
-  <p>Facility dedup with a stated rule, a source-agreement matrix, and arithmetic checks that reject the competitor's impossible 300k claim.</p></div>
- <div class="step"><span class="n">07 · conclude</span><b>The model decides</b>
-  <p>The same five-year engine runs all four markets, ranks them, and feeds the live Excel model.</p></div>
-</div>
-<footer>closed-world analysis — the pack is the sole source of truth · deterministic core, AI at the edges, evidence everywhere</footer>
+<div class="rail"><div class="rail-strip">
+ <div class="stage"><span class="n">01 READ</span><b>Native formats</b>
+  <p>PDF, XLSX, HTML, CSV. Zero retyping; every file's fate on the ingestion board.</p></div>
+ <div class="stage"><span class="n">02 EXTRACT</span><b>Deterministic first</b>
+  <p>Patterns resolve 74/74 fields here; a schema-guarded AI tier absorbs messier markets.</p></div>
+ <div class="stage"><span class="n">03 UNIFY</span><b>One schema</b>
+  <p>Provenance on every value: source, method, pattern.</p></div>
+ <div class="stage"><span class="n">04 DEDUPE</span><b>3,236 → 228</b>
+  <p>One row per real facility, rule stated, conflicts surfaced.</p></div>
+ <div class="stage"><span class="n">05–06 CHECK</span><b>Nothing silent</b>
+  <p>Source agreement plus arithmetic; the impossible 300k claim dies here.</p></div>
+ <div class="stage"><span class="n">07 CONCLUDE</span><b>The model decides</b>
+  <p>One five-year engine, four markets, one ranking; it also feeds the Excel.</p></div>
+</div><div class="rail-caption">The seven stages the brief asks for, in the order they run.</div></div>
+<footer>closed-world analysis: the pack is the sole source of truth. deterministic core · AI at the edges · evidence on every number</footer>
 </body></html>
