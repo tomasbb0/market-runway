@@ -27,7 +27,7 @@
  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
  .stats div{background:var(--sf);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
  .stats b{display:block;font-size:22px;letter-spacing:-.01em} .stats span{font-size:12.5px;color:var(--soft)}
- img{max-width:100%;border-radius:12px;border:1px solid var(--line);background:#fff}
+ img{max-width:100%;height:auto;border-radius:12px;border:1px solid var(--line);background:#fff}
  .cols{display:grid;grid-template-columns:1.05fr 1fr;gap:26px;align-items:center}
  @media(max-width:880px){.cols{grid-template-columns:1fr}}
  ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
@@ -62,7 +62,7 @@
          <div><b>159,910/yr</b><span>addressable FIT-positives — 92% of Germany's volume, none of its barriers</span></div>
          <div><b>€7,750 saved</b><span>per 100 patients triaged — the payer wants this</span></div>
         </div>
-        <img src="assets/cash_curves.png" alt="Five-year cash position of all four markets">
+        <img src="assets/cash_curves.png" width="1560" height="860" alt="Five-year cash position of all four markets">
         </div></section><section id="s2" class="slide"><div class="in">
         <div class="eyebrow">Why not the biggest market first</div>
         <h2>Germany is the prize — and the certain death of the runway.</h2>
@@ -72,7 +72,7 @@
          <li><b>The runway dies first.</b> Cash bottoms at -1.4M — insolvent before the first reimbursed euro.</li>
          <li><b>An incumbent owns the channel.</b> OncoStream: ~3 years reimbursed, 35–40% share, framework agreements.</li>
          <li><b>Its 300k tests/yr claim is impossible</b> — 1.7× the entire organised addressable market (174,240/yr). Rejected by pipeline check CHK-02.</li>
-        </ul><img src="assets/trough.png" alt="Cash trough by market"></div>
+        </ul><img src="assets/trough.png" width="1240" height="840" alt="Cash trough by market"></div>
         <p class="note">Right market later, unaffordable market now: file the German application early — the clock is procedural — and enter once NL cash flow or new capital funds the wait.</p>
         </div></section><section id="s3" class="slide"><div class="in">
         <div class="eyebrow">The case for the recommendation</div>
@@ -83,17 +83,17 @@
          <li><b>Open field.</b> No competitor active; second-highest price (€215).</li>
          <li><b>Capacity pressure is policy.</b> Referrals run at ~103% of national endoscopy capacity (deduplicated registers).</li>
          <li><b>The economics clear.</b> 76% unit margin by Y3; five-year end cash €9.6M.</li>
-        </ul><img src="assets/nl_model.png" alt="Netherlands EBITDA and cash"></div>
+        </ul><img src="assets/nl_model.png" width="1280" height="840" alt="Netherlands EBITDA and cash"></div>
         <p class="note">What must be true: reimbursement ≈ month 12 · ramp ~13% of addressable by the second reimbursed year · price holds near €215.</p>
         </div></section><section id="s4" class="slide"><div class="in">
         <div class="eyebrow">Break-even and the range around it</div>
         <h2>Where the case bends — and where it breaks.</h2>
         <div class="cols">
         <ul>
-         <li><b>Ramp is the sensitive input.</b> At half the benchmark the trough falls to ≈€0.2M — survival with nothing spare.</li>
-         <li><b>Delay is the killer when combined.</b> Half-ramp <i>and</i> 24 months → −€2.1M: insolvent. Either alone is survivable.</li>
-         <li><b>Price is the cushion.</b> Every €10 ≈ €0.2–0.3M of annual EBITDA at scale.</li>
-         <li><b>Kill condition, stated up front.</b> No reimbursement by month 18 → cut in-market spend and bridge.</li>
+         <li><b>Ramp alone can sink it.</b> At half the benchmark the trough grazes €0 (−€0.0M) — the case fails with no other help.</li>
+         <li><b>Delay alone breaks it too.</b> Any slip past month 12 (the annual model rounds delays up — deliberately conservative) → trough −€0.8M on the base ramp.</li>
+         <li><b>Together, decisively fatal.</b> Half-ramp + 24 months → −€2.1M.</li>
+         <li><b>Price is the cushion; month 15 is the tripwire.</b> Every €10 ≈ €0.2–0.3M annual EBITDA at scale; no reimbursement signal by month 15 → cut in-market spend and bridge before the trough.</li>
         </ul>
         <div><table class="grid"><tr><th>cash trough<br>ramp ↓ delay →</th><th>12 mo</th><th>18 mo</th><th>24 mo</th></tr><tr><th>ramp ×50%</th><td class="bad">-0.0M</td><td class="bad">-2.1M</td><td class="bad">-2.1M</td></tr><tr><th>ramp ×75%</th><td class="thin">+0.8M</td><td class="bad">-1.3M</td><td class="bad">-1.3M</td></tr><tr><th>ramp ×100%</th><td class="good">+1.3M</td><td class="bad">-0.8M</td><td class="bad">-0.8M</td></tr><tr><th>ramp ×125%</th><td class="good">+1.6M</td><td class="bad">-0.5M</td><td class="bad">-0.5M</td></tr></table>
         <p class="note">The same grid lives as formulas in the Excel — assumptions change, everything recalculates.</p></div>
