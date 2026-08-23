@@ -117,8 +117,22 @@ def landing(st) -> str:
    border:1px solid var(--deep);border-radius:6px;padding:4px 7px;min-width:0}}
  .ex .del{{border:none;background:none;color:var(--soft);cursor:pointer;font-size:13px;padding:2px 4px;opacity:0}}
  .ex:hover .del{{opacity:1}} .ex .del:hover{{color:var(--acc)}}
+ .railset{{display:flex;align-items:center;gap:9px;padding:12px 14px;border:none;border-top:1px solid var(--line);
+   background:none;color:var(--softblue);cursor:pointer;font:600 13px 'Instrument Sans';text-align:left}}
+ .railset:hover{{color:var(--ink)}} .railset svg{{width:15px;height:15px}}
  .rail footer{{padding:10px 14px;border-top:1px solid var(--line);font:10px 'IBM Plex Mono',monospace;
    letter-spacing:.1em;color:var(--soft)}}
+ #wsset{{position:fixed;left:22px;bottom:96px;width:280px;background:rgba(29,41,57,.85);
+   -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(189,210,224,.2);
+   border-radius:14px;padding:15px;display:none;z-index:9;box-shadow:0 24px 60px -30px rgba(0,0,0,.85)}}
+ #wsset.open{{display:block}}
+ #wsset label{{display:block;font:10px 'IBM Plex Mono',monospace;letter-spacing:.14em;color:var(--tan);
+   text-transform:uppercase;margin:10px 0 5px}} #wsset label:first-child{{margin-top:0}}
+ #wsset input,#wsset select{{width:100%;font:12.5px 'IBM Plex Mono',monospace;border:1px solid var(--line);
+   border-radius:8px;padding:8px 9px;background:var(--bg);color:var(--ink)}}
+ .whint{{font-size:12px;color:var(--soft);margin-top:5px;min-height:14px}}
+ .wforget{{margin-top:10px;border:none;background:none;color:var(--soft);cursor:pointer;
+   font:600 11.5px 'Instrument Sans';padding:0}} .wforget:hover{{color:var(--acc)}}
  /* center pane */
  .pane{{display:flex;flex-direction:column;min-height:0;gap:14px}}
  .panehead{{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}}
@@ -197,6 +211,23 @@ def landing(st) -> str:
  .facts b{{font-size:21px;letter-spacing:-.01em}}
  .openfull{{font:600 12px 'Instrument Sans';color:var(--softblue);text-decoration:none;float:right}}
  .openfull:hover{{color:var(--acc)}}
+ .iband{{border:1px solid var(--line);border-radius:11px;padding:14px 16px;display:flex;gap:16px;
+   align-items:baseline;flex-wrap:wrap;margin-bottom:14px}}
+ .iband b{{font-size:15.5px}} .iband span{{font-size:12.5px;color:var(--soft)}}
+ .iband.SUFFICIENT{{border-color:var(--deep);background:var(--softblue2)}}
+ .iband.PARTIAL{{border-color:#5a4620;background:#2b2413}}
+ .iband.INSUFFICIENT{{border-color:#5a2620;background:#2b1613}}
+ .ichip{{font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.08em;border-radius:99px;padding:2px 9px}}
+ .ichip.SUFFICIENT{{background:var(--softblue2);color:var(--softblue)}}
+ .ichip.PARTIAL{{background:#3d2f16;color:#f2d9a7}}
+ .ichip.INSUFFICIENT{{background:#3d1c16;color:#f2b3a7}}
+ .itable{{border-collapse:collapse;width:100%;font-size:13px;margin-bottom:14px}}
+ .itable th,.itable td{{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}}
+ .itable th{{font:600 10.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:var(--soft);text-transform:uppercase}}
+ .igrid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}}
+ .igrid>div{{border:1px solid var(--line);border-radius:11px;padding:13px 15px}}
+ .igrid b{{display:block;font-size:13px;margin-bottom:6px}}
+ .igrid p{{margin:3px 0;font-size:12.5px;color:var(--soft)}}
  .emptyres{{display:grid;place-content:center;text-align:center;height:100%;color:var(--soft);gap:10px}}
  .emptyres b{{font-size:26px;color:var(--line);letter-spacing:.04em}}
 </style></head><body>
@@ -209,8 +240,15 @@ def landing(st) -> str:
  <aside class="rail">
   <header><span class="tag"></span><span class="mono">EXERCISES</span><button id="newex">+ New</button></header>
   <div class="exlist" id="exlist"></div>
+  <button class="railset" id="openset"><svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd"><path d="M18.79 10.31 L21.70 10.64 L21.70 13.36 L18.79 13.69 L18.00 15.61 L19.83 17.90 L17.90 19.83 L15.61 18.00 L13.69 18.79 L13.36 21.70 L10.64 21.70 L10.31 18.79 L8.39 18.00 L6.10 19.83 L4.17 17.90 L6.00 15.61 L5.21 13.69 L2.30 13.36 L2.30 10.64 L5.21 10.31 L6.00 8.39 L4.17 6.10 L6.10 4.17 L8.39 6.00 L10.31 5.21 L10.64 2.30 L13.36 2.30 L13.69 5.21 L15.61 6.00 L17.90 4.17 L19.83 6.10 L18.00 8.39 Z M15.1 12 A3.1 3.1 0 1 0 8.9 12 A3.1 3.1 0 1 0 15.1 12 Z"/></svg><span>Settings</span></button>
   <footer>SEVEN STAGES · DETERMINISTIC FIRST · EVAL 28/28</footer>
  </aside>
+ <div id="wsset">
+  <label>API key</label><input type="password" id="wkey" placeholder="sk-ant-… / sk-… / AIza…" autocomplete="off">
+  <div class="whint" id="wprov"></div>
+  <label>Model</label><select id="wmodel" disabled><option>set a key first</option></select>
+  <button class="wforget" id="wforget">Forget key</button>
+ </div>
 
  <section class="pane">
   <div class="panehead"><h1 id="title">EU4 <em>case pack</em></h1>
@@ -330,8 +368,9 @@ def landing(st) -> str:
      <div class="modes">
       <button class="mode" data-m="glide"><b>${{rerun}}: Glide →</b>
        <span>deterministic core; AI only where patterns fail · seconds, ~€0</span></button>
-      <button class="mode after" data-m="afterburner"><b>${{rerun}}: Afterburner ⚡</b>
-       <span>everything Glide does, then a frontier model audits every extracted value</span></button>
+      <button class="mode after" data-m="afterburner"><b>${{rerun}}: Afterburner</b>
+       <span>Glide, then a frontier model audits every value and grades whether the documents
+       are sufficient · needs an API key (Settings, bottom-left)</span></button>
      </div>
      ${{e.hasRun?'<button class="runbtn ghost" id="gores">View last results</button>':''}}
      <div class="runlog" id="rlog"></div>
@@ -341,6 +380,11 @@ def landing(st) -> str:
    $('gores')&&($('gores').onclick=()=>{{S.tab='results';save();render();}});
    document.querySelectorAll('.mode').forEach(btn=>btn.onclick=()=>{{
      const m=btn.dataset.m;
+     if(m==='afterburner'&&!getKey()){{
+       wset.classList.add('open');syncW();
+       $('rlog').style.display='block';
+       $('rlog').innerHTML='<div class="pend">Afterburner needs an API key — add one in Settings (bottom-left), then run again.</div>';
+       return;}}
      const steps=[...STAGES,...(m==='afterburner'?['audit every extraction (frontier model)']:[])];
      const log=$('rlog');log.innerHTML=steps.map(x=>'<div class="pend">'+x+'</div>').join('');
      log.style.display='block';
@@ -349,25 +393,55 @@ def landing(st) -> str:
      const tick=()=>{{if(i<rows.length){{rows[i].className='done';i++;
          setTimeout(tick,m==='afterburner'&&i>STAGES.length-1?420:210)}}
        else{{e.hasRun=true;e.dirty=false;e.lastMode=m;
+         if(m==='afterburner')e.insights=analyze(e.files);
          e.lastRun=new Date().toISOString().slice(0,16).replace('T',' ');
-         save();S.tab='results';render();}}}};
+         save();S.res=m==='afterburner'?'insights':S.res;S.tab='results';render();}}}};
      setTimeout(tick,250);
    }});
  }}
 
+ function insightsHTML(I){{
+   const chip=v=>`<span class="ichip ${{v}}">${{v}}</span>`;
+   const rows=I.rows.length?I.rows.map(r=>
+     `<tr><td>${{esc(r.m)}}</td><td>${{chip(r.verdict)}}</td>
+      <td>${{r.miss.length?('missing: '+r.miss.join(', ')):'screening report + facility register present'}}</td></tr>`).join('')
+     :'<tr><td colspan="3">no market detected from the filenames yet</td></tr>';
+   const add=[];
+   I.rows.forEach(r=>r.miss.forEach(x=>add.push(r.m+' '+x)));
+   I.core.forEach(c=>{{if(!c.ok)add.push(c.lbl)}});
+   return `<div class="iband ${{I.overall}}"><b>Document base: ${{I.overall}}</b>
+     <span>${{I.rows.length}} market(s) detected · ${{I.rows.filter(r=>r.verdict==='SUFFICIENT').length}} fully covered
+     · core docs ${{I.core.every(c=>c.ok)?'complete':'incomplete'}}</span></div>
+   <table class="itable"><thead><tr><th>Market</th><th>Verdict</th><th>Detail</th></tr></thead><tbody>${{rows}}</tbody></table>
+   <div class="igrid">
+    <div><b>Core documents</b>${{I.core.map(c=>`<p>${{esc(c.lbl)}} — ${{c.ok?'present':'missing'}}</p>`).join('')}}
+     ${{I.extras.length?'<p>also present: '+I.extras.join(', ')+'</p>':''}}</div>
+    <div><b>Flags</b>
+     ${{I.unknown.length?'<p>'+I.unknown.length+' file(s) unrecognised: '+I.unknown.map(esc).join(', ')+'</p>':'<p>no unrecognised files</p>'}}
+     ${{I.dupes.length?'<p>duplicate names: '+I.dupes.map(esc).join(', ')+'</p>':''}}</div>
+    <div><b>To reach sufficient</b>${{add.length?add.map(x=>'<p>add the '+esc(x)+'</p>').join(''):'<p>nothing — run Glide for the numbers</p>'}}</div>
+   </div>`;
+ }}
  function renderResults(){{
    const e=cur();
+   const seg=S.res||(e.insights?'insights':'evidence');
    if(!e.protected){{
-     $('stage').innerHTML=`<div class="emptyres"><b>— · — · — · —</b>
-       <p>The mock has no engine: this exercise ran, but produced the blank model.<br>
-       Compute for real in the local app (<span class="mono">python app.py</span>).</p>
-       <p><a class="openfull" style="float:none" href="model/">see the blank model →</a></p></div>`;
+     if(!e.insights){{
+       $('stage').innerHTML=`<div class="emptyres"><b>— · — · — · —</b>
+         <p>The mock has no engine: this exercise ran, but produced the blank model.<br>
+         Compute for real in the local app (<span class="mono">python app.py</span>).</p>
+         <p><a class="openfull" style="float:none" href="model/">see the blank model →</a></p></div>`;
+       return;}}
+     $('stage').innerHTML='<div class="seg"><button class="on">Insights</button></div>'+insightsHTML(e.insights)
+       +'<p style="color:var(--soft);font-size:12px;margin-top:14px">Numbers need the real engine — the local app computes them; the mock grades the document base.</p>';
      return;
    }}
-   const seg=S.res||'evidence';
    const segs=[['evidence','Evidence report'],['deck','Deck'],['dataset','Dataset'],['chat','Ask the data']];
+   if(e.insights)segs.unshift(['insights','Insights']);
    let body='';
-   if(seg==='dataset'){{
+   if(seg==='insights'){{
+     body=insightsHTML(e.insights);
+   }} else if(seg==='dataset'){{
      body='<div class="facts">'+e.facts.map(f=>`<div><span>${{f[0]}}</span><b>${{f[1]}}</b></div>`).join('')+'</div>';
    }} else {{
      const src={{evidence:'report/',deck:'deck/',chat:'chat/'}}[seg];
@@ -379,6 +453,73 @@ def landing(st) -> str:
  }}
 
  function esc(x){{const d=document.createElement('div');d.textContent=x;return d.innerHTML}}
+
+ // ---- settings (shared with the chat page via the same storage keys)
+ const PROVIDERS={{anthropic:{{label:'Anthropic',models:{{'claude-sonnet-5':'Claude Sonnet 5','claude-haiku-4-5-20251001':'Claude Haiku 4.5','claude-fable-5':'Claude Fable 5'}}}},
+                   openai:{{label:'OpenAI',models:{{'gpt-5.1':'GPT-5.1','gpt-5-mini':'GPT-5 mini'}}}},
+                   google:{{label:'Google',models:{{'gemini-3-pro-preview':'Gemini 3 Pro','gemini-2.5-flash':'Gemini 2.5 Flash'}}}}}};
+ function detectProvider(k){{k=(k||'').trim();
+   if(k.startsWith('sk-ant-'))return 'anthropic';
+   if(/^AIza[0-9A-Za-z_-]{{30,}}$/.test(k))return 'google';
+   if(k.startsWith('sk-'))return 'openai';return null}}
+ const getKey=()=>localStorage.getItem('ak')||'';
+ const wset=$('wsset');
+ $('openset').onclick=e=>{{e.stopPropagation();wset.classList.toggle('open');syncW()}};
+ document.addEventListener('click',e=>{{
+   if(!wset.contains(e.target)&&!$('openset').contains(e.target))wset.classList.remove('open')}});
+ function syncW(){{
+   const k=getKey(),p=detectProvider(k);
+   $('wkey').value='';$('wkey').placeholder=k?PROVIDERS[p].label+' key set ·…'+k.slice(-4):'sk-ant-… / sk-… / AIza…';
+   $('wprov').textContent=k?'':'the provider is detected from the key format';
+   const sel=$('wmodel');
+   if(p){{sel.disabled=false;const cur=localStorage.getItem('mdl');
+     sel.innerHTML=Object.entries(PROVIDERS[p].models).map(([v,l])=>
+       `<option value="${{v}}" ${{v===cur?'selected':''}}>${{l}}</option>`).join('');}}
+   else{{sel.disabled=true;sel.innerHTML='<option>set a key first</option>'}}
+ }}
+ $('wkey').oninput=()=>{{const p=detectProvider($('wkey').value);
+   $('wprov').textContent=p?PROVIDERS[p].label+' key detected':($('wkey').value.trim()?'format not recognised':'')}};
+ $('wkey').onchange=()=>{{const v=$('wkey').value.trim(),p=detectProvider(v);
+   if(p){{localStorage.setItem('ak',v);localStorage.setItem('mdl',Object.keys(PROVIDERS[p].models)[0]);syncW()}}}};
+ $('wmodel').onchange=()=>localStorage.setItem('mdl',$('wmodel').value);
+ $('wforget').onclick=()=>{{localStorage.removeItem('ak');localStorage.removeItem('mdl');syncW()}};
+
+ // ---- Afterburner insights: document-sufficiency grading (computed locally)
+ const CTRY=['portugal','germany','netherlands','poland','spain','france','italy','austria','belgium',
+   'sweden','denmark','norway','finland','ireland','greece','czech','switzerland','uk'];
+ function roleOf(n){{n=n.toLowerCase();
+   const c=CTRY.find(x=>n.includes(x));const cap=x=>x[0].toUpperCase()+x.slice(1);
+   if(/candidate/.test(n)&&/brief/.test(n))return{{kind:'reference'}};
+   if(/company/.test(n)&&/brief/.test(n))return{{kind:'company'}};
+   if(/landscape/.test(n))return{{kind:'landscape'}};
+   if(/funding/.test(n))return{{kind:'funding'}};
+   if(/competitor|oncostream/.test(n))return{{kind:'competitor'}};
+   if(/master/.test(n))return{{kind:'master'}};
+   if(/screen/.test(n)&&c)return{{kind:'screening',mkt:cap(c)}};
+   if((/facilit|register|units/.test(n))&&c)return{{kind:'register',mkt:cap(c)}};
+   return{{kind:'unknown'}}}}
+ function analyze(files){{
+   const seen={{}},mkts={{}},unknown=[],dupes=[];
+   const names={{}};
+   files.forEach(f=>{{
+     if(names[f.name])dupes.push(f.name);names[f.name]=1;
+     const r=roleOf(f.name);
+     if(r.kind==='unknown'){{unknown.push(f.name);return}}
+     if(r.mkt){{mkts[r.mkt]=mkts[r.mkt]||{{}};mkts[r.mkt][r.kind]=1}}
+     else seen[r.kind]=1;
+   }});
+   const rows=Object.keys(mkts).sort().map(m=>{{
+     const has=mkts[m];const ok=has.screening&&has.register;
+     return{{m,verdict:ok?'SUFFICIENT':'PARTIAL',
+       miss:[!has.screening&&'screening report',!has.register&&'facility register'].filter(Boolean)}}}});
+   const core=[['company briefing','company'],['market landscape','landscape']]
+     .map(([lbl,k])=>({{lbl,ok:!!seen[k]}}));
+   const nMkts=rows.length,nOk=rows.filter(r=>r.verdict==='SUFFICIENT').length;
+   const coreOk=core.every(c=>c.ok);
+   const overall=nMkts&&coreOk&&nOk===nMkts?'SUFFICIENT':(nMkts||coreOk?'PARTIAL':'INSUFFICIENT');
+   return{{overall,rows,core,unknown,dupes,
+     extras:[seen.competitor&&'competitor brief',seen.funding&&'funding call',seen.master&&'master registry'].filter(Boolean)}};
+ }}
  render();
 </script>
 </body></html>"""
