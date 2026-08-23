@@ -35,13 +35,66 @@ ROOT = Path(__file__).resolve().parent
 PY = sys.executable
 app = Flask(__name__)
 
-_session_key = {"value": os.environ.get("ANTHROPIC_API_KEY", "")}
+def detect_provider(key: str) -> str | None:
+    """Key-format detection: deterministic, instant, and it cannot hallucinate."""
+    key = (key or "").strip()
+    if key.startswith("sk-ant-"):
+        return "anthropic"
+    if re.match(r"^AIza[0-9A-Za-z_-]{30,}$", key):
+        return "google"
+    if key.startswith("sk-"):
+        return "openai"
+    return None
 
-CHAT_MODELS = {
-    "claude-haiku-4-5-20251001": "Haiku 4.5 — fast & cheap",
-    "claude-sonnet-5": "Sonnet 5 — balanced (default)",
-    "claude-fable-5": "Fable 5 — frontier",
+
+_env_key = os.environ.get("ANTHROPIC_API_KEY", "")
+_session_key = {"value": _env_key, "provider": detect_provider(_env_key)}
+
+PROVIDERS = {
+    "anthropic": {"label": "Anthropic", "models": {
+        "claude-sonnet-5": "Claude Sonnet 5 (default)",
+        "claude-haiku-4-5-20251001": "Claude Haiku 4.5",
+        "claude-fable-5": "Claude Fable 5"}},
+    "openai": {"label": "OpenAI", "models": {
+        "gpt-5.1": "GPT-5.1 (default)",
+        "gpt-5-mini": "GPT-5 mini"}},
+    "google": {"label": "Google", "models": {
+        "gemini-3-pro-preview": "Gemini 3 Pro (default)",
+        "gemini-2.5-flash": "Gemini 2.5 Flash"}},
 }
+
+
+def _chat_call(provider: str, key: str, model: str, system: str, msgs: list) -> str:
+    """Route one grounded chat turn to the detected provider. Returns reply text."""
+    import urllib.request
+    if provider == "anthropic":
+        import anthropic
+        client = anthropic.Anthropic(api_key=key)
+        resp = client.messages.create(model=model, max_tokens=900, temperature=0,
+                                      system=system, messages=msgs)
+        return resp.content[0].text
+    if provider == "openai":
+        body = {"model": model, "max_completion_tokens": 900,
+                "messages": [{"role": "system", "content": system}] + msgs}
+        req = urllib.request.Request(
+            "https://api.openai.com/v1/chat/completions",
+            data=json.dumps(body).encode(),
+            headers={"Content-Type": "application/json", "Authorization": f"Bearer {key}"})
+        with urllib.request.urlopen(req, timeout=90) as r:
+            out = json.load(r)
+        return out["choices"][0]["message"]["content"]
+    if provider == "google":
+        contents = [{"role": "model" if m["role"] == "assistant" else "user",
+                     "parts": [{"text": m["content"]}]} for m in msgs]
+        body = {"system_instruction": {"parts": [{"text": system}]}, "contents": contents,
+                "generationConfig": {"maxOutputTokens": 900, "temperature": 0}}
+        req = urllib.request.Request(
+            f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}",
+            data=json.dumps(body).encode(), headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=90) as r:
+            out = json.load(r)
+        return out["candidates"][0]["content"]["parts"][0]["text"]
+    raise ValueError("unknown provider")
 
 # ---------------------------------------------------------------- iLoF skin
 STYLE = """
@@ -117,7 +170,8 @@ STYLE = """
 
 def nav(crumbs=""):
     key = _session_key["value"]
-    key_chip = (f'<span class="chip ok">key ·…{html.escape(key[-4:])}</span>'
+    prov = PROVIDERS.get(_session_key.get("provider") or "", {}).get("label", "key")
+    key_chip = (f'<span class="chip ok">{prov} key ·…{html.escape(key[-4:])}</span>'
                 '<form method="post" action="/clearkey" style="display:inline">'
                 '<button class="ghost" title="Forget the API key">clear</button></form>'
                 if key else '<span class="chip skip">no API key</span>')
@@ -252,7 +306,7 @@ def workspace(ws_name):
 
     key = _session_key["value"]
     key_field = ('' if key else
-                 '<input type="password" name="api_key" placeholder="Anthropic API key (optional — enables AI tiers)" '
+                 '<input type="password" name="api_key" placeholder="API key, optional (Anthropic / OpenAI / Gemini; auto-detected)" '
                  'autocomplete="off" style="width:100%;font-family:\'IBM Plex Mono\',monospace;font-size:12.5px">')
     body = f"""
     <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
@@ -351,8 +405,9 @@ def run_ws(ws_name):
     submitted = (request.form.get("api_key") or "").strip()
     if submitted:
         _session_key["value"] = submitted
+        _session_key["provider"] = detect_provider(submitted)
     env = dict(os.environ)
-    if _session_key["value"]:
+    if _session_key["value"] and _session_key.get("provider") == "anthropic":
         env["ANTHROPIC_API_KEY"] = _session_key["value"]
     else:
         env.pop("ANTHROPIC_API_KEY", None)
@@ -430,13 +485,20 @@ DATASET:
 def chat_page(ws_name):
     ws = ws_dir(ws_name)
     _, run_name = _grounding(ws)
-    key = bool(_session_key["value"])
-    opts = "".join(f'<option value="{m}" {"selected" if m == "claude-sonnet-5" else ""}>{lbl}</option>'
-                   for m, lbl in CHAT_MODELS.items())
-    keyrow = ('' if key else '<input type="password" id="key" placeholder="Anthropic API key — required for chat" '
-              'style="font-family:\'IBM Plex Mono\',monospace;font-size:12.5px">')
-    banner = (f'grounded on run <b class="mono">{run_name}</b> — answers come only from the validated dataset'
-              if run_name else "no runs yet — run the pipeline first, then chat about its results")
+    provider = _session_key.get("provider")
+    if _session_key["value"] and provider:
+        models = PROVIDERS[provider]["models"]
+        first = next(iter(models))
+        opts = "".join(f'<option value="{m}" {"selected" if m == first else ""}>{lbl}</option>'
+                       for m, lbl in models.items())
+        picker = f'<select id="model">{opts}</select>'
+        keyrow = ''
+    else:
+        picker = '<select id="model" hidden></select><span id="prov" class="hint"></span>'
+        keyrow = ('<input type="password" id="key" placeholder="API key — Anthropic, OpenAI or Gemini" '
+                  'style="font-family:\'IBM Plex Mono\',monospace;font-size:12.5px" oninput="detect()">')
+    banner = (f'grounded on run <b class="mono">{run_name}</b>; answers come only from the validated dataset'
+              if run_name else "no runs yet. Run the pipeline first, then chat about its results")
     body = f"""
     <div class="chatbox">
      <div><div class="eyebrow">{ws.name} · ask the data</div>
@@ -445,13 +507,26 @@ def chat_page(ws_name):
       you can apply (it re-runs the pipeline, badged MANUAL, fully audited).</div></div>
      <div id="msgs" style="display:flex;flex-direction:column;gap:10px"></div>
      <div class="chatinput">
-      <select id="model" title="model">{opts}</select>{keyrow}
+      {picker}{keyrow}
       <input type="text" id="q" placeholder="e.g. Why not Germany? · Set Netherlands price to 190 because procurement pushback"
         onkeydown="if(event.key==='Enter')send()">
       <button class="primary" onclick="send()">Send</button>
      </div>
     </div>
     <script>
+     const PROVIDERS={{anthropic:{{label:'Anthropic',models:{{'claude-sonnet-5':'Claude Sonnet 5 (default)','claude-haiku-4-5-20251001':'Claude Haiku 4.5','claude-fable-5':'Claude Fable 5'}}}},
+                       openai:{{label:'OpenAI',models:{{'gpt-5.1':'GPT-5.1 (default)','gpt-5-mini':'GPT-5 mini'}}}},
+                       google:{{label:'Google',models:{{'gemini-3-pro-preview':'Gemini 3 Pro (default)','gemini-2.5-flash':'Gemini 2.5 Flash'}}}}}};
+     function detectProvider(k){{k=(k||'').trim();
+       if(k.startsWith('sk-ant-'))return 'anthropic';
+       if(/^AIza[0-9A-Za-z_-]{{30,}}$/.test(k))return 'google';
+       if(k.startsWith('sk-'))return 'openai';return null}}
+     function detect(){{const el=document.getElementById('key');if(!el)return;
+       const p=detectProvider(el.value);const sel=document.getElementById('model');
+       const badge=document.getElementById('prov');
+       if(!p){{sel.hidden=true;if(badge)badge.textContent=el.value.trim()?'key format not recognised':'';return}}
+       const m=PROVIDERS[p].models;sel.innerHTML=Object.entries(m).map(([v,l])=>`<option value="${{v}}">${{l}}</option>`).join('');
+       sel.hidden=false;if(badge)badge.textContent=PROVIDERS[p].label+' key detected';}}
      const msgs=document.getElementById('msgs');let hist=[];
      function esc(s){{const d=document.createElement('div');d.textContent=s;return d.innerHTML}}
      function render(role,text){{
@@ -494,22 +569,24 @@ def chat_send(ws_name):
     data = request.get_json(force=True)
     if data.get("key"):
         _session_key["value"] = data["key"].strip()
+        _session_key["provider"] = detect_provider(_session_key["value"])
     if not _session_key["value"]:
-        return jsonify({"error": "No API key set — paste one in the field next to the message box."})
+        return jsonify({"error": "No API key set. Paste an Anthropic, OpenAI or Gemini key next to the message box."})
+    provider = _session_key.get("provider")
+    if not provider:
+        return jsonify({"error": "Key format not recognised. Expected sk-ant-… (Anthropic), sk-… (OpenAI) or AIza… (Gemini)."})
     grounding, run_name = _grounding(ws)
     if not grounding:
         return jsonify({"error": "No completed run in this workspace yet."})
-    model = data.get("model") if data.get("model") in CHAT_MODELS else "claude-sonnet-5"
+    models = PROVIDERS[provider]["models"]
+    model = data.get("model") if data.get("model") in models else next(iter(models))
     try:
-        import anthropic
-        client = anthropic.Anthropic(api_key=_session_key["value"])
         msgs = [{"role": m["role"], "content": m["content"]}
                 for m in data.get("messages", []) if m.get("role") in ("user", "assistant")][-20:]
-        resp = client.messages.create(model=model, max_tokens=900, temperature=0,
-                                      system=SYSTEM + grounding, messages=msgs)
-        return jsonify({"text": resp.content[0].text})
+        text = _chat_call(provider, _session_key["value"], model, SYSTEM + grounding, msgs)
+        return jsonify({"text": text})
     except Exception as e:  # noqa: BLE001
-        return jsonify({"error": f"{type(e).__name__}: {e}"})
+        return jsonify({"error": f"{PROVIDERS[provider]['label']} call failed ({type(e).__name__}): {e}"})
 
 
 @app.post("/w/<ws_name>/override")
@@ -546,6 +623,7 @@ def apply_override(ws_name):
 @app.post("/clearkey")
 def clearkey():
     _session_key["value"] = ""
+    _session_key["provider"] = None
     return redirect(request.referrer or "/")
 
 

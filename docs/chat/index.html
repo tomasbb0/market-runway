@@ -35,42 +35,76 @@
  <a class="back" href="../">← Runway</a>
  <div><div class="eyebrow">Helix Optics · ask the data</div>
  <h1>Chat with the <em>validated</em> dataset</h1>
- <p class="hint">Answers come only from the pipeline's validated output (embedded in this page). Your API key stays
- in your browser; calls go straight from here to Anthropic, no server in between. This static edition is read-only;
+ <p class="hint">Answers come only from the pipeline's validated output (embedded in this page). Paste an
+ Anthropic, OpenAI or Gemini key: the provider is detected from the key format and the model picker appears.
+ The key stays in your browser; calls go straight to the provider, no server in between. This static edition is read-only;
  the local app can additionally apply overrides and re-run the pipeline.</p></div>
  <div id="msgs"></div>
 </div>
 <div class="bar"><div class="in">
- <select id="model">
-  <option value="claude-sonnet-5" selected>Sonnet 5</option>
-  <option value="claude-haiku-4-5-20251001">Haiku 4.5</option>
-  <option value="claude-fable-5">Fable 5</option></select>
- <input id="key" type="password" placeholder="Anthropic API key" style="width:180px;font-family:'IBM Plex Mono',monospace;font-size:12px">
+ <select id="model" hidden></select>
+ <input id="key" type="password" placeholder="API key (Anthropic / OpenAI / Gemini)" oninput="detect()"
+   style="width:210px;font-family:'IBM Plex Mono',monospace;font-size:12px">
  <input id="q" placeholder="e.g. Why not Germany? What drives break-even?" onkeydown="if(event.key==='Enter')send()">
  <button class="primary" onclick="send()">Send</button>
 </div></div>
 <script src="data.js"></script>
 <script>
+ const PROVIDERS={anthropic:{label:'Anthropic',models:{'claude-sonnet-5':'Claude Sonnet 5','claude-haiku-4-5-20251001':'Claude Haiku 4.5','claude-fable-5':'Claude Fable 5'}},
+                   openai:{label:'OpenAI',models:{'gpt-5.1':'GPT-5.1','gpt-5-mini':'GPT-5 mini'}},
+                   google:{label:'Google',models:{'gemini-3-pro-preview':'Gemini 3 Pro','gemini-2.5-flash':'Gemini 2.5 Flash'}}};
+ function detectProvider(k){k=(k||'').trim();
+   if(k.startsWith('sk-ant-'))return 'anthropic';
+   if(/^AIza[0-9A-Za-z_-]{30,}$/.test(k))return 'google';
+   if(k.startsWith('sk-'))return 'openai';return null}
+ function detect(){const el=document.getElementById('key');const p=detectProvider(el.value);
+   const sel=document.getElementById('model');
+   if(!p){sel.hidden=true;return}
+   sel.innerHTML=Object.entries(PROVIDERS[p].models).map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+   sel.hidden=false;}
+ async function callProvider(p,key,model,system,hist){
+   if(p==='anthropic'){
+     const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{
+       'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01',
+       'anthropic-dangerous-direct-browser-access':'true'},
+       body:JSON.stringify({model,max_tokens:900,system,messages:hist})});
+     const j=await r.json();if(j.error)throw j.error.message;return j.content[0].text;
+   }
+   if(p==='openai'){
+     const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{
+       'content-type':'application/json','authorization':'Bearer '+key},
+       body:JSON.stringify({model,max_completion_tokens:900,
+         messages:[{role:'system',content:system},...hist]})});
+     const j=await r.json();if(j.error)throw j.error.message;return j.choices[0].message.content;
+   }
+   if(p==='google'){
+     const contents=hist.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
+     const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+       {method:'POST',headers:{'content-type':'application/json'},
+        body:JSON.stringify({system_instruction:{parts:[{text:system}]},contents,
+          generationConfig:{maxOutputTokens:900,temperature:0}})});
+     const j=await r.json();if(j.error)throw j.error.message;return j.candidates[0].content.parts[0].text;
+   }
+   throw 'unknown provider';
+ }
  const SYSTEM=`You are the analyst assistant for a market-entry assessment. Answer ONLY from the JSON dataset
 provided (the pipeline's validated output). If something is not in it, say "not in the validated dataset" -
 never guess. Cite a figure's source and method when giving numbers. Be concise. Currency EUR.
 DATASET: `+JSON.stringify(window.DATASET);
  const msgs=document.getElementById('msgs');let hist=[];
- const keyEl=document.getElementById('key');keyEl.value=localStorage.getItem('ak')||'';
+ const keyEl=document.getElementById('key');keyEl.value=localStorage.getItem('ak')||'';detect();
  function render(role,text){const d=document.createElement('div');d.className='msg '+(role==='user'?'user':'ai');
    d.textContent=text;msgs.appendChild(d);d.scrollIntoView({behavior:'smooth',block:'end'})}
  async function send(){
    const q=document.getElementById('q');const t=q.value.trim();if(!t)return;q.value='';
-   const key=keyEl.value.trim();if(!key){render('ai','⚠ Paste your Anthropic API key first (it stays in your browser).');return}
+   const key=keyEl.value.trim();const p=detectProvider(key);
+   if(!key){render('ai','⚠ Paste an API key first: Anthropic (sk-ant-…), OpenAI (sk-…) or Gemini (AIza…). It stays in your browser.');return}
+   if(!p){render('ai','⚠ Key format not recognised. Expected sk-ant-…, sk-… or AIza…');return}
    localStorage.setItem('ak',key);render('user',t);hist.push({role:'user',content:t});
    try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{
-      'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:document.getElementById('model').value,max_tokens:900,system:SYSTEM,messages:hist.slice(-20)})});
-    const j=await r.json();
-    if(j.error){render('ai','⚠ '+j.error.message);return}
-    const text=j.content[0].text;render('ai',text);hist.push({role:'assistant',content:text});
-   }catch(e){render('ai','⚠ '+e)}
+    const model=document.getElementById('model').value||Object.keys(PROVIDERS[p].models)[0];
+    const text=await callProvider(p,key,model,SYSTEM,hist.slice(-20));
+    render('ai',text);hist.push({role:'assistant',content:text});
+   }catch(e){render('ai','⚠ '+(e.message||e)+(p!=='anthropic'?' (some providers refuse browser calls; the local app routes them server-side)':''))}
  }
 </script></body></html>
