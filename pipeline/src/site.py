@@ -26,7 +26,11 @@ HEAD = """<meta charset="utf-8"><meta name="viewport" content="width=device-widt
    --tan:#c9a689;--cream2:#0c1522}
  *{box-sizing:border-box}
  html{scroll-behavior:smooth}
- body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 'Instrument Sans',system-ui,sans-serif}
+ body{margin:0;color:var(--ink);font:16px/1.6 'Instrument Sans',system-ui,sans-serif;
+   background:var(--bg) fixed;
+   background-image:radial-gradient(900px 600px at 12% -10%,rgba(55,75,96,.55),transparent 60%),
+     radial-gradient(800px 560px at 105% 8%,rgba(255,66,0,.07),transparent 55%),
+     radial-gradient(700px 700px at 85% 110%,rgba(55,75,96,.4),transparent 60%)}
  ::selection{background:var(--acc);color:#fff}
  .serif{font-family:'Noto Serif',serif}.mono{font-family:'IBM Plex Mono',monospace}
  a{color:var(--softblue)}
@@ -42,6 +46,18 @@ HEAD = """<meta charset="utf-8"><meta name="viewport" content="width=device-widt
    border:1px solid var(--soft);transform:rotate(45deg)}
  .rule::before{left:0}.rule::after{right:0}
  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}html{scroll-behavior:auto}}
+ /* glass windows — body-prefixed so it outranks per-page rules */
+ body .rail,body .stage,body #settings,body .msg.ai,body .dirty,body .bar,
+ body .stats>div,body .steps>div,body .facts>div,body .in>.stats>div{
+   background:rgba(29,41,57,.55);
+   -webkit-backdrop-filter:blur(16px) saturate(1.3);
+   backdrop-filter:blur(16px) saturate(1.3);
+   border-color:rgba(189,210,224,.17)}
+ body .stage,body #settings,body .msg.ai,body .stats>div,body .steps>div,body .facts>div{
+   box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
+ body .rail{box-shadow:0 18px 50px -30px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.08)}
+ body .bar{background:rgba(16,24,40,.6)}
+ body #settings{background:rgba(29,41,57,.72)}
 </style>"""
 
 
@@ -130,9 +146,25 @@ def landing(st) -> str:
  .chip.warn{{background:#3d2f16;color:#f2d9a7}}
  .frow .del{{border:none;background:none;color:var(--soft);cursor:pointer;padding:0 2px}}
  .frow .del:hover{{color:var(--acc)}}
- .addtile{{display:grid;place-content:center;border:1.5px dashed var(--deep);border-radius:9px;min-height:44px;
-   color:var(--softblue);cursor:pointer;font-size:22px}}
- .addtile:hover{{border-color:var(--acc);color:var(--acc)}}
+ .viewtog{{display:flex;gap:6px;justify-content:flex-end;margin-bottom:12px}}
+ .viewtog button{{font:600 12px 'IBM Plex Mono',monospace;border:1px solid var(--line);background:transparent;
+   color:var(--soft);border-radius:7px;width:32px;height:28px;cursor:pointer}}
+ .viewtog button.on{{background:var(--softblue2);color:var(--ink);border-color:var(--deep)}}
+ .fgridV{{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px}}
+ .ftile{{aspect-ratio:1;border:1px solid var(--line);border-radius:11px;position:relative;padding:12px 10px;
+   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center}}
+ .ftile .fmt{{font:600 11px 'IBM Plex Mono',monospace;background:var(--softblue2);color:var(--softblue);
+   border:1px solid var(--line);border-radius:8px;padding:9px 11px}}
+ .ftile .nm{{font:11px 'IBM Plex Mono',monospace;max-width:100%;overflow:hidden;display:-webkit-box;
+   -webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-all}}
+ .ftile .del{{position:absolute;top:7px;right:7px;border:none;background:none;color:var(--soft);
+   cursor:pointer;opacity:0}}
+ .ftile:hover .del{{opacity:1}} .ftile .del:hover{{color:var(--acc)}}
+ .flist{{display:flex;flex-direction:column;gap:8px}}
+ .addsq{{aspect-ratio:1;border:1.5px dashed var(--deep);border-radius:11px;display:grid;place-content:center;
+   color:var(--softblue);cursor:pointer;font-size:26px}}
+ .addsq:hover{{border-color:var(--acc);color:var(--acc)}}
+ .addsq.sm{{width:64px;height:64px;aspect-ratio:auto;margin-top:8px}}
  /* run */
  .runwrap{{display:grid;place-content:center;text-align:center;height:100%;gap:16px}}
  .runbtn{{font:700 17px 'Instrument Sans';background:var(--acc);color:#fff;border:none;border-radius:12px;
@@ -249,19 +281,34 @@ def landing(st) -> str:
    if(b.disabled)return;S.tab=b.dataset.t;save();render();}});
 
  function renderFiles(){{
-   const e=cur();
-   $('stage').innerHTML='<div class="filegrid">'+e.files.map((f,i)=>
-     `<div class="frow"><span class="mono" title="${{esc(f.name)}}">${{esc(f.name)}}</span>
-      <span class="chip ${{f.role==='unassigned'?'warn':''}}">${{esc(f.role||f.fmt||'')}}</span>
-      <button class="del" data-i="${{i}}" title="Remove">✕</button></div>`).join('')
-     +'<div class="addtile" id="addf" title="Add documents">+</div></div>'
+   const e=cur();const v=S.view||'grid';
+   const tog='<div class="viewtog">'
+     +'<button data-v="grid" class="'+(v==='grid'?'on':'')+'" title="Icon view">⊞</button>'
+     +'<button data-v="list" class="'+(v==='list'?'on':'')+'" title="List view">≡</button></div>';
+   let body;
+   if(v==='grid'){{
+     body='<div class="fgridV">'+e.files.map((f,i)=>
+       `<div class="ftile"><button class="del" data-i="${{i}}" title="Remove">✕</button>
+        <span class="fmt">${{esc(f.fmt||'?')}}</span>
+        <span class="nm" title="${{esc(f.name)}}">${{esc(f.name)}}</span>
+        <span class="chip ${{f.role==='unassigned'?'warn':''}}">${{esc(f.role||'')}}</span></div>`).join('')
+       +'<div class="addsq" id="addf" title="Add documents">+</div></div>';
+   }} else {{
+     body='<div class="flist">'+e.files.map((f,i)=>
+       `<div class="frow"><span class="mono" title="${{esc(f.name)}}">${{esc(f.name)}}</span>
+        <span class="chip ${{f.role==='unassigned'?'warn':''}}">${{esc(f.role||f.fmt||'')}}</span>
+        <button class="del" data-i="${{i}}" title="Remove">✕</button></div>`).join('')
+       +'</div><div class="addsq sm" id="addf" title="Add documents">+</div>';
+   }}
+   $('stage').innerHTML=tog+body
      +'<p style="color:var(--soft);font-size:12.5px;margin-top:14px">Adding or removing files changes nothing until you run. '
      +(e.protected?'This is the recorded case pack; edits here are a local mock.':'')+'</p>';
+   document.querySelectorAll('.viewtog button').forEach(b=>b.onclick=()=>{{S.view=b.dataset.v;save();render();}});
    $('addf').onclick=()=>$('fpick').click();
    $('fpick').onchange=()=>{{
      [...$('fpick').files].forEach(f=>e.files.push({{name:f.name,role:'unassigned',fmt:(f.name.split('.').pop()||'').toUpperCase()}}));
      $('fpick').value='';e.dirty=true;save();render();}};
-   document.querySelectorAll('.frow .del').forEach(b=>b.onclick=()=>{{
+   document.querySelectorAll('.stage .del,.ftile .del,.frow .del').forEach(b=>b.onclick=()=>{{
      e.files.splice(+b.dataset.i,1);e.dirty=true;save();render();}});
  }}
 
@@ -595,10 +642,10 @@ def chat(st) -> tuple[str, str]:
  .gearlink:hover{{border-color:var(--acc)}}
  .gearlink svg{{width:15px;height:15px}}
  .provbtn svg{{width:22px;height:22px}}
- .typing{{display:inline-flex;gap:5px;align-items:center;height:14px}}
- .typing i{{width:7px;height:7px;border-radius:50%;background:var(--soft);animation:tp 1.1s ease-in-out infinite}}
+ .typing{{display:inline-flex;gap:4px;align-items:center;height:10px}}
+ .typing i{{width:4.5px;height:4.5px;border-radius:50%;background:var(--soft);animation:tp 1.1s ease-in-out infinite}}
  .typing i:nth-child(2){{animation-delay:.18s}} .typing i:nth-child(3){{animation-delay:.36s}}
- @keyframes tp{{0%,70%,100%{{opacity:.25;transform:translateY(0)}}35%{{opacity:1;transform:translateY(-4px)}}}}
+ @keyframes tp{{0%,70%,100%{{opacity:.25;transform:translateY(0)}}35%{{opacity:1;transform:translateY(-3px)}}}}
  #settings{{position:fixed;bottom:74px;left:16px;width:min(340px,calc(100vw - 32px));background:var(--sf);
    border:1px solid var(--line);border-radius:14px;padding:16px;display:none;
    box-shadow:0 24px 60px -30px rgba(0,0,0,.85);z-index:9}}
@@ -648,9 +695,8 @@ def chat(st) -> tuple[str, str]:
  const PROVIDERS={{anthropic:{{label:'Anthropic',models:{{'claude-sonnet-5':'Claude Sonnet 5','claude-haiku-4-5-20251001':'Claude Haiku 4.5','claude-fable-5':'Claude Fable 5'}}}},
                    openai:{{label:'OpenAI',models:{{'gpt-5.1':'GPT-5.1','gpt-5-mini':'GPT-5 mini'}}}},
                    google:{{label:'Google',models:{{'gemini-3-pro-preview':'Gemini 3 Pro','gemini-2.5-flash':'Gemini 2.5 Flash'}}}}}};
- const GEAR='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">'
-  +'<circle cx="12" cy="12" r="3.4"/>'
-  +'<path d="M12 2.8v3M12 18.2v3M21.2 12h-3M5.8 12h-3M18.5 5.5l-2.1 2.1M7.6 16.4l-2.1 2.1M18.5 18.5l-2.1-2.1M7.6 7.6L5.5 5.5"/></svg>';
+ const GEAR='<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd">'
+  +'<path d="M18.79 10.31 L21.70 10.64 L21.70 13.36 L18.79 13.69 L18.00 15.61 L19.83 17.90 L17.90 19.83 L15.61 18.00 L13.69 18.79 L13.36 21.70 L10.64 21.70 L10.31 18.79 L8.39 18.00 L6.10 19.83 L4.17 17.90 L6.00 15.61 L5.21 13.69 L2.30 13.36 L2.30 10.64 L5.21 10.31 L6.00 8.39 L4.17 6.10 L6.10 4.17 L8.39 6.00 L10.31 5.21 L10.64 2.30 L13.36 2.30 L13.69 5.21 L15.61 6.00 L17.90 4.17 L19.83 6.10 L18.00 8.39 Z M15.1 12 A3.1 3.1 0 1 0 8.9 12 A3.1 3.1 0 1 0 15.1 12 Z"/></svg>';
  document.getElementById('provbtn').innerHTML=GEAR;
  function detectProvider(k){{k=(k||'').trim();
    if(k.startsWith('sk-ant-'))return 'anthropic';

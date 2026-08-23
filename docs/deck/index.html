@@ -7,7 +7,11 @@
    --tan:#c9a689;--cream2:#0c1522}
  *{box-sizing:border-box}
  html{scroll-behavior:smooth}
- body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 'Instrument Sans',system-ui,sans-serif}
+ body{margin:0;color:var(--ink);font:16px/1.6 'Instrument Sans',system-ui,sans-serif;
+   background:var(--bg) fixed;
+   background-image:radial-gradient(900px 600px at 12% -10%,rgba(55,75,96,.55),transparent 60%),
+     radial-gradient(800px 560px at 105% 8%,rgba(255,66,0,.07),transparent 55%),
+     radial-gradient(700px 700px at 85% 110%,rgba(55,75,96,.4),transparent 60%)}
  ::selection{background:var(--acc);color:#fff}
  .serif{font-family:'Noto Serif',serif}.mono{font-family:'IBM Plex Mono',monospace}
  a{color:var(--softblue)}
@@ -23,6 +27,18 @@
    border:1px solid var(--soft);transform:rotate(45deg)}
  .rule::before{left:0}.rule::after{right:0}
  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}html{scroll-behavior:auto}}
+ /* glass windows — body-prefixed so it outranks per-page rules */
+ body .rail,body .stage,body #settings,body .msg.ai,body .dirty,body .bar,
+ body .stats>div,body .steps>div,body .facts>div,body .in>.stats>div{
+   background:rgba(29,41,57,.55);
+   -webkit-backdrop-filter:blur(16px) saturate(1.3);
+   backdrop-filter:blur(16px) saturate(1.3);
+   border-color:rgba(189,210,224,.17)}
+ body .stage,body #settings,body .msg.ai,body .stats>div,body .steps>div,body .facts>div{
+   box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
+ body .rail{box-shadow:0 18px 50px -30px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.08)}
+ body .bar{background:rgba(16,24,40,.6)}
+ body #settings{background:rgba(29,41,57,.72)}
 </style>
 <style>
  html{scroll-snap-type:y proximity;scroll-behavior:smooth}
