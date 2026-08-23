@@ -222,6 +222,13 @@ def landing(st) -> str:
  .ichip.SUFFICIENT{{background:var(--softblue2);color:var(--softblue)}}
  .ichip.PARTIAL{{background:#3d2f16;color:#f2d9a7}}
  .ichip.INSUFFICIENT{{background:#3d1c16;color:#f2b3a7}}
+ .ichip.PEND{{background:transparent;border:1px dashed var(--soft);color:var(--soft)}}
+ .mini h3{{font:600 13px 'Instrument Sans';margin:20px 0 10px;letter-spacing:.01em}}
+ .mini h3:first-child{{margin-top:0}}
+ .steps{{display:grid;gap:12px}}
+ .steps div{{background:rgba(29,41,57,.55);border:1px solid rgba(189,210,224,.17);border-radius:12px;padding:14px}}
+ .steps span{{font:600 11px 'IBM Plex Mono',monospace;color:var(--acc)}}
+ .steps b{{display:block;margin:4px 0 2px}} .steps p{{margin:2px 0 0;font-size:12.5px;color:var(--soft)}}
  .itable{{border-collapse:collapse;width:100%;font-size:13px;margin-bottom:14px}}
  .itable th,.itable td{{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}}
  .itable th{{font:600 10.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:var(--soft);text-transform:uppercase}}
@@ -394,10 +401,10 @@ def landing(st) -> str:
      const tick=()=>{{if(i<rows.length){{rows[i].className='done';i++;
          setTimeout(tick,m==='afterburner'&&i>STAGES.length-1?420:210)}}
        else{{e.hasRun=true;e.dirty=false;e.lastMode=m;
-         if(m==='afterburner')e.insights=analyze(e.files);
+         e.analysis=analyze(e.files);
+         if(m==='afterburner')e.insights=e.analysis;
          e.lastRun=new Date().toISOString().slice(0,16).replace('T',' ');
-         save();S.res=e.protected?'evidence':(m==='afterburner'?'insights':S.res);
-         S.tab='results';render();}}}};
+         save();S.res='evidence';S.tab='results';render();}}}};
      setTimeout(tick,250);
    }});
  }}
@@ -424,22 +431,77 @@ def landing(st) -> str:
     <div><b>To reach sufficient</b>${{add.length?add.map(x=>'<p>add the '+esc(x)+'</p>').join(''):'<p>nothing — run Glide for the numbers</p>'}}</div>
    </div>`;
  }}
+ function pendChip(){{return '<span class="ichip PEND">ENGINE PENDING</span>'}}
+ function miniEvidence(e,A){{
+   const cards=e.files.map(f=>{{const r=roleOf(f.name);
+     const ok=r.kind!=='unknown';
+     return `<div class="frow"><span class="mono" style="flex:1;min-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${{esc(f.name)}}</span>
+       <span class="chip ${{ok?'':'warn'}}">${{ok?(r.mkt?esc(r.mkt)+' · ':'')+esc(r.kind):'unassigned'}}</span></div>`}}).join('');
+   const mkts=A.rows.map(r=>r.m);
+   const params=['Eligible population','Participation','FIT positivity','Addressable / yr','Price per test','Months to reimbursement'];
+   const tbl='<table class="itable"><thead><tr><th>Parameter</th>'
+     +(mkts.length?mkts.map(m=>'<th>'+esc(m)+'</th>').join(''):'<th>Market</th>')+'</tr></thead><tbody>'
+     +params.map(p=>'<tr><td>'+p+'</td>'+(mkts.length?mkts.map(()=>'<td>—</td>').join(''):'<td>—</td>')+'</tr>').join('')
+     +'</tbody></table>';
+   const checks=['Cross-source agreement','Competitor volume vs addressable','Rates are valid fractions','Screened-volume arithmetic']
+     .map((n,i)=>`<div class="finding" style="border:1px dashed var(--line);border-radius:9px;padding:10px 14px;margin-bottom:8px;color:var(--soft)">
+       <span class="ichip PEND">PENDING</span> <b>CHK-0${{i+1}}</b> ${{n}}</div>`).join('');
+   return `<div class="mini">
+     <h3>1 · Ingestion — every file, its role</h3><div style="display:flex;flex-direction:column;gap:8px">${{cards}}</div>
+     <h3>2–3 · Canonical dataset ${{pendChip()}}</h3>${{tbl}}
+     <h3>4–6 · Validation ${{pendChip()}}</h3>${{checks}}
+     <h3>7 · Conclusion</h3>
+     <div class="iband ${{A.overall}}"><b>Structure ${{A.overall}} — numbers await the engine</b>
+      <span>${{A.rows.length}} market(s) detected · the ranking is computed, never written</span></div></div>`;
+ }}
+ function miniDeck(A){{
+   const mk=A.rows.map(r=>r.m).join(', ')||'the detected markets';
+   const slides=[['S1','Recommendation','which market first — engine output'],
+     ['S2','The counter-case','why the runner-up loses on the numbers'],
+     ['S3','The winning market','break-even, trough, unit economics'],
+     ['S4','Sensitivity','where the case bends and where it breaks'],
+     ['S5','Sequencing','order, triggers, refusals for '+mk]];
+   return '<div class="steps" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">'
+     +slides.map(x=>`<div><span>${{x[0]}}</span><b>${{x[1]}}</b><p>${{x[2]}}</p><p>${{pendChip()}}</p></div>`).join('')+'</div>'
+     +'<p style="color:var(--soft);font-size:12.5px;margin-top:12px">The outline is fixed by the method; every number on it comes from a real run.</p>';
+ }}
+ function miniDataset(e,A){{
+   const facts=[['Files',e.files.length],['Markets detected',A.rows.length||'—'],
+     ['Fully covered',A.rows.filter(r=>r.verdict==='SUFFICIENT').length+' / '+A.rows.length],
+     ['Unrecognised files',A.unknown.length],['Recommendation','—'],['Break-even','—'],['Cash trough','—'],['Eval','—']];
+   return '<div class="facts">'+facts.map(f=>`<div><span>${{f[0]}}</span><b>${{f[1]}}</b></div>`).join('')+'</div>';
+ }}
  function renderResults(){{
    const e=cur();
-   const seg=S.res||(e.insights?'insights':'evidence');
    if(!e.protected){{
-     if(!e.insights){{
+     if(e.hasRun&&!e.analysis){{e.analysis=analyze(e.files);save();}}
+     if(!e.analysis){{
        $('stage').innerHTML=`<div class="emptyres"><b>— · — · — · —</b>
-         <p>The mock has no engine: this exercise ran, but produced the blank model.<br>
-         Compute for real in the local app (<span class="mono">python app.py</span>).</p>
-         <p><a class="openfull" style="float:none" href="model/">see the blank model →</a></p></div>`;
-       return;}}
-     $('stage').innerHTML='<div class="seg"><button class="on">Insights</button></div>'+insightsHTML(e.insights)
-       +'<p style="color:var(--soft);font-size:12px;margin-top:14px">Numbers need the real engine — the local app computes them; the mock grades the document base.</p>';
+         <p>Run this exercise first.</p></div>`;return;}}
+     const A=e.analysis;
+     const segs=[['evidence','Evidence report'],['deck','Deck'],['dataset','Dataset']];
+     if(e.insights)segs.push(['insights','Insights']);
+     segs.push(['chat','Ask the data']);
+     const seg=segs.some(x=>x[0]===S.res)?S.res:'evidence';
+     let body='';
+     if(seg==='evidence')body=miniEvidence(e,A);
+     else if(seg==='deck')body=miniDeck(A);
+     else if(seg==='dataset')body=miniDataset(e,A);
+     else if(seg==='insights')body=insightsHTML(A);
+     else body=`<div class="emptyres" style="height:auto;padding:40px 0"><b>ASK THE DATA</b>
+       <p>The grounded chat answers only from a computed dataset. This exercise does not have one yet —
+       run it in the local app, then chat against that run.</p>
+       <p><a class="openfull" style="float:none" href="chat/">see it working on the EU4 case</a></p></div>`;
+     $('stage').innerHTML='<div class="seg">'+segs.map(x=>
+       `<button data-s="${{x[0]}}" class="${{seg===x[0]?'on':''}}">${{x[1]}}</button>`).join('')+'</div>'
+       +'<p class="recnote">Structure view: computed in the browser from your files. Numbers require the engine (local app).</p>'
+       +body;
+     document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{{S.res=b.dataset.s;save();render();}});
      return;
    }}
    const segs=[['evidence','Evidence report'],['deck','Deck'],['dataset','Dataset'],['chat','Ask the data']];
    if(e.insights)segs.unshift(['insights','Insights']);
+   const seg=S.res||'evidence';
    let body='';
    if(seg==='insights'){{
      body=insightsHTML(e.insights);
