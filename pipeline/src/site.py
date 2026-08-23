@@ -451,7 +451,7 @@ def landing(st) -> str:
    }}
    const recnote=(seg!=='insights')?
      '<p class="recnote">Recorded from the real pipeline run. File edits in this mock never regenerate these '
-     +'artifacts (Insights grades your current file base); regeneration is the local app\'s job.</p>':'';
+     +'artifacts; Insights grades your current file base. Regeneration happens in the local app.</p>':'';
    $('stage').innerHTML='<div class="seg">'+segs.map(x=>
      `<button data-s="${{x[0]}}" class="${{seg===x[0]?'on':''}}">${{x[1]}}</button>`).join('')+'</div>'+recnote+body;
    document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{{S.res=b.dataset.s;save();render();}});
