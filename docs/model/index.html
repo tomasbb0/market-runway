@@ -1,0 +1,62 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>The blank model — Runway</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Noto+Serif:ital,wght@0,300;1,300&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+ :root{--bg:#f9f7f5;--sf:#fff;--ink:#1d2939;--soft:#667085;--line:#e6e1da;--acc:#ff4200;
+   --deep:#374b60;--accsoft:#e6eef3;--tan:#ad836c}
+ *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);
+   font:15px/1.5 'Instrument Sans',system-ui,sans-serif;padding:34px 22px 70px}
+ .wrap{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+ .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.15em;
+   text-transform:uppercase;color:var(--tan)}
+ h1{font-size:27px;margin:0;letter-spacing:-.01em;font-weight:650}
+ h1 em{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;color:var(--acc)}
+ .empty-chip{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.1em;
+   border:1.5px dashed var(--soft);border-radius:99px;padding:3px 12px;color:var(--soft);vertical-align:6px;margin-left:10px}
+ .note{background:var(--accsoft);border:1px solid var(--line);border-left:4px solid var(--acc);
+   border-radius:10px;padding:14px 18px;font-size:14.5px}
+ section{background:var(--sf);border:1px solid var(--line);border-radius:12px;padding:18px 20px;position:relative}
+ section::after{content:"EMPTY";position:absolute;top:14px;right:16px;font:10px 'IBM Plex Mono',monospace;
+   letter-spacing:.12em;color:var(--soft);border:1px dashed var(--line);border-radius:99px;padding:2px 8px}
+ h2{font-size:16px;margin:0 0 12px;font-weight:650}
+ .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}
+ .fcard{display:flex;gap:10px;border:1px dashed var(--line);border-radius:8px;padding:8px 10px;align-items:center;color:var(--soft)}
+ .fstat{width:26px;height:26px;border-radius:7px;display:grid;place-content:center;background:var(--bg)}
+ .fname{font-size:13px;font-weight:600} .fmeta{font-size:11.5px;font-family:'IBM Plex Mono',monospace}
+ table{border-collapse:collapse;width:100%;font-size:13.5px}
+ th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line)}
+ td{color:var(--soft);font-family:'IBM Plex Mono',monospace;font-size:12.5px}
+ tbody tr:last-child td,tbody tr:last-child th{border-bottom:none}
+ .finding{border:1px dashed var(--line);border-radius:9px;padding:10px 14px;margin-bottom:8px;color:var(--soft)}
+ .fpill{font-family:'IBM Plex Mono',monospace;font-size:10.5px;border-radius:99px;padding:1px 8px;
+   background:var(--bg);margin-right:8px}
+ .fdetail{font-size:13px;margin-top:3px}
+ .verdict{display:grid;place-content:center;text-align:center;min-height:150px;color:var(--soft)}
+ .verdict b{font-size:34px;color:var(--line);letter-spacing:.02em}
+ .verdict p{margin:6px 0 0;font-size:13.5px}
+ .ctas{display:flex;gap:12px;flex-wrap:wrap}
+ .btn{display:inline-block;font:600 14.5px 'Instrument Sans';border-radius:9px;border:1px solid var(--line);
+   padding:11px 20px;background:var(--sf);color:var(--ink);text-decoration:none}
+ .btn.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+ .btn.primary:hover{background:#c12d00}
+ a.back{font:600 13px 'Instrument Sans';color:var(--soft);text-decoration:none}
+</style></head><body><div class="wrap">
+ <a class="back" href="../">← Runway</a>
+ <div><div class="eyebrow">RUNWAY · WORKSPACE: BLANK-MODEL</div>
+  <h1>The model, before any <em>data</em>.<span class="empty-chip">NOTHING LOADED</span></h1></div>
+ <div class="note"><b>This dashboard is generated, never hand-filled.</b> Every section below is rendered by the
+  pipeline; until documents are read, it has nothing to say — and shows exactly that. Drop a pack into a
+  workspace and the same page fills itself: ingestion fates, provenance-badged values, checks, and a ranking.</div>
+ <section><h2>1 · Ingestion — every file, its fate</h2><div class="grid"><div class="fcard"><div class="fstat">·</div><div><div class="fname">awaiting file</div><div class="fmeta">format — · sha —</div></div></div><div class="fcard"><div class="fstat">·</div><div><div class="fname">awaiting file</div><div class="fmeta">format — · sha —</div></div></div><div class="fcard"><div class="fstat">·</div><div><div class="fname">awaiting file</div><div class="fmeta">format — · sha —</div></div></div><div class="fcard"><div class="fstat">·</div><div><div class="fname">awaiting file</div><div class="fmeta">format — · sha —</div></div></div><div class="fcard"><div class="fstat">·</div><div><div class="fname">awaiting file</div><div class="fmeta">format — · sha —</div></div></div><div class="fcard"><div class="fstat">·</div><div><div class="fname">awaiting file</div><div class="fmeta">format — · sha —</div></div></div></div></section>
+ <section><h2>2–3 · Canonical dataset</h2>
+  <table><thead><tr><th>Parameter</th><th>Market A</th><th>Market B</th><th>Market C</th><th>Market D</th></tr></thead>
+  <tbody><tr><th>Eligible population</th><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><th>Participation</th><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><th>FIT positivity</th><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><th>Addressable / yr</th><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><th>Price per test</th><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><th>Months to reimbursement</th><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody></table></section>
+ <section><h2>4–6 · Validation</h2><div class="finding"><span class="fpill">PENDING</span><b>CHK-01</b> Cross-source agreement<div class="fdetail">runs when a pack is read</div></div><div class="finding"><span class="fpill">PENDING</span><b>CHK-02</b> Competitor volume vs addressable<div class="fdetail">runs when a pack is read</div></div><div class="finding"><span class="fpill">PENDING</span><b>CHK-03</b> Rates are valid fractions<div class="fdetail">runs when a pack is read</div></div><div class="finding"><span class="fpill">PENDING</span><b>CHK-04</b> Screened-volume arithmetic<div class="fdetail">runs when a pack is read</div></div></section>
+ <section><h2>7 · Conclusion</h2><div class="verdict"><b>— · — · — · —</b>
+  <p>the ranking appears when the engine has inputs; it is computed, not written</p></div></section>
+ <div class="ctas">
+  <a class="btn primary" href="../report/">Populate it: open the Helix case →</a>
+  <a class="btn" href="https://github.com/tomasbb0/market-runway">Run it yourself (local app)</a>
+ </div>
+</div></body></html>

@@ -46,137 +46,258 @@ HEAD = """<meta charset="utf-8"><meta name="viewport" content="width=device-widt
 
 
 def landing(st) -> str:
+    import json as _json
     rec = st["conclusion"]["recommendation"]
-    nl = st["conclusion"]["results"][rec]
     man = st["manifest"]
     fac = st["facilities"]["summary"]
-    stages = ["01 READ", "02 EXTRACT", "03 UNIFY", "04 DEDUPE", "05 COMPARE", "06 CHECK", "07 CONCLUDE"]
-    lane = " &nbsp;&nbsp;◇&nbsp;&nbsp; ".join(stages)
-    stats = [
-        ("Y3", "BREAK-EVEN", "company EBITDA positive, second reimbursed year"),
-        ("€1.30M", "CASH TROUGH", "the €4.0M runway is never exhausted"),
-        ("159,910", "FIT+ / YEAR", "92% of Germany's volume, none of its barriers"),
-        (f"€{nl.get('system_saving_per_100',0):,}", "SAVED PER 100", "at €650 per avoided colonoscopy"),
-    ]
-    stat_html = "".join(
-        f'<div class="stat"><span class="mono lbl"><i>▲</i>{lbl}</span><b>{big}</b><p>{sub}</p></div>'
-        for big, lbl, sub in stats)
-    rows = [
-        ("deck/", "THE DECK", "five slides · the recommendation and its defence"),
-        ("report/", "THE EVIDENCE", "every file's fate · the checks · the impossible 300k claim, rejected"),
-        ("chat/", "ASK THE DATA", "grounded chat · your key, any provider, detected on paste"),
-    ]
-    row_html = "".join(
-        f'<a class="row" href="{href}"><span class="split big">{title}</span>'
-        f'<span class="mono sub">{sub}</span><span class="arr">→</span></a><div class="rule wide"></div>'
-        for href, title, sub in rows)
+    nl = st["conclusion"]["results"][rec]
+    files = []
+    for d in st["ingestion"]:
+        key = d["key"]
+        scope, kind = key.split("/", 1)
+        role = (kind.replace("_", " ") if scope in ("company", "shared") else f"{scope} · {kind.replace('_', ' ')}")
+        files.append({"name": d["file"], "role": role, "fmt": d["format"].upper()})
+    for f in st.get("files", {}).get("skipped", []):
+        files.append({"name": f, "role": "reference — not analysed", "fmt": f.split(".")[-1].upper()})
+    for f in st.get("files", {}).get("unassigned", []):
+        files.append({"name": f, "role": "unassigned", "fmt": f.split(".")[-1].upper()})
+    seed = _json.dumps({
+        "id": "eu4", "name": "EU4 Case Pack", "protected": True, "hasRun": True, "dirty": False,
+        "lastRun": man["run_at"][:16].replace("T", " ") + " UTC", "files": files,
+        "facts": [["Recommendation", f"the {rec}"], ["Break-even", f"Year {nl['break_even_year']}"],
+                   ["Cash trough", f"€{nl['min_cash']/1e6:.2f}M"], ["End cash Y5", f"€{nl['end_cash']/1e6:.2f}M"],
+                   ["Records → facilities", f"{fac['raw_records']:,} → {fac['unique_facilities']}"],
+                   ["Golden eval", "28 / 28"], ["AI calls · cost", f"{man['llm_calls']} · €{man['llm_cost_eur']:.2f}"],
+                   ["Runtime", f"{man['total_s']}s"]]})
+    stages_js = _json.dumps(["read native formats", "extract parameters", "resolve one schema",
+                             "dedupe facilities", "compare sources", "arithmetic checks", "conclude"])
     return f"""<!doctype html><html lang="en"><head><title>Runway, the market-entry desk</title>{HEAD}
 <style>
- .bar{{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;gap:12px;padding:16px 28px;z-index:9;
-   background:linear-gradient(var(--bg) 60%,transparent)}}
- .bar b{{font-size:15px;letter-spacing:.02em}} .bar .mono{{color:var(--soft);font-size:11px}}
- .bar nav{{margin-left:auto;display:flex;gap:20px}}
- .bar nav a{{font:600 13px 'Instrument Sans';color:var(--softblue);text-decoration:none}}
+ html,body{{height:100%}}
+ body{{overflow:hidden;display:grid;grid-template-rows:auto 1fr;font-size:15px}}
+ .bar{{display:flex;align-items:center;gap:12px;padding:14px 22px;border-bottom:1px solid var(--line)}}
+ .bar b{{font-size:15px}} .bar .mono{{color:var(--soft);font-size:11px;letter-spacing:.14em}}
+ .bar nav{{margin-left:auto;display:flex;gap:18px}}
+ .bar nav a{{font:600 12.5px 'Instrument Sans';color:var(--softblue);text-decoration:none}}
  .bar nav a:hover{{color:var(--acc)}}
- .hero{{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:110px 28px 40px;max-width:1240px;margin:0 auto}}
- h1{{margin:14px 0 0;font-weight:700;text-transform:uppercase;letter-spacing:-.028em;
-   font-size:clamp(46px,9.2vw,132px);line-height:.98}}
- h1 .l2{{color:var(--acc);display:block}}
- h1 .serif{{font-style:italic;font-weight:300;text-transform:none;letter-spacing:0}}
- .hero .meta{{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;margin-top:34px;flex-wrap:wrap}}
- .hero .meta p{{max-width:44ch;margin:0;color:var(--soft);font-size:15.5px}}
- .scrollhint{{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.3em;color:var(--soft)}}
- .sect{{max-width:1240px;margin:0 auto;padding:90px 28px}}
- .verdict h2{{margin:16px 0 0;font-weight:700;text-transform:uppercase;letter-spacing:-.02em;
-   font-size:clamp(34px,6vw,84px);line-height:1.02}}
- .verdict h2 em{{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;text-transform:none;color:var(--acc);letter-spacing:0}}
- .stats{{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1px;background:var(--line);
-   border:1px solid var(--line);margin-top:46px}}
- .stat{{background:var(--bg);padding:22px 20px}}
- .stat .lbl{{font-size:10.5px;letter-spacing:.14em;color:var(--soft)}}
- .stat .lbl i{{font-style:normal;color:var(--acc);margin-right:8px;font-size:9px}}
- .stat b{{display:block;font-size:clamp(28px,3vw,40px);letter-spacing:-.02em;margin:8px 0 4px}}
- .stat p{{margin:0;font-size:12.5px;color:var(--soft)}}
- .lane{{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;padding:18px 0;
-   font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:.12em;color:var(--softblue);white-space:nowrap}}
- .lane .in{{display:inline-block;animation:lane 36s linear infinite;padding-right:60px}}
- .lane:hover .in{{animation-play-state:paused}}
- @keyframes lane{{to{{transform:translateX(-50%)}}}}
- @media(prefers-reduced-motion:reduce){{.lane .in{{animation:none}}}}
- .rows{{display:flex;flex-direction:column}}
- .row{{display:flex;align-items:baseline;gap:26px;padding:34px 4px;text-decoration:none;color:var(--ink)}}
- .row .big{{font-weight:700;text-transform:uppercase;letter-spacing:-.02em;font-size:clamp(30px,5vw,64px);line-height:1}}
- .row .sub{{color:var(--soft);font-size:12px;max-width:34ch;line-height:1.6}}
- .row .arr{{margin-left:auto;font-size:clamp(24px,3.5vw,40px);color:var(--soft);transition:transform .2s,color .2s}}
- .row:hover .arr{{color:var(--acc);transform:translateX(10px)}}
- .row:hover .big{{color:var(--acc)}}
- .rule.wide{{max-width:1240px}}
- .method{{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:34px;color:var(--soft);font-size:14px}}
- .method b{{display:block;color:var(--ink);margin-bottom:6px;font-size:15px}}
- footer{{text-align:center;padding:40px 20px 50px;color:var(--soft);font:11.5px 'IBM Plex Mono',monospace;letter-spacing:.08em}}
- /* reveals (initial hidden states only when JS is present) */
- .split{{display:inline-block;overflow:hidden;vertical-align:bottom}}
- .js .split .ch{{display:inline-block;transform:translateY(110%);transition:transform .7s cubic-bezier(.2,.6,.1,1)}}
- .js .on .ch{{transform:translateY(0)}}
- .js .fade{{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}}
- .js .fade.on{{opacity:1;transform:none}}
- @media(prefers-reduced-motion:reduce){{.js .split .ch{{transform:none}}.js .fade{{opacity:1;transform:none}}}}
+ .desk{{display:grid;grid-template-columns:270px 1fr;gap:18px;padding:18px 22px;min-height:0}}
+ @media(max-width:820px){{body{{overflow:auto}}.desk{{grid-template-columns:1fr}}}}
+ /* left rail — the floating panel */
+ .rail{{background:var(--sf);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;
+   min-height:0;box-shadow:0 18px 50px -30px rgba(0,0,0,.8)}}
+ .rail header{{display:flex;align-items:center;gap:8px;padding:13px 14px;border-bottom:1px solid var(--line)}}
+ .rail header .mono{{font-size:10px;letter-spacing:.18em;color:var(--tan)}}
+ .rail header button{{margin-left:auto;font:600 12px 'Instrument Sans';background:var(--acc);color:#fff;
+   border:none;border-radius:7px;padding:6px 10px;cursor:pointer}}
+ .rail header button:hover{{background:var(--accdark)}}
+ .exlist{{overflow-y:auto;min-height:0;padding:6px}}
+ .ex{{display:flex;align-items:center;gap:9px;padding:10px 10px;border-radius:9px;cursor:pointer;color:var(--ink)}}
+ .ex:hover{{background:var(--softblue2)}}
+ .ex.on{{background:var(--softblue2);outline:1px solid var(--deep)}}
+ .ex .dot{{width:8px;height:8px;border-radius:50%;flex:none;border:1.5px solid var(--soft)}}
+ .ex.ran .dot{{background:var(--acc);border-color:var(--acc)}}
+ .ex .nm{{flex:1;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+ .ex input{{flex:1;font:600 13.5px 'Instrument Sans';background:var(--bg);color:var(--ink);
+   border:1px solid var(--deep);border-radius:6px;padding:4px 7px;min-width:0}}
+ .ex .del{{border:none;background:none;color:var(--soft);cursor:pointer;font-size:13px;padding:2px 4px;opacity:0}}
+ .ex:hover .del{{opacity:1}} .ex .del:hover{{color:var(--acc)}}
+ .rail footer{{padding:10px 14px;border-top:1px solid var(--line);font:10px 'IBM Plex Mono',monospace;
+   letter-spacing:.1em;color:var(--soft)}}
+ /* center pane */
+ .pane{{display:flex;flex-direction:column;min-height:0;gap:14px}}
+ .panehead{{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}}
+ .panehead h1{{margin:0;font-size:clamp(24px,3vw,34px);font-weight:700;text-transform:uppercase;letter-spacing:-.02em}}
+ .panehead h1 em{{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;text-transform:none;color:var(--acc)}}
+ .tabs{{display:flex;gap:6px;margin-left:auto}}
+ .tab{{font:600 13px 'Instrument Sans';border:1px solid var(--line);background:var(--sf);color:var(--softblue);
+   border-radius:9px;padding:8px 18px;cursor:pointer}}
+ .tab.on{{background:var(--deep);color:#fff;border-color:var(--deep)}}
+ .tab:disabled{{opacity:.4;cursor:not-allowed}}
+ .dirty{{background:#3d2f16;color:#f2d9a7;border:1px solid #5a4620;border-radius:10px;padding:10px 14px;
+   font-size:13px;display:none}}
+ .dirty.show{{display:block}}
+ .stage{{flex:1;background:var(--sf);border:1px solid var(--line);border-radius:14px;min-height:0;
+   overflow:auto;padding:18px}}
+ /* files */
+ .filegrid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:9px}}
+ .frow{{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:9px;padding:9px 11px}}
+ .frow .mono{{font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:110px}}
+ .chip{{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;border-radius:99px;
+   padding:2px 8px;background:var(--softblue2);color:var(--softblue);white-space:nowrap}}
+ .chip.warn{{background:#3d2f16;color:#f2d9a7}}
+ .frow .del{{border:none;background:none;color:var(--soft);cursor:pointer;padding:0 2px}}
+ .frow .del:hover{{color:var(--acc)}}
+ .addtile{{display:grid;place-content:center;border:1.5px dashed var(--deep);border-radius:9px;min-height:44px;
+   color:var(--softblue);cursor:pointer;font-size:22px}}
+ .addtile:hover{{border-color:var(--acc);color:var(--acc)}}
+ /* run */
+ .runwrap{{display:grid;place-content:center;text-align:center;height:100%;gap:16px}}
+ .runbtn{{font:700 17px 'Instrument Sans';background:var(--acc);color:#fff;border:none;border-radius:12px;
+   padding:16px 34px;cursor:pointer;letter-spacing:.01em}}
+ .runbtn:hover{{background:var(--accdark)}}
+ .runbtn.ghost{{background:var(--sf);border:1px solid var(--line);color:var(--ink)}}
+ .runlog{{text-align:left;font:12.5px 'IBM Plex Mono',monospace;color:var(--soft);display:none;min-width:290px}}
+ .runlog div{{padding:3px 0}} .runlog .done::before{{content:"✓ ";color:var(--acc)}}
+ .runlog .pend::before{{content:"· "}}
+ /* results */
+ .seg{{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}}
+ .seg button{{font:600 12px 'Instrument Sans';border:1px solid var(--line);background:transparent;
+   color:var(--softblue);border-radius:99px;padding:7px 15px;cursor:pointer}}
+ .seg button.on{{background:var(--softblue2);border-color:var(--deep);color:var(--ink)}}
+ iframe{{width:100%;height:calc(100% - 52px);border:1px solid var(--line);border-radius:10px;background:#fff}}
+ .facts{{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1px;background:var(--line);
+   border:1px solid var(--line)}}
+ .facts div{{background:var(--bg);padding:16px}}
+ .facts span{{display:block;font:10px 'IBM Plex Mono',monospace;letter-spacing:.14em;color:var(--soft);text-transform:uppercase}}
+ .facts b{{font-size:21px;letter-spacing:-.01em}}
+ .openfull{{font:600 12px 'Instrument Sans';color:var(--softblue);text-decoration:none;float:right}}
+ .openfull:hover{{color:var(--acc)}}
+ .emptyres{{display:grid;place-content:center;text-align:center;height:100%;color:var(--soft);gap:10px}}
+ .emptyres b{{font-size:26px;color:var(--line);letter-spacing:.04em}}
 </style></head><body>
 <div class="bar"><span class="tag"></span><b>RUNWAY</b><span class="mono">THE MARKET-ENTRY DESK</span>
- <nav><a href="deck/">Deck</a><a href="report/">Evidence</a><a href="chat/">Ask the data</a></nav></div>
+ <nav><a href="v1.html" style="display:none"></a><a href="model/">Blank model</a>
+ <a href="https://github.com/tomasbb0/market-runway">Repo</a>
+ <a href="https://burnaylabs.pt/v1-market-runway/">v1 site ↗</a></nav></div>
 
-<section class="hero">
- <div class="eyebrow"><span class="tag"></span>HELIX OPTICS · FIRST EUROPEAN MARKET · {fac['raw_records']:,} RECORDS READ</div>
- <h1><span class="split" data-stagger>FOUR MARKETS IN,</span>
-     <span class="l2"><span class="split" data-stagger>ONE <span class="serif">answer</span> OUT.</span></span></h1>
- <div class="meta">
-  <p>A seven-stage pipeline reads the raw pack in its native formats, validates every figure, deduplicates
-  {fac['raw_records']:,} register records into {fac['unique_facilities']} real facilities, and rejects the
-  planted impossibilities. Deterministic first; AI only where it earns its place.</p>
-  <span class="scrollhint">(&nbsp;&nbsp;SCROLL&nbsp;&nbsp;)</span>
- </div>
-</section>
+<div class="desk">
+ <aside class="rail">
+  <header><span class="tag"></span><span class="mono">EXERCISES</span><button id="newex">+ New</button></header>
+  <div class="exlist" id="exlist"></div>
+  <footer>SEVEN STAGES · DETERMINISTIC FIRST · EVAL 28/28</footer>
+ </aside>
 
-<div class="lane"><span class="in">{lane} &nbsp;&nbsp;◇&nbsp;&nbsp; {lane}</span></div>
+ <section class="pane">
+  <div class="panehead"><h1 id="title">EU4 <em>case pack</em></h1>
+   <div class="tabs">
+    <button class="tab" data-t="files">Files</button>
+    <button class="tab" data-t="run">Run</button>
+    <button class="tab" data-t="results" id="tabres">Results</button>
+   </div></div>
+  <div class="dirty" id="dirty">Files changed since the last run — results are stale. Nothing updates until you re-run.</div>
+  <div class="stage" id="stage"></div>
+ </section>
+</div>
 
-<section class="sect verdict">
- <div class="eyebrow fade"><span class="tag"></span>THE VERDICT</div>
- <h2><span class="split">ENTER THE</span><br><span class="split"><em>Netherlands</em> FIRST.</span></h2>
- <div class="stats fade">{stat_html}</div>
-</section>
-
-<section class="sect" style="padding-top:0">
- <div class="eyebrow fade" style="margin-bottom:8px"><span class="tag"></span>EXPLORE</div>
- <div class="rows">{row_html}</div>
-</section>
-
-<section class="sect method">
- <div class="fade"><b>Deterministic core.</b>74 of 74 fields resolved by patterns on this pack; the manifest
-  records {man['llm_calls']} AI calls and €{man['llm_cost_eur']:.2f} spent. Eval: 28/28.</div>
- <div class="fade"><b>Nothing silent.</b>Unrecognised files are flagged, never ignored; capacity conflicts are
-  reported as ranges; the competitor's 300k claim dies in check CHK-02.</div>
- <div class="fade"><b>Closed world.</b>The pack is the sole source of truth. The research workflow exists,
-  and is deliberately off.</div>
-</section>
-
-<footer>RUNWAY · BUILT ON THE ILOF PALETTE · MARKETS 5–14 ARE A CONFIG ENTRY AWAY</footer>
+<input type="file" id="fpick" multiple hidden>
 <script>
  document.documentElement.classList.add('js');
- const rm=matchMedia('(prefers-reduced-motion: reduce)').matches;
- document.querySelectorAll('.split').forEach(el=>{{
-   if(rm)return;
-   const walk=n=>{{[...n.childNodes].forEach(c=>{{
-     if(c.nodeType===3){{const f=document.createDocumentFragment();
-       [...c.textContent].forEach(ch=>{{const s=document.createElement('span');s.className='ch';
-         s.textContent=ch===' '?'\u00a0':ch;f.appendChild(s)}});n.replaceChild(f,c);}}
-     else walk(c);}})}};
-   walk(el);
-   [...el.querySelectorAll('.ch')].forEach((c,i)=>c.style.transitionDelay=(i*22)+'ms');
- }});
- const io=new IntersectionObserver(es=>es.forEach(e=>{{if(e.isIntersecting){{e.target.classList.add('on');io.unobserve(e.target)}}}}),{{threshold:.3}});
- document.querySelectorAll('.split,.fade').forEach(el=>io.observe(el));
- addEventListener('load',()=>document.querySelectorAll('.hero .split').forEach(el=>el.classList.add('on')));
- setTimeout(()=>document.querySelectorAll('.split,.fade').forEach(el=>el.classList.add('on')),1600);
+ const SEED={seed};
+ const STAGES={stages_js};
+ let S=JSON.parse(localStorage.getItem('runway-ex')||'null');
+ if(!S){{S={{list:[SEED],sel:'eu4',tab:'files'}};save();}}
+ if(!S.list.find(e=>e.id==='eu4')){{S.list.unshift(SEED);}}
+ function save(){{localStorage.setItem('runway-ex',JSON.stringify(S))}}
+ function cur(){{return S.list.find(e=>e.id===S.sel)||S.list[0]}}
+ const $=id=>document.getElementById(id);
+
+ function renderRail(){{
+   $('exlist').innerHTML=S.list.map(e=>
+     `<div class="ex ${{e.id===S.sel?'on':''}} ${{e.hasRun?'ran':''}}" data-id="${{e.id}}">
+       <span class="dot"></span><span class="nm" title="double-click to rename">${{esc(e.name)}}</span>
+       ${{e.protected?'':'<button class="del" title="Delete exercise">✕</button>'}}</div>`).join('');
+   document.querySelectorAll('.ex').forEach(el=>{{
+     el.onclick=ev=>{{if(ev.target.classList.contains('del'))return;
+       S.sel=el.dataset.id;S.tab=cur().hasRun?'results':'files';save();render();}};
+     el.querySelector('.del')?.addEventListener('click',()=>{{
+       if(confirm('Delete this exercise and its file list?')){{
+         S.list=S.list.filter(x=>x.id!==el.dataset.id);
+         if(S.sel===el.dataset.id)S.sel=S.list[0]?.id;save();render();}}}});
+     el.querySelector('.nm').ondblclick=()=>rename(el.dataset.id);
+   }});
+ }}
+ function rename(id){{
+   const e=S.list.find(x=>x.id===id);const row=document.querySelector(`.ex[data-id="${{id}}"]`);
+   row.querySelector('.nm').outerHTML=`<input value="${{esc(e.name)}}" maxlength="40">`;
+   const inp=row.querySelector('input');inp.focus();inp.select();
+   const done=()=>{{e.name=inp.value.trim()||e.name;save();render();}};
+   inp.onkeydown=ev=>{{if(ev.key==='Enter')done();if(ev.key==='Escape')render();}};
+   inp.onblur=done;
+ }}
+ $('newex').onclick=()=>{{
+   const n=S.list.filter(e=>!e.protected).length+1;
+   const e={{id:'ex'+Date.now(),name:'Exercise '+n,protected:false,hasRun:false,dirty:false,files:[],facts:[]}};
+   S.list.push(e);S.sel=e.id;S.tab='files';save();render();
+   setTimeout(()=>rename(e.id),50);
+ }};
+
+ function render(){{
+   const e=cur();if(!e)return;
+   renderRail();
+   const t=$('title');
+   const parts=e.name.split(' ');
+   t.innerHTML=parts.length>1?esc(parts[0])+' <em>'+esc(parts.slice(1).join(' ').toLowerCase())+'</em>':esc(e.name);
+   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===S.tab));
+   $('tabres').disabled=!e.hasRun;
+   $('dirty').classList.toggle('show',!!e.dirty&&e.hasRun);
+   ({{files:renderFiles,run:renderRun,results:renderResults}})[S.tab]();
+ }}
+ document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{{
+   if(b.disabled)return;S.tab=b.dataset.t;save();render();}});
+
+ function renderFiles(){{
+   const e=cur();
+   $('stage').innerHTML='<div class="filegrid">'+e.files.map((f,i)=>
+     `<div class="frow"><span class="mono" title="${{esc(f.name)}}">${{esc(f.name)}}</span>
+      <span class="chip ${{f.role==='unassigned'?'warn':''}}">${{esc(f.role||f.fmt||'')}}</span>
+      <button class="del" data-i="${{i}}" title="Remove">✕</button></div>`).join('')
+     +'<div class="addtile" id="addf" title="Add documents">+</div></div>'
+     +'<p style="color:var(--soft);font-size:12.5px;margin-top:14px">Adding or removing files changes nothing until you run. '
+     +(e.protected?'This is the recorded case pack; edits here are a local mock.':'')+'</p>';
+   $('addf').onclick=()=>$('fpick').click();
+   $('fpick').onchange=()=>{{
+     [...$('fpick').files].forEach(f=>e.files.push({{name:f.name,role:'unassigned',fmt:(f.name.split('.').pop()||'').toUpperCase()}}));
+     $('fpick').value='';e.dirty=true;save();render();}};
+   document.querySelectorAll('.frow .del').forEach(b=>b.onclick=()=>{{
+     e.files.splice(+b.dataset.i,1);e.dirty=true;save();render();}});
+ }}
+
+ function renderRun(){{
+   const e=cur();
+   $('stage').innerHTML=`<div class="runwrap">
+     <div class="eyebrow"><span class="tag"></span>${{e.hasRun?'LAST RUN · '+(e.lastRun||'recorded'):'NEVER RUN'}}</div>
+     <button class="runbtn" id="go">${{e.hasRun?'Re-run →':'Initial run →'}}</button>
+     ${{e.hasRun?'<button class="runbtn ghost" id="gores">View last results</button>':''}}
+     <div class="runlog" id="rlog">${{STAGES.map(s=>'<div class="pend">'+s+'</div>').join('')}}</div>
+     <p style="color:var(--soft);font-size:12px;max-width:46ch">${{e.protected
+       ?'Re-running replays the recorded pipeline run (0.9s, 0 AI calls).'
+       :'This static mock stages the run; actual computation happens in the local app.'}}</p></div>`;
+   $('gores')&&($('gores').onclick=()=>{{S.tab='results';save();render();}});
+   $('go').onclick=()=>{{
+     const log=$('rlog');log.style.display='block';$('go').disabled=true;
+     const rows=[...log.children];let i=0;
+     const tick=()=>{{if(i<rows.length){{rows[i].className='done';i++;setTimeout(tick,210)}}
+       else{{e.hasRun=true;e.dirty=false;e.lastRun=new Date().toISOString().slice(0,16).replace('T',' ');
+         save();S.tab='results';render();}}}};
+     setTimeout(tick,250);
+   }};
+ }}
+
+ function renderResults(){{
+   const e=cur();
+   if(!e.protected){{
+     $('stage').innerHTML=`<div class="emptyres"><b>— · — · — · —</b>
+       <p>The mock has no engine: this exercise ran, but produced the blank model.<br>
+       Compute for real in the local app (<span class="mono">python app.py</span>).</p>
+       <p><a class="openfull" style="float:none" href="model/">see the blank model →</a></p></div>`;
+     return;
+   }}
+   const seg=S.res||'evidence';
+   const segs=[['evidence','Evidence report'],['deck','Deck'],['dataset','Dataset'],['chat','Ask the data']];
+   let body='';
+   if(seg==='dataset'){{
+     body='<div class="facts">'+e.facts.map(f=>`<div><span>${{f[0]}}</span><b>${{f[1]}}</b></div>`).join('')+'</div>';
+   }} else {{
+     const src={{evidence:'report/',deck:'deck/',chat:'chat/'}}[seg];
+     body=`<a class="openfull" href="${{src}}">open full ↗</a><iframe src="${{src}}" title="${{seg}}"></iframe>`;
+   }}
+   $('stage').innerHTML='<div class="seg">'+segs.map(x=>
+     `<button data-s="${{x[0]}}" class="${{seg===x[0]?'on':''}}">${{x[1]}}</button>`).join('')+'</div>'+body;
+   document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{{S.res=b.dataset.s;save();render();}});
+ }}
+
+ function esc(x){{const d=document.createElement('div');d.textContent=x;return d.innerHTML}}
+ render();
 </script>
 </body></html>"""
 
@@ -328,6 +449,83 @@ def deck(st) -> str:
 </script></body></html>"""
 
 
+def model_blank() -> str:
+    """The dashboard in its empty state: the same sections the pipeline fills,
+    rendered unpopulated so it is unmistakable that nothing is hand-typed."""
+    slot = ('<div class="fcard"><div class="fstat">·</div><div>'
+            '<div class="fname">awaiting file</div><div class="fmeta">format — · sha —</div></div></div>')
+    ing = slot * 6
+    prow = "".join(f'<tr><th>{p}</th><td>—</td><td>—</td><td>—</td><td>—</td></tr>'
+                   for p in ("Eligible population", "Participation", "FIT positivity",
+                             "Addressable / yr", "Price per test", "Months to reimbursement"))
+    chk = "".join(f'<div class="finding"><span class="fpill">PENDING</span><b>CHK-0{i}</b> '
+                  f'{n}<div class="fdetail">runs when a pack is read</div></div>'
+                  for i, n in enumerate(("Cross-source agreement", "Competitor volume vs addressable",
+                                         "Rates are valid fractions", "Screened-volume arithmetic"), 1))
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>The blank model — Runway</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Noto+Serif:ital,wght@0,300;1,300&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+ :root{{--bg:#f9f7f5;--sf:#fff;--ink:#1d2939;--soft:#667085;--line:#e6e1da;--acc:#ff4200;
+   --deep:#374b60;--accsoft:#e6eef3;--tan:#ad836c}}
+ *{{box-sizing:border-box}} body{{margin:0;background:var(--bg);color:var(--ink);
+   font:15px/1.5 'Instrument Sans',system-ui,sans-serif;padding:34px 22px 70px}}
+ .wrap{{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:24px}}
+ .eyebrow{{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.15em;
+   text-transform:uppercase;color:var(--tan)}}
+ h1{{font-size:27px;margin:0;letter-spacing:-.01em;font-weight:650}}
+ h1 em{{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;color:var(--acc)}}
+ .empty-chip{{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.1em;
+   border:1.5px dashed var(--soft);border-radius:99px;padding:3px 12px;color:var(--soft);vertical-align:6px;margin-left:10px}}
+ .note{{background:var(--accsoft);border:1px solid var(--line);border-left:4px solid var(--acc);
+   border-radius:10px;padding:14px 18px;font-size:14.5px}}
+ section{{background:var(--sf);border:1px solid var(--line);border-radius:12px;padding:18px 20px;position:relative}}
+ section::after{{content:"EMPTY";position:absolute;top:14px;right:16px;font:10px 'IBM Plex Mono',monospace;
+   letter-spacing:.12em;color:var(--soft);border:1px dashed var(--line);border-radius:99px;padding:2px 8px}}
+ h2{{font-size:16px;margin:0 0 12px;font-weight:650}}
+ .grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}}
+ .fcard{{display:flex;gap:10px;border:1px dashed var(--line);border-radius:8px;padding:8px 10px;align-items:center;color:var(--soft)}}
+ .fstat{{width:26px;height:26px;border-radius:7px;display:grid;place-content:center;background:var(--bg)}}
+ .fname{{font-size:13px;font-weight:600}} .fmeta{{font-size:11.5px;font-family:'IBM Plex Mono',monospace}}
+ table{{border-collapse:collapse;width:100%;font-size:13.5px}}
+ th,td{{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line)}}
+ td{{color:var(--soft);font-family:'IBM Plex Mono',monospace;font-size:12.5px}}
+ tbody tr:last-child td,tbody tr:last-child th{{border-bottom:none}}
+ .finding{{border:1px dashed var(--line);border-radius:9px;padding:10px 14px;margin-bottom:8px;color:var(--soft)}}
+ .fpill{{font-family:'IBM Plex Mono',monospace;font-size:10.5px;border-radius:99px;padding:1px 8px;
+   background:var(--bg);margin-right:8px}}
+ .fdetail{{font-size:13px;margin-top:3px}}
+ .verdict{{display:grid;place-content:center;text-align:center;min-height:150px;color:var(--soft)}}
+ .verdict b{{font-size:34px;color:var(--line);letter-spacing:.02em}}
+ .verdict p{{margin:6px 0 0;font-size:13.5px}}
+ .ctas{{display:flex;gap:12px;flex-wrap:wrap}}
+ .btn{{display:inline-block;font:600 14.5px 'Instrument Sans';border-radius:9px;border:1px solid var(--line);
+   padding:11px 20px;background:var(--sf);color:var(--ink);text-decoration:none}}
+ .btn.primary{{background:var(--acc);border-color:var(--acc);color:#fff}}
+ .btn.primary:hover{{background:#c12d00}}
+ a.back{{font:600 13px 'Instrument Sans';color:var(--soft);text-decoration:none}}
+</style></head><body><div class="wrap">
+ <a class="back" href="../">← Runway</a>
+ <div><div class="eyebrow">RUNWAY · WORKSPACE: BLANK-MODEL</div>
+  <h1>The model, before any <em>data</em>.<span class="empty-chip">NOTHING LOADED</span></h1></div>
+ <div class="note"><b>This dashboard is generated, never hand-filled.</b> Every section below is rendered by the
+  pipeline; until documents are read, it has nothing to say — and shows exactly that. Drop a pack into a
+  workspace and the same page fills itself: ingestion fates, provenance-badged values, checks, and a ranking.</div>
+ <section><h2>1 · Ingestion — every file, its fate</h2><div class="grid">{ing}</div></section>
+ <section><h2>2–3 · Canonical dataset</h2>
+  <table><thead><tr><th>Parameter</th><th>Market A</th><th>Market B</th><th>Market C</th><th>Market D</th></tr></thead>
+  <tbody>{prow}</tbody></table></section>
+ <section><h2>4–6 · Validation</h2>{chk}</section>
+ <section><h2>7 · Conclusion</h2><div class="verdict"><b>— · — · — · —</b>
+  <p>the ranking appears when the engine has inputs; it is computed, not written</p></div></section>
+ <div class="ctas">
+  <a class="btn primary" href="../report/">Populate it: open the Helix case →</a>
+  <a class="btn" href="https://github.com/tomasbb0/market-runway">Run it yourself (local app)</a>
+ </div>
+</div></body></html>"""
+
+
 def chat(st) -> tuple[str, str]:
     compact = {
         "dataset": {s: {p: {"value": e["value"], "unit": e["unit"], "method": e["method"],
@@ -440,6 +638,8 @@ def build() -> str:
     for sub in ("", "deck", "deck/assets", "report", "chat"):
         (SITE / sub).mkdir(parents=True, exist_ok=True)
     (SITE / "index.html").write_text(landing(st))
+    (SITE / "model").mkdir(exist_ok=True)
+    (SITE / "model" / "index.html").write_text(model_blank())
     (SITE / "deck" / "index.html").write_text(deck(st))
     for png in ("cash_curves_dark.png", "trough_dark.png", "nl_model_dark.png"):
         shutil.copy(DELIV / "charts" / png, SITE / "deck" / "assets" / png)

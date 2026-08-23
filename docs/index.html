@@ -25,110 +25,230 @@
  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}html{scroll-behavior:auto}}
 </style>
 <style>
- .bar{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;gap:12px;padding:16px 28px;z-index:9;
-   background:linear-gradient(var(--bg) 60%,transparent)}
- .bar b{font-size:15px;letter-spacing:.02em} .bar .mono{color:var(--soft);font-size:11px}
- .bar nav{margin-left:auto;display:flex;gap:20px}
- .bar nav a{font:600 13px 'Instrument Sans';color:var(--softblue);text-decoration:none}
+ html,body{height:100%}
+ body{overflow:hidden;display:grid;grid-template-rows:auto 1fr;font-size:15px}
+ .bar{display:flex;align-items:center;gap:12px;padding:14px 22px;border-bottom:1px solid var(--line)}
+ .bar b{font-size:15px} .bar .mono{color:var(--soft);font-size:11px;letter-spacing:.14em}
+ .bar nav{margin-left:auto;display:flex;gap:18px}
+ .bar nav a{font:600 12.5px 'Instrument Sans';color:var(--softblue);text-decoration:none}
  .bar nav a:hover{color:var(--acc)}
- .hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:110px 28px 40px;max-width:1240px;margin:0 auto}
- h1{margin:14px 0 0;font-weight:700;text-transform:uppercase;letter-spacing:-.028em;
-   font-size:clamp(46px,9.2vw,132px);line-height:.98}
- h1 .l2{color:var(--acc);display:block}
- h1 .serif{font-style:italic;font-weight:300;text-transform:none;letter-spacing:0}
- .hero .meta{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;margin-top:34px;flex-wrap:wrap}
- .hero .meta p{max-width:44ch;margin:0;color:var(--soft);font-size:15.5px}
- .scrollhint{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.3em;color:var(--soft)}
- .sect{max-width:1240px;margin:0 auto;padding:90px 28px}
- .verdict h2{margin:16px 0 0;font-weight:700;text-transform:uppercase;letter-spacing:-.02em;
-   font-size:clamp(34px,6vw,84px);line-height:1.02}
- .verdict h2 em{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;text-transform:none;color:var(--acc);letter-spacing:0}
- .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1px;background:var(--line);
-   border:1px solid var(--line);margin-top:46px}
- .stat{background:var(--bg);padding:22px 20px}
- .stat .lbl{font-size:10.5px;letter-spacing:.14em;color:var(--soft)}
- .stat .lbl i{font-style:normal;color:var(--acc);margin-right:8px;font-size:9px}
- .stat b{display:block;font-size:clamp(28px,3vw,40px);letter-spacing:-.02em;margin:8px 0 4px}
- .stat p{margin:0;font-size:12.5px;color:var(--soft)}
- .lane{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;padding:18px 0;
-   font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:.12em;color:var(--softblue);white-space:nowrap}
- .lane .in{display:inline-block;animation:lane 36s linear infinite;padding-right:60px}
- .lane:hover .in{animation-play-state:paused}
- @keyframes lane{to{transform:translateX(-50%)}}
- @media(prefers-reduced-motion:reduce){.lane .in{animation:none}}
- .rows{display:flex;flex-direction:column}
- .row{display:flex;align-items:baseline;gap:26px;padding:34px 4px;text-decoration:none;color:var(--ink)}
- .row .big{font-weight:700;text-transform:uppercase;letter-spacing:-.02em;font-size:clamp(30px,5vw,64px);line-height:1}
- .row .sub{color:var(--soft);font-size:12px;max-width:34ch;line-height:1.6}
- .row .arr{margin-left:auto;font-size:clamp(24px,3.5vw,40px);color:var(--soft);transition:transform .2s,color .2s}
- .row:hover .arr{color:var(--acc);transform:translateX(10px)}
- .row:hover .big{color:var(--acc)}
- .rule.wide{max-width:1240px}
- .method{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:34px;color:var(--soft);font-size:14px}
- .method b{display:block;color:var(--ink);margin-bottom:6px;font-size:15px}
- footer{text-align:center;padding:40px 20px 50px;color:var(--soft);font:11.5px 'IBM Plex Mono',monospace;letter-spacing:.08em}
- /* reveals (initial hidden states only when JS is present) */
- .split{display:inline-block;overflow:hidden;vertical-align:bottom}
- .js .split .ch{display:inline-block;transform:translateY(110%);transition:transform .7s cubic-bezier(.2,.6,.1,1)}
- .js .on .ch{transform:translateY(0)}
- .js .fade{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
- .js .fade.on{opacity:1;transform:none}
- @media(prefers-reduced-motion:reduce){.js .split .ch{transform:none}.js .fade{opacity:1;transform:none}}
+ .desk{display:grid;grid-template-columns:270px 1fr;gap:18px;padding:18px 22px;min-height:0}
+ @media(max-width:820px){body{overflow:auto}.desk{grid-template-columns:1fr}}
+ /* left rail — the floating panel */
+ .rail{background:var(--sf);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;
+   min-height:0;box-shadow:0 18px 50px -30px rgba(0,0,0,.8)}
+ .rail header{display:flex;align-items:center;gap:8px;padding:13px 14px;border-bottom:1px solid var(--line)}
+ .rail header .mono{font-size:10px;letter-spacing:.18em;color:var(--tan)}
+ .rail header button{margin-left:auto;font:600 12px 'Instrument Sans';background:var(--acc);color:#fff;
+   border:none;border-radius:7px;padding:6px 10px;cursor:pointer}
+ .rail header button:hover{background:var(--accdark)}
+ .exlist{overflow-y:auto;min-height:0;padding:6px}
+ .ex{display:flex;align-items:center;gap:9px;padding:10px 10px;border-radius:9px;cursor:pointer;color:var(--ink)}
+ .ex:hover{background:var(--softblue2)}
+ .ex.on{background:var(--softblue2);outline:1px solid var(--deep)}
+ .ex .dot{width:8px;height:8px;border-radius:50%;flex:none;border:1.5px solid var(--soft)}
+ .ex.ran .dot{background:var(--acc);border-color:var(--acc)}
+ .ex .nm{flex:1;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .ex input{flex:1;font:600 13.5px 'Instrument Sans';background:var(--bg);color:var(--ink);
+   border:1px solid var(--deep);border-radius:6px;padding:4px 7px;min-width:0}
+ .ex .del{border:none;background:none;color:var(--soft);cursor:pointer;font-size:13px;padding:2px 4px;opacity:0}
+ .ex:hover .del{opacity:1} .ex .del:hover{color:var(--acc)}
+ .rail footer{padding:10px 14px;border-top:1px solid var(--line);font:10px 'IBM Plex Mono',monospace;
+   letter-spacing:.1em;color:var(--soft)}
+ /* center pane */
+ .pane{display:flex;flex-direction:column;min-height:0;gap:14px}
+ .panehead{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+ .panehead h1{margin:0;font-size:clamp(24px,3vw,34px);font-weight:700;text-transform:uppercase;letter-spacing:-.02em}
+ .panehead h1 em{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;text-transform:none;color:var(--acc)}
+ .tabs{display:flex;gap:6px;margin-left:auto}
+ .tab{font:600 13px 'Instrument Sans';border:1px solid var(--line);background:var(--sf);color:var(--softblue);
+   border-radius:9px;padding:8px 18px;cursor:pointer}
+ .tab.on{background:var(--deep);color:#fff;border-color:var(--deep)}
+ .tab:disabled{opacity:.4;cursor:not-allowed}
+ .dirty{background:#3d2f16;color:#f2d9a7;border:1px solid #5a4620;border-radius:10px;padding:10px 14px;
+   font-size:13px;display:none}
+ .dirty.show{display:block}
+ .stage{flex:1;background:var(--sf);border:1px solid var(--line);border-radius:14px;min-height:0;
+   overflow:auto;padding:18px}
+ /* files */
+ .filegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:9px}
+ .frow{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+ .frow .mono{font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:110px}
+ .chip{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;border-radius:99px;
+   padding:2px 8px;background:var(--softblue2);color:var(--softblue);white-space:nowrap}
+ .chip.warn{background:#3d2f16;color:#f2d9a7}
+ .frow .del{border:none;background:none;color:var(--soft);cursor:pointer;padding:0 2px}
+ .frow .del:hover{color:var(--acc)}
+ .addtile{display:grid;place-content:center;border:1.5px dashed var(--deep);border-radius:9px;min-height:44px;
+   color:var(--softblue);cursor:pointer;font-size:22px}
+ .addtile:hover{border-color:var(--acc);color:var(--acc)}
+ /* run */
+ .runwrap{display:grid;place-content:center;text-align:center;height:100%;gap:16px}
+ .runbtn{font:700 17px 'Instrument Sans';background:var(--acc);color:#fff;border:none;border-radius:12px;
+   padding:16px 34px;cursor:pointer;letter-spacing:.01em}
+ .runbtn:hover{background:var(--accdark)}
+ .runbtn.ghost{background:var(--sf);border:1px solid var(--line);color:var(--ink)}
+ .runlog{text-align:left;font:12.5px 'IBM Plex Mono',monospace;color:var(--soft);display:none;min-width:290px}
+ .runlog div{padding:3px 0} .runlog .done::before{content:"✓ ";color:var(--acc)}
+ .runlog .pend::before{content:"· "}
+ /* results */
+ .seg{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+ .seg button{font:600 12px 'Instrument Sans';border:1px solid var(--line);background:transparent;
+   color:var(--softblue);border-radius:99px;padding:7px 15px;cursor:pointer}
+ .seg button.on{background:var(--softblue2);border-color:var(--deep);color:var(--ink)}
+ iframe{width:100%;height:calc(100% - 52px);border:1px solid var(--line);border-radius:10px;background:#fff}
+ .facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1px;background:var(--line);
+   border:1px solid var(--line)}
+ .facts div{background:var(--bg);padding:16px}
+ .facts span{display:block;font:10px 'IBM Plex Mono',monospace;letter-spacing:.14em;color:var(--soft);text-transform:uppercase}
+ .facts b{font-size:21px;letter-spacing:-.01em}
+ .openfull{font:600 12px 'Instrument Sans';color:var(--softblue);text-decoration:none;float:right}
+ .openfull:hover{color:var(--acc)}
+ .emptyres{display:grid;place-content:center;text-align:center;height:100%;color:var(--soft);gap:10px}
+ .emptyres b{font-size:26px;color:var(--line);letter-spacing:.04em}
 </style></head><body>
 <div class="bar"><span class="tag"></span><b>RUNWAY</b><span class="mono">THE MARKET-ENTRY DESK</span>
- <nav><a href="deck/">Deck</a><a href="report/">Evidence</a><a href="chat/">Ask the data</a></nav></div>
+ <nav><a href="v1.html" style="display:none"></a><a href="model/">Blank model</a>
+ <a href="https://github.com/tomasbb0/market-runway">Repo</a>
+ <a href="https://burnaylabs.pt/v1-market-runway/">v1 site ↗</a></nav></div>
 
-<section class="hero">
- <div class="eyebrow"><span class="tag"></span>HELIX OPTICS · FIRST EUROPEAN MARKET · 3,236 RECORDS READ</div>
- <h1><span class="split" data-stagger>FOUR MARKETS IN,</span>
-     <span class="l2"><span class="split" data-stagger>ONE <span class="serif">answer</span> OUT.</span></span></h1>
- <div class="meta">
-  <p>A seven-stage pipeline reads the raw pack in its native formats, validates every figure, deduplicates
-  3,236 register records into 228 real facilities, and rejects the
-  planted impossibilities. Deterministic first; AI only where it earns its place.</p>
-  <span class="scrollhint">(&nbsp;&nbsp;SCROLL&nbsp;&nbsp;)</span>
- </div>
-</section>
+<div class="desk">
+ <aside class="rail">
+  <header><span class="tag"></span><span class="mono">EXERCISES</span><button id="newex">+ New</button></header>
+  <div class="exlist" id="exlist"></div>
+  <footer>SEVEN STAGES · DETERMINISTIC FIRST · EVAL 28/28</footer>
+ </aside>
 
-<div class="lane"><span class="in">01 READ &nbsp;&nbsp;◇&nbsp;&nbsp; 02 EXTRACT &nbsp;&nbsp;◇&nbsp;&nbsp; 03 UNIFY &nbsp;&nbsp;◇&nbsp;&nbsp; 04 DEDUPE &nbsp;&nbsp;◇&nbsp;&nbsp; 05 COMPARE &nbsp;&nbsp;◇&nbsp;&nbsp; 06 CHECK &nbsp;&nbsp;◇&nbsp;&nbsp; 07 CONCLUDE &nbsp;&nbsp;◇&nbsp;&nbsp; 01 READ &nbsp;&nbsp;◇&nbsp;&nbsp; 02 EXTRACT &nbsp;&nbsp;◇&nbsp;&nbsp; 03 UNIFY &nbsp;&nbsp;◇&nbsp;&nbsp; 04 DEDUPE &nbsp;&nbsp;◇&nbsp;&nbsp; 05 COMPARE &nbsp;&nbsp;◇&nbsp;&nbsp; 06 CHECK &nbsp;&nbsp;◇&nbsp;&nbsp; 07 CONCLUDE</span></div>
+ <section class="pane">
+  <div class="panehead"><h1 id="title">EU4 <em>case pack</em></h1>
+   <div class="tabs">
+    <button class="tab" data-t="files">Files</button>
+    <button class="tab" data-t="run">Run</button>
+    <button class="tab" data-t="results" id="tabres">Results</button>
+   </div></div>
+  <div class="dirty" id="dirty">Files changed since the last run — results are stale. Nothing updates until you re-run.</div>
+  <div class="stage" id="stage"></div>
+ </section>
+</div>
 
-<section class="sect verdict">
- <div class="eyebrow fade"><span class="tag"></span>THE VERDICT</div>
- <h2><span class="split">ENTER THE</span><br><span class="split"><em>Netherlands</em> FIRST.</span></h2>
- <div class="stats fade"><div class="stat"><span class="mono lbl"><i>▲</i>BREAK-EVEN</span><b>Y3</b><p>company EBITDA positive, second reimbursed year</p></div><div class="stat"><span class="mono lbl"><i>▲</i>CASH TROUGH</span><b>€1.30M</b><p>the €4.0M runway is never exhausted</p></div><div class="stat"><span class="mono lbl"><i>▲</i>FIT+ / YEAR</span><b>159,910</b><p>92% of Germany's volume, none of its barriers</p></div><div class="stat"><span class="mono lbl"><i>▲</i>SAVED PER 100</span><b>€7,750</b><p>at €650 per avoided colonoscopy</p></div></div>
-</section>
-
-<section class="sect" style="padding-top:0">
- <div class="eyebrow fade" style="margin-bottom:8px"><span class="tag"></span>EXPLORE</div>
- <div class="rows"><a class="row" href="deck/"><span class="split big">THE DECK</span><span class="mono sub">five slides · the recommendation and its defence</span><span class="arr">→</span></a><div class="rule wide"></div><a class="row" href="report/"><span class="split big">THE EVIDENCE</span><span class="mono sub">every file's fate · the checks · the impossible 300k claim, rejected</span><span class="arr">→</span></a><div class="rule wide"></div><a class="row" href="chat/"><span class="split big">ASK THE DATA</span><span class="mono sub">grounded chat · your key, any provider, detected on paste</span><span class="arr">→</span></a><div class="rule wide"></div></div>
-</section>
-
-<section class="sect method">
- <div class="fade"><b>Deterministic core.</b>74 of 74 fields resolved by patterns on this pack; the manifest
-  records 0 AI calls and €0.00 spent. Eval: 28/28.</div>
- <div class="fade"><b>Nothing silent.</b>Unrecognised files are flagged, never ignored; capacity conflicts are
-  reported as ranges; the competitor's 300k claim dies in check CHK-02.</div>
- <div class="fade"><b>Closed world.</b>The pack is the sole source of truth. The research workflow exists,
-  and is deliberately off.</div>
-</section>
-
-<footer>RUNWAY · BUILT ON THE ILOF PALETTE · MARKETS 5–14 ARE A CONFIG ENTRY AWAY</footer>
+<input type="file" id="fpick" multiple hidden>
 <script>
  document.documentElement.classList.add('js');
- const rm=matchMedia('(prefers-reduced-motion: reduce)').matches;
- document.querySelectorAll('.split').forEach(el=>{
-   if(rm)return;
-   const walk=n=>{[...n.childNodes].forEach(c=>{
-     if(c.nodeType===3){const f=document.createDocumentFragment();
-       [...c.textContent].forEach(ch=>{const s=document.createElement('span');s.className='ch';
-         s.textContent=ch===' '?' ':ch;f.appendChild(s)});n.replaceChild(f,c);}
-     else walk(c);})};
-   walk(el);
-   [...el.querySelectorAll('.ch')].forEach((c,i)=>c.style.transitionDelay=(i*22)+'ms');
- });
- const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}}),{threshold:.3});
- document.querySelectorAll('.split,.fade').forEach(el=>io.observe(el));
- addEventListener('load',()=>document.querySelectorAll('.hero .split').forEach(el=>el.classList.add('on')));
- setTimeout(()=>document.querySelectorAll('.split,.fade').forEach(el=>el.classList.add('on')),1600);
+ const SEED={"id": "eu4", "name": "EU4 Case Pack", "protected": true, "hasRun": true, "dirty": false, "lastRun": "2026-08-23 15:28 UTC", "files": [{"name": "1_Company_Briefing.pdf", "role": "company briefing", "fmt": "PDF"}, {"name": "2_Market_Landscape.pdf", "role": "market landscape", "fmt": "PDF"}, {"name": "4_Funding_Call.pdf", "role": "funding call", "fmt": "PDF"}, {"name": "6_Competitor_Brief_OncoStream.pdf", "role": "competitor brief", "fmt": "PDF"}, {"name": "3a_Facilities_Portugal.csv", "role": "Portugal \u00b7 facility register", "fmt": "CSV"}, {"name": "5a_Screening_Report_Portugal.pdf", "role": "Portugal \u00b7 screening report", "fmt": "PDF"}, {"name": "3b_Facilities_Germany.xlsx", "role": "Germany \u00b7 facility register", "fmt": "XLSX"}, {"name": "5b_Screening_Report_Germany.pdf", "role": "Germany \u00b7 screening report", "fmt": "PDF"}, {"name": "3c_Facilities_Netherlands.html", "role": "Netherlands \u00b7 facility register", "fmt": "HTML"}, {"name": "5c_Screening_Report_Netherlands.html", "role": "Netherlands \u00b7 screening report", "fmt": "HTML"}, {"name": "3d_Facilities_Poland.csv", "role": "Poland \u00b7 facility register", "fmt": "CSV"}, {"name": "5d_Screening_Report_Poland.xlsx", "role": "Poland \u00b7 screening report", "fmt": "XLSX"}, {"name": "3e_Master_Registry.csv", "role": "master registry", "fmt": "CSV"}, {"name": "0_Candidate_Brief.pdf", "role": "reference \u2014 not analysed", "fmt": "PDF"}, {"name": "JobPilot_Architecture_Results (1).pdf", "role": "unassigned", "fmt": "PDF"}], "facts": [["Recommendation", "the Netherlands"], ["Break-even", "Year 3"], ["Cash trough", "\u20ac1.30M"], ["End cash Y5", "\u20ac9.63M"], ["Records \u2192 facilities", "3,236 \u2192 228"], ["Golden eval", "28 / 28"], ["AI calls \u00b7 cost", "0 \u00b7 \u20ac0.00"], ["Runtime", "0.9s"]]};
+ const STAGES=["read native formats", "extract parameters", "resolve one schema", "dedupe facilities", "compare sources", "arithmetic checks", "conclude"];
+ let S=JSON.parse(localStorage.getItem('runway-ex')||'null');
+ if(!S){S={list:[SEED],sel:'eu4',tab:'files'};save();}
+ if(!S.list.find(e=>e.id==='eu4')){S.list.unshift(SEED);}
+ function save(){localStorage.setItem('runway-ex',JSON.stringify(S))}
+ function cur(){return S.list.find(e=>e.id===S.sel)||S.list[0]}
+ const $=id=>document.getElementById(id);
+
+ function renderRail(){
+   $('exlist').innerHTML=S.list.map(e=>
+     `<div class="ex ${e.id===S.sel?'on':''} ${e.hasRun?'ran':''}" data-id="${e.id}">
+       <span class="dot"></span><span class="nm" title="double-click to rename">${esc(e.name)}</span>
+       ${e.protected?'':'<button class="del" title="Delete exercise">✕</button>'}</div>`).join('');
+   document.querySelectorAll('.ex').forEach(el=>{
+     el.onclick=ev=>{if(ev.target.classList.contains('del'))return;
+       S.sel=el.dataset.id;S.tab=cur().hasRun?'results':'files';save();render();};
+     el.querySelector('.del')?.addEventListener('click',()=>{
+       if(confirm('Delete this exercise and its file list?')){
+         S.list=S.list.filter(x=>x.id!==el.dataset.id);
+         if(S.sel===el.dataset.id)S.sel=S.list[0]?.id;save();render();}});
+     el.querySelector('.nm').ondblclick=()=>rename(el.dataset.id);
+   });
+ }
+ function rename(id){
+   const e=S.list.find(x=>x.id===id);const row=document.querySelector(`.ex[data-id="${id}"]`);
+   row.querySelector('.nm').outerHTML=`<input value="${esc(e.name)}" maxlength="40">`;
+   const inp=row.querySelector('input');inp.focus();inp.select();
+   const done=()=>{e.name=inp.value.trim()||e.name;save();render();};
+   inp.onkeydown=ev=>{if(ev.key==='Enter')done();if(ev.key==='Escape')render();};
+   inp.onblur=done;
+ }
+ $('newex').onclick=()=>{
+   const n=S.list.filter(e=>!e.protected).length+1;
+   const e={id:'ex'+Date.now(),name:'Exercise '+n,protected:false,hasRun:false,dirty:false,files:[],facts:[]};
+   S.list.push(e);S.sel=e.id;S.tab='files';save();render();
+   setTimeout(()=>rename(e.id),50);
+ };
+
+ function render(){
+   const e=cur();if(!e)return;
+   renderRail();
+   const t=$('title');
+   const parts=e.name.split(' ');
+   t.innerHTML=parts.length>1?esc(parts[0])+' <em>'+esc(parts.slice(1).join(' ').toLowerCase())+'</em>':esc(e.name);
+   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===S.tab));
+   $('tabres').disabled=!e.hasRun;
+   $('dirty').classList.toggle('show',!!e.dirty&&e.hasRun);
+   ({files:renderFiles,run:renderRun,results:renderResults})[S.tab]();
+ }
+ document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
+   if(b.disabled)return;S.tab=b.dataset.t;save();render();});
+
+ function renderFiles(){
+   const e=cur();
+   $('stage').innerHTML='<div class="filegrid">'+e.files.map((f,i)=>
+     `<div class="frow"><span class="mono" title="${esc(f.name)}">${esc(f.name)}</span>
+      <span class="chip ${f.role==='unassigned'?'warn':''}">${esc(f.role||f.fmt||'')}</span>
+      <button class="del" data-i="${i}" title="Remove">✕</button></div>`).join('')
+     +'<div class="addtile" id="addf" title="Add documents">+</div></div>'
+     +'<p style="color:var(--soft);font-size:12.5px;margin-top:14px">Adding or removing files changes nothing until you run. '
+     +(e.protected?'This is the recorded case pack; edits here are a local mock.':'')+'</p>';
+   $('addf').onclick=()=>$('fpick').click();
+   $('fpick').onchange=()=>{
+     [...$('fpick').files].forEach(f=>e.files.push({name:f.name,role:'unassigned',fmt:(f.name.split('.').pop()||'').toUpperCase()}));
+     $('fpick').value='';e.dirty=true;save();render();};
+   document.querySelectorAll('.frow .del').forEach(b=>b.onclick=()=>{
+     e.files.splice(+b.dataset.i,1);e.dirty=true;save();render();});
+ }
+
+ function renderRun(){
+   const e=cur();
+   $('stage').innerHTML=`<div class="runwrap">
+     <div class="eyebrow"><span class="tag"></span>${e.hasRun?'LAST RUN · '+(e.lastRun||'recorded'):'NEVER RUN'}</div>
+     <button class="runbtn" id="go">${e.hasRun?'Re-run →':'Initial run →'}</button>
+     ${e.hasRun?'<button class="runbtn ghost" id="gores">View last results</button>':''}
+     <div class="runlog" id="rlog">${STAGES.map(s=>'<div class="pend">'+s+'</div>').join('')}</div>
+     <p style="color:var(--soft);font-size:12px;max-width:46ch">${e.protected
+       ?'Re-running replays the recorded pipeline run (0.9s, 0 AI calls).'
+       :'This static mock stages the run; actual computation happens in the local app.'}</p></div>`;
+   $('gores')&&($('gores').onclick=()=>{S.tab='results';save();render();});
+   $('go').onclick=()=>{
+     const log=$('rlog');log.style.display='block';$('go').disabled=true;
+     const rows=[...log.children];let i=0;
+     const tick=()=>{if(i<rows.length){rows[i].className='done';i++;setTimeout(tick,210)}
+       else{e.hasRun=true;e.dirty=false;e.lastRun=new Date().toISOString().slice(0,16).replace('T',' ');
+         save();S.tab='results';render();}};
+     setTimeout(tick,250);
+   };
+ }
+
+ function renderResults(){
+   const e=cur();
+   if(!e.protected){
+     $('stage').innerHTML=`<div class="emptyres"><b>— · — · — · —</b>
+       <p>The mock has no engine: this exercise ran, but produced the blank model.<br>
+       Compute for real in the local app (<span class="mono">python app.py</span>).</p>
+       <p><a class="openfull" style="float:none" href="model/">see the blank model →</a></p></div>`;
+     return;
+   }
+   const seg=S.res||'evidence';
+   const segs=[['evidence','Evidence report'],['deck','Deck'],['dataset','Dataset'],['chat','Ask the data']];
+   let body='';
+   if(seg==='dataset'){
+     body='<div class="facts">'+e.facts.map(f=>`<div><span>${f[0]}</span><b>${f[1]}</b></div>`).join('')+'</div>';
+   } else {
+     const src={evidence:'report/',deck:'deck/',chat:'chat/'}[seg];
+     body=`<a class="openfull" href="${src}">open full ↗</a><iframe src="${src}" title="${seg}"></iframe>`;
+   }
+   $('stage').innerHTML='<div class="seg">'+segs.map(x=>
+     `<button data-s="${x[0]}" class="${seg===x[0]?'on':''}">${x[1]}</button>`).join('')+'</div>'+body;
+   document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{S.res=b.dataset.s;save();render();});
+ }
+
+ function esc(x){const d=document.createElement('div');d.textContent=x;return d.innerHTML}
+ render();
 </script>
 </body></html>
