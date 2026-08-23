@@ -61,9 +61,16 @@
    border-radius:11px;width:44px;height:46px;cursor:pointer;flex:none;display:grid;place-content:center}
  .provbtn:hover{border-color:var(--deep);color:var(--ink)}
  .provbtn.set{color:var(--softblue)}
- .gearlink{font-size:12px;border:1px solid var(--line);background:var(--softblue2);color:var(--ink);
-   border-radius:6px;width:22px;height:22px;cursor:pointer;vertical-align:-4px;margin-right:6px;padding:0}
+ .gearlink{border:1px solid var(--line);background:var(--softblue2);color:var(--ink);
+   border-radius:7px;width:28px;height:28px;cursor:pointer;vertical-align:-8px;margin-right:8px;padding:0;
+   display:inline-grid;place-content:center}
  .gearlink:hover{border-color:var(--acc)}
+ .gearlink svg{width:15px;height:15px}
+ .provbtn svg{width:22px;height:22px}
+ .typing{display:inline-flex;gap:5px;align-items:center;height:14px}
+ .typing i{width:7px;height:7px;border-radius:50%;background:var(--soft);animation:tp 1.1s ease-in-out infinite}
+ .typing i:nth-child(2){animation-delay:.18s} .typing i:nth-child(3){animation-delay:.36s}
+ @keyframes tp{0%,70%,100%{opacity:.25;transform:translateY(0)}35%{opacity:1;transform:translateY(-4px)}}
  #settings{position:fixed;bottom:74px;left:16px;width:min(340px,calc(100vw - 32px));background:var(--sf);
    border:1px solid var(--line);border-radius:14px;padding:16px;display:none;
    box-shadow:0 24px 60px -30px rgba(0,0,0,.85);z-index:9}
@@ -102,7 +109,7 @@
 </div>
 
 <div class="bar"><div class="in">
- <button class="provbtn" id="provbtn" title="Provider settings" aria-label="Provider settings">⚙</button>
+ <button class="provbtn" id="provbtn" title="Provider settings" aria-label="Provider settings"></button>
  <input id="q" placeholder="Ask about the data — or paste your API key right here to get set up"
    onkeydown="if(event.key==='Enter')send()">
  <button class="send" onclick="send()">Send</button>
@@ -113,6 +120,10 @@
  const PROVIDERS={anthropic:{label:'Anthropic',models:{'claude-sonnet-5':'Claude Sonnet 5','claude-haiku-4-5-20251001':'Claude Haiku 4.5','claude-fable-5':'Claude Fable 5'}},
                    openai:{label:'OpenAI',models:{'gpt-5.1':'GPT-5.1','gpt-5-mini':'GPT-5 mini'}},
                    google:{label:'Google',models:{'gemini-3-pro-preview':'Gemini 3 Pro','gemini-2.5-flash':'Gemini 2.5 Flash'}}};
+ const GEAR='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">'
+  +'<circle cx="12" cy="12" r="3.4"/>'
+  +'<path d="M12 2.8v3M12 18.2v3M21.2 12h-3M5.8 12h-3M18.5 5.5l-2.1 2.1M7.6 16.4l-2.1 2.1M18.5 18.5l-2.1-2.1M7.6 7.6L5.5 5.5"/></svg>';
+ document.getElementById('provbtn').innerHTML=GEAR;
  function detectProvider(k){k=(k||'').trim();
    if(k.startsWith('sk-ant-'))return 'anthropic';
    if(/^AIza[0-9A-Za-z_-]{30,}$/.test(k))return 'google';
@@ -246,7 +257,7 @@ Currency EUR. DATASET: `+JSON.stringify(window.DATASET);
      return;}
    bubble('user',t);hist.push({role:'user',content:t});
    const p=detectProvider(store.k),model=currentModel();
-   const wait=bubble('ai','<p>…</p>');
+   const wait=bubble('ai','<span class="typing"><i></i><i></i><i></i></span>');
    try{
      const text=await callProvider(p,store.k,model,SYSTEM,hist.slice(-20));
      wait.innerHTML=md(text);hist.push({role:'assistant',content:text});
@@ -267,13 +278,13 @@ Currency EUR. DATASET: `+JSON.stringify(window.DATASET);
    store.clear();store.set(pendingKey,pendingModel||Object.keys(PROVIDERS[p].models)[0],all);
    pendingKey=null;pendingModel=null;
    syncSettings();
-   bubble('ai','<p><button class="gearlink" title="Change provider settings">⚙</button>'
+   bubble('ai','<p><button class="gearlink" title="Change provider settings">'+GEAR+'</button>'
      +'<strong>'+PROVIDERS[p].label+' · '+PROVIDERS[p].models[currentModel()]+'</strong> — saved '
      +(all?'for all chats on this browser':'for this session only')
      +'. That little gear (here or next to the message box) changes it any time. Ask away.</p>');
  }
  msgs.addEventListener('click',e=>{
-   if(e.target.classList.contains('gearlink')){sPanel.classList.add('open');syncSettings();}});
+   if(e.target.closest('.gearlink')){sPanel.classList.add('open');syncSettings();}});
 
  syncSettings();
  if(!store.k){
