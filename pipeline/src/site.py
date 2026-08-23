@@ -585,10 +585,13 @@ def chat(st) -> tuple[str, str]:
    border-radius:11px;padding:13px 22px;cursor:pointer}}
  .send:hover{{background:var(--accdark)}}
  /* provider dropdown */
- .provbtn{{font:600 12.5px 'IBM Plex Mono',monospace;border:1px solid var(--line);background:var(--sf);
-   color:var(--softblue);border-radius:11px;padding:13px 14px;cursor:pointer;white-space:nowrap}}
- .provbtn:hover{{border-color:var(--deep)}}
- .provbtn.set{{color:var(--ink)}}
+ .provbtn{{font-size:15px;border:1px solid var(--line);background:var(--sf);color:var(--soft);
+   border-radius:11px;width:44px;height:46px;cursor:pointer;flex:none;display:grid;place-content:center}}
+ .provbtn:hover{{border-color:var(--deep);color:var(--ink)}}
+ .provbtn.set{{color:var(--softblue)}}
+ .gearlink{{font-size:12px;border:1px solid var(--line);background:var(--softblue2);color:var(--ink);
+   border-radius:6px;width:22px;height:22px;cursor:pointer;vertical-align:-4px;margin-right:6px;padding:0}}
+ .gearlink:hover{{border-color:var(--acc)}}
  #settings{{position:fixed;bottom:74px;left:16px;width:min(340px,calc(100vw - 32px));background:var(--sf);
    border:1px solid var(--line);border-radius:14px;padding:16px;display:none;
    box-shadow:0 24px 60px -30px rgba(0,0,0,.85);z-index:9}}
@@ -627,7 +630,7 @@ def chat(st) -> tuple[str, str]:
 </div>
 
 <div class="bar"><div class="in">
- <button class="provbtn" id="provbtn" title="Provider settings">⚙ no key</button>
+ <button class="provbtn" id="provbtn" title="Provider settings" aria-label="Provider settings">⚙</button>
  <input id="q" placeholder="Ask about the data — or paste your API key right here to get set up"
    onkeydown="if(event.key==='Enter')send()">
  <button class="send" onclick="send()">Send</button>
@@ -707,8 +710,8 @@ def chat(st) -> tuple[str, str]:
    fillModels(p,store.m);
    document.getElementById('scAll').classList.toggle('on',!!localStorage.getItem('ak'));
    document.getElementById('scOne').classList.toggle('on',!localStorage.getItem('ak')&&!!sessionStorage.getItem('ak'));
-   sBtn.textContent=k?'⚙ '+PROVIDERS[p].label+' · '+(PROVIDERS[p].models[currentModel()]||'')
-     :'⚙ no key';
+   sBtn.title=k?PROVIDERS[p].label+' · '+(PROVIDERS[p].models[currentModel()]||'')+' — click to change'
+     :'No key set — paste one in the chat, or click to set up';
    sBtn.classList.toggle('set',!!k);
  }}
  sKey.oninput=()=>{{const p=detectProvider(sKey.value);
@@ -760,9 +763,8 @@ Currency EUR. DATASET: `+JSON.stringify(window.DATASET);
    if(asKey){{
      bubble('user','•'.repeat(12)+' '+t.slice(-4));
      pendingKey=t;
-     bubble('ai','<p><strong>'+PROVIDERS[asKey].label+' key detected.</strong> Where should I keep it?</p>',
-       [['Save for all chats on this browser',()=>keepKey(true)],
-        ['Just this session',()=>keepKey(false)]]);
+     bubble('ai','<p><strong>'+PROVIDERS[asKey].label+' key detected.</strong> Which model should I use?</p>',
+       Object.entries(PROVIDERS[asKey].models).map(([v,l])=>[l,()=>chooseModel(v)]));
      return;}}
    if(!store.k){{
      bubble('user',t);
@@ -780,14 +782,26 @@ Currency EUR. DATASET: `+JSON.stringify(window.DATASET);
      +(p!=='anthropic'?' <em>(some providers refuse browser calls; the local app routes them server-side)</em>':'')+'</p>'}}
    wait.scrollIntoView({{behavior:'smooth',block:'end'}});
  }}
+ let pendingModel=null;
+ function chooseModel(m){{
+   pendingModel=m;
+   const p=detectProvider(pendingKey);
+   bubble('ai','<p><strong>'+PROVIDERS[p].models[m]+'</strong> it is. Where should I keep the key?</p>',
+     [['Save for all chats on this browser',()=>keepKey(true)],
+      ['Just this session',()=>keepKey(false)]]);
+ }}
  function keepKey(all){{
    const p=detectProvider(pendingKey);
-   store.clear();store.set(pendingKey,Object.keys(PROVIDERS[p].models)[0],all);pendingKey=null;
+   store.clear();store.set(pendingKey,pendingModel||Object.keys(PROVIDERS[p].models)[0],all);
+   pendingKey=null;pendingModel=null;
    syncSettings();
-   bubble('ai','<p>Saved '+(all?'for all chats on this browser':'for this session only')+' — <strong>'
-     +PROVIDERS[p].label+' · '+PROVIDERS[p].models[currentModel()]+'</strong>. '
-     +'Change model or forget the key any time via the <code>⚙</code> button. Ask away.</p>');
+   bubble('ai','<p><button class="gearlink" title="Change provider settings">⚙</button>'
+     +'<strong>'+PROVIDERS[p].label+' · '+PROVIDERS[p].models[currentModel()]+'</strong> — saved '
+     +(all?'for all chats on this browser':'for this session only')
+     +'. That little gear (here or next to the message box) changes it any time. Ask away.</p>');
  }}
+ msgs.addEventListener('click',e=>{{
+   if(e.target.classList.contains('gearlink')){{sPanel.classList.add('open');syncSettings();}}}});
 
  syncSettings();
  if(!store.k){{
