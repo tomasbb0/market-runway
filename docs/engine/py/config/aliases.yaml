@@ -1,0 +1,46 @@
+# Institution alias map: legacy master-registry names -> national-register canonical names.
+# Seeded by fuzzy matching (rapidfuzz token_set_ratio) + generic-token translation,
+# then human-reviewed. National register naming is canonical; master rows are
+# corroboration or master-only additions.
+Portugal:
+  CHU Coimbra: Centro Hospitalar de Coimbra
+  CHU Sao Joao: Centro Hospitalar de Sao Joao
+  University Hospital Centre of the Algarve: Centro Hospitalar do Algarve
+  Porto Endoscopy Clinic: Clinica Endoscopica do Porto
+  CUF Descobertas Hospital: Hospital CUF Descobertas
+  Hospital da Luz Lisbon: Hospital da Luz
+  Baixo Vouga Hospital Centre - Aveiro: Hospital de Aveiro
+  Hospital de Braga: Hospital de Braga
+  Centro Hospitalar Universitario Lisboa Norte - Santa Maria: Hospital de Santa Maria
+  Portuguese Institute of Oncology - Porto: IPO Porto
+Germany:
+  Charite - University Medicine Berlin: Charite Universitaetsmedizin
+  Frankfurt Endoscopy Centre: Endoskopie Zentrum Frankfurt
+  Berlin Gastroenterology Centre: Gastro Praxis Berlin
+  University Hospital Leipzig: Klinikum Leipzig
+  Klinikum Stuttgart - Katharinenhospital: Klinikum Stuttgart
+  Klinikum rechts der Isar - TUM: Klinikum rechts der Isar
+  Munich Endoscopy Centre: MVZ Endoskopie Muenchen
+  University Hospital Cologne: Uniklinik Koeln
+  UKE Hamburg-Eppendorf: Universitaetsklinikum Hamburg
+Netherlands:
+  Amsterdam University Medical Centres: Amsterdam UMC
+  Antoni van Leeuwenhoek - NKI: Antoni van Leeuwenhoek
+  Catharina Hospital Eindhoven: Catharina Ziekenhuis
+  Erasmus Medical Centre Rotterdam: Erasmus MC
+  Haga Hospital The Hague: Haga Ziekenhuis
+  Leiden University Medical Centre: LUMC
+  Maasstad Hospital Rotterdam: Maasstad Ziekenhuis
+  Radboud University Medical Centre: Radboudumc
+  University Medical Centre Groningen: UMC Groningen
+  University Medical Centre Utrecht: UMC Utrecht
+Poland:
+  Medical Centre Lodz: Centrum Medyczne Lodz
+  National Oncology Institute Warsaw: Centrum Onkologii Warszawa
+  Poznan Endoscopy Centre: Endoskopia Poznan
+  Lublin Gastroenterology Clinic: Klinika Gastroenterologii Lublin
+  University Hospital Gdansk: Szpital Gdansk
+  Warsaw Clinical Hospital: Szpital Kliniczny Warszawa
+  Szczecin Public Hospital: Szpital Szczecin
+  Regional Specialist Hospital Wroclaw: Szpital Wojewodzki Wroclaw
+  University Hospital Krakow: Uniwersytecki Szpital Krakow

@@ -271,10 +271,13 @@ def landing(st) -> str:
 </div>
 
 <input type="file" id="fpick" multiple hidden>
+<script src="engine/engine.js"></script>
 <script>
  document.documentElement.classList.add('js');
  const SEED={seed};
  const STAGES={stages_js};
+ const FILESTORE={{}};   // exercise id -> {{filename: Uint8Array}} (session only)
+ const RUNS={{}};        // exercise id -> real browser-engine result (session only)
  let S=JSON.parse(localStorage.getItem('runway-ex')||'null');
  if(!S){{S={{list:[SEED],sel:'eu4',tab:'files'}};save();}}
  if(!S.list.find(e=>e.id==='eu4')){{S.list.unshift(SEED);}}
@@ -361,13 +364,48 @@ def landing(st) -> str:
      +(e.protected?'This is the recorded case pack; edits here are a local mock.':'')+'</p>';
    document.querySelectorAll('.viewtog button').forEach(b=>b.onclick=()=>{{S.view=b.dataset.v;save();render();}});
    $('addf').onclick=()=>$('fpick').click();
-   $('fpick').onchange=()=>{{
-     [...$('fpick').files].forEach(f=>e.files.push({{name:f.name,role:'unassigned',fmt:(f.name.split('.').pop()||'').toUpperCase()}}));
+   $('fpick').onchange=async()=>{{
+     for(const f of [...$('fpick').files]){{
+       (FILESTORE[e.id]=FILESTORE[e.id]||{{}})[f.name]=new Uint8Array(await f.arrayBuffer());
+       if(!e.files.some(x=>x.name===f.name))
+         e.files.push({{name:f.name,role:'unassigned',fmt:(f.name.split('.').pop()||'').toUpperCase()}});
+     }}
      $('fpick').value='';e.dirty=true;save();render();}};
    document.querySelectorAll('.stage .del,.ftile .del,.frow .del').forEach(b=>b.onclick=()=>{{
      e.files.splice(+b.dataset.i,1);e.dirty=true;save();render();}});
  }}
 
+ async function realRun(e,m){{
+   const log=$('rlog');log.style.display='block';
+   const line=t=>{{const d=document.createElement('div');d.className='done';d.textContent=t;
+     log.appendChild(d);d.scrollIntoView({{block:'nearest'}})}};
+   document.querySelectorAll('.mode').forEach(b=>b.disabled=true);
+   const store=FILESTORE[e.id]||{{}};
+   const missing=e.files.filter(f=>!store[f.name]).map(f=>f.name);
+   if(!e.files.length){{log.innerHTML='<div class="pend">add documents in Files first</div>';
+     document.querySelectorAll('.mode').forEach(b=>b.disabled=false);return}}
+   if(missing.length){{
+     log.innerHTML='<div class="pend">the browser holds file bytes only for this session — '
+       +'re-attach: '+missing.map(esc).join(', ')+'</div>';
+     const pick=document.createElement('button');pick.className='runbtn ghost';pick.textContent='Re-attach files';
+     pick.onclick=()=>$('fpick').click();log.appendChild(pick);
+     document.querySelectorAll('.mode').forEach(b=>b.disabled=false);return}}
+   log.innerHTML='';
+   try{{
+     const files=e.files.map(f=>({{name:f.name,bytes:store[f.name]}}));
+     const res=await Engine.run(e.id,files,line);
+     RUNS[e.id]=res;
+     e.hasRun=true;e.dirty=false;e.lastMode=m;e.realAt=Date.now();
+     e.analysis=analyze(e.files);
+     if(m==='afterburner')e.insights=e.analysis;
+     e.lastRun=new Date().toISOString().slice(0,16).replace('T',' ');
+     line('done — opening the evidence report');
+     save();S.res='evidence';S.tab='results';render();
+   }}catch(err){{
+     line('engine error: '+String(err).slice(0,300));
+     document.querySelectorAll('.mode').forEach(b=>b.disabled=false);
+   }}
+ }}
  function renderRun(){{
    const e=cur();const rerun=e.hasRun?'Re-run':'Run';
    $('stage').innerHTML=`<div class="runwrap">
@@ -386,8 +424,9 @@ def landing(st) -> str:
        ?'Re-running replays the recorded pipeline run (0.9s, 0 AI calls).'
        :'This static mock stages the run; actual computation happens in the local app.'}}</p></div>`;
    $('gores')&&($('gores').onclick=()=>{{S.tab='results';save();render();}});
-   document.querySelectorAll('.mode').forEach(btn=>btn.onclick=()=>{{
+   document.querySelectorAll('.mode').forEach(btn=>btn.onclick=async()=>{{
      const m=btn.dataset.m;
+     if(!e.protected){{await realRun(e,m);return}}
      if(m==='afterburner'&&!getKey()){{
        wset.classList.add('open');syncW();
        $('rlog').style.display='block';
@@ -479,23 +518,29 @@ def landing(st) -> str:
        $('stage').innerHTML=`<div class="emptyres"><b>— · — · — · —</b>
          <p>Run this exercise first.</p></div>`;return;}}
      const A=e.analysis;
+     const R=RUNS[e.id];
      const segs=[['evidence','Evidence report'],['deck','Deck'],['dataset','Dataset']];
      if(e.insights)segs.push(['insights','Insights']);
      segs.push(['chat','Ask the data']);
      const seg=segs.some(x=>x[0]===S.res)?S.res:'evidence';
      let body='';
-     if(seg==='evidence')body=miniEvidence(e,A);
-     else if(seg==='deck')body=miniDeck(A);
-     else if(seg==='dataset')body=miniDataset(e,A);
+     if(seg==='evidence')body=R?'<iframe id="realrep" title="evidence"></iframe>':miniEvidence(e,A);
+     else if(seg==='deck')body=(R?'<div class="iband SUFFICIENT"><b>Engine verdict: '
+       +esc(R.facts["Recommendation"])+'</b><span>'+esc(R.facts["Ranking"])+'</span></div>':'')+miniDeck(A);
+     else if(seg==='dataset')body=R?'<div class="facts">'+Object.entries(R.facts).map(([k,v])=>
+       `<div><span>${{esc(k)}}</span><b>${{esc(String(v))}}</b></div>`).join('')+'</div>':miniDataset(e,A);
      else if(seg==='insights')body=insightsHTML(A);
      else body=`<div class="emptyres" style="height:auto;padding:40px 0"><b>ASK THE DATA</b>
        <p>The grounded chat answers only from a computed dataset. This exercise does not have one yet —
        run it in the local app, then chat against that run.</p>
        <p><a class="openfull" style="float:none" href="chat/">see it working on the EU4 case</a></p></div>`;
+     const note=R?'Computed by the pipeline in your browser this session; nothing left your machine.'
+       :(e.realAt?'Browser results expired with the session. Re-run to regenerate; structural view below.'
+         :'Structure view, computed in the browser from your files. Full numbers: press Run.');
      $('stage').innerHTML='<div class="seg">'+segs.map(x=>
        `<button data-s="${{x[0]}}" class="${{seg===x[0]?'on':''}}">${{x[1]}}</button>`).join('')+'</div>'
-       +'<p class="recnote">Structure view: computed in the browser from your files. Numbers require the engine (local app).</p>'
-       +body;
+       +'<p class="recnote">'+note+'</p>'+body;
+     if(R&&seg==='evidence')document.getElementById('realrep').srcdoc=R.report;
      document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{{S.res=b.dataset.s;save();render();}});
      return;
    }}
@@ -1100,12 +1145,84 @@ Currency EUR. DATASET: `+JSON.stringify(window.DATASET);
     return page, data_js
 
 
+ENGINE_JS = r"""// Runway browser engine: the real pipeline, in WebAssembly. Files never leave the machine.
+window.Engine = (() => {
+  let py = null, ready = false, loading = null;
+  const PYODIDE = "https://cdn.jsdelivr.net/pyodide/v314.0.5/full/pyodide.mjs";
+  async function init(progress) {
+    if (ready) return;
+    if (loading) return loading;
+    loading = (async () => {
+      progress("downloading the Python runtime (~15 MB, once per session)");
+      const { loadPyodide } = await import(PYODIDE);
+      py = await loadPyodide();
+      progress("loading packages: yaml, xlsx, html, pdf, imaging");
+      await py.loadPackage(["micropip", "pyyaml", "beautifulsoup4", "cryptography", "pillow"]);
+      await py.runPythonAsync('import micropip\nawait micropip.install(["pdfplumber==0.9.0","openpyxl"])');
+      progress("mounting the pipeline");
+      const list = await (await fetch("engine/files.json")).json();
+      const mk = d => { try { py.FS.mkdirTree(d) } catch (e) {} };
+      mk("/app/src"); mk("/app/config");
+      for (const rel of list) {
+        const buf = new Uint8Array(await (await fetch("engine/py/" + rel)).arrayBuffer());
+        py.FS.writeFile("/app/" + rel, buf);
+      }
+      ready = true;
+      progress("engine ready");
+    })();
+    try { await loading } finally { loading = null }
+  }
+  async function run(exId, files, progress) {
+    await init(progress);
+    const ws = "w_" + exId.replace(/[^a-z0-9]/gi, "");
+    const raw = "/app/workspaces/" + ws + "/raw";
+    try { py.FS.mkdirTree(raw) } catch (e) {}
+    for (const f of py.FS.readdir(raw)) if (f !== "." && f !== "..") py.FS.unlink(raw + "/" + f);
+    for (const f of files) py.FS.writeFile(raw + "/" + f.name, f.bytes);
+    progress("running the seven stages on " + files.length + " file(s)");
+    const out = await py.runPythonAsync(
+      'import sys, json, importlib\n' +
+      'sys.path.insert(0, "/app")\n' +
+      'import web_run\n' +
+      'r = web_run.run(' + JSON.stringify(ws) + ')\n' +
+      'json.dumps({"summary": r["summary"], "report": r["report"], ' +
+      '"facts": {"Recommendation": r["summary"]["recommendation"] or "none", ' +
+      '"Ranking": " > ".join(r["summary"]["ranking"]) or "-", ' +
+      '"Deterministic fields": r["summary"]["det"], ' +
+      '"Unresolved": r["summary"]["unresolved"], ' +
+      '"Runtime": str(r["summary"]["seconds"]) + "s (in this browser)"}})'
+    );
+    return JSON.parse(out);
+  }
+  return { init, run, isReady: () => ready };
+})();"""
+
+
 def build() -> str:
     run = latest_run(ws_dir(DEFAULT_WS))
     st = json.load(open(run / "state.json"))
     for sub in ("", "deck", "deck/assets", "report", "chat"):
         (SITE / sub).mkdir(parents=True, exist_ok=True)
     (SITE / "index.html").write_text(landing(st))
+    # browser engine: the pipeline itself, served for Pyodide
+    eng = SITE / "engine"
+    (eng / "py" / "src").mkdir(parents=True, exist_ok=True)
+    (eng / "py" / "config").mkdir(parents=True, exist_ok=True)
+    files = []
+    for f in sorted((ROOT / "src").glob("*.py")):
+        if f.name in ("site.py", "excel.py", "deck.py"):
+            continue
+        shutil.copy(f, eng / "py" / "src" / f.name)
+        files.append("src/" + f.name)
+    for f in sorted((ROOT / "config").glob("*.yaml")):
+        shutil.copy(f, eng / "py" / "config" / f.name)
+        files.append("config/" + f.name)
+    shutil.copy(ROOT / "overrides.yaml", eng / "py" / "overrides.yaml")
+    files.append("overrides.yaml")
+    shutil.copy(ROOT / "web_run.py", eng / "py" / "web_run.py")
+    files.append("web_run.py")
+    (eng / "files.json").write_text(json.dumps(files))
+    (eng / "engine.js").write_text(ENGINE_JS)
     (SITE / "model").mkdir(exist_ok=True)
     (SITE / "model" / "index.html").write_text(model_blank())
     (SITE / "deck" / "index.html").write_text(deck(st))

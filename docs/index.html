@@ -223,10 +223,13 @@
 </div>
 
 <input type="file" id="fpick" multiple hidden>
+<script src="engine/engine.js"></script>
 <script>
  document.documentElement.classList.add('js');
  const SEED={"id": "eu4", "name": "EU4 Case Pack", "protected": true, "hasRun": true, "dirty": false, "lastRun": "2026-08-23 20:18 UTC", "files": [{"name": "1_Company_Briefing.pdf", "role": "company briefing", "fmt": "PDF"}, {"name": "2_Market_Landscape.pdf", "role": "market landscape", "fmt": "PDF"}, {"name": "4_Funding_Call.pdf", "role": "funding call", "fmt": "PDF"}, {"name": "6_Competitor_Brief_OncoStream.pdf", "role": "competitor brief", "fmt": "PDF"}, {"name": "3a_Facilities_Portugal.csv", "role": "Portugal \u00b7 facility register", "fmt": "CSV"}, {"name": "5a_Screening_Report_Portugal.pdf", "role": "Portugal \u00b7 screening report", "fmt": "PDF"}, {"name": "3b_Facilities_Germany.xlsx", "role": "Germany \u00b7 facility register", "fmt": "XLSX"}, {"name": "5b_Screening_Report_Germany.pdf", "role": "Germany \u00b7 screening report", "fmt": "PDF"}, {"name": "3c_Facilities_Netherlands.html", "role": "Netherlands \u00b7 facility register", "fmt": "HTML"}, {"name": "5c_Screening_Report_Netherlands.html", "role": "Netherlands \u00b7 screening report", "fmt": "HTML"}, {"name": "3d_Facilities_Poland.csv", "role": "Poland \u00b7 facility register", "fmt": "CSV"}, {"name": "5d_Screening_Report_Poland.xlsx", "role": "Poland \u00b7 screening report", "fmt": "XLSX"}, {"name": "3e_Master_Registry.csv", "role": "master registry", "fmt": "CSV"}, {"name": "0_Candidate_Brief.pdf", "role": "reference \u2014 not analysed", "fmt": "PDF"}, {"name": "JobPilot_Architecture_Results (1).pdf", "role": "unassigned", "fmt": "PDF"}], "facts": [["Recommendation", "the Netherlands"], ["Break-even", "Year 3"], ["Cash trough", "\u20ac1.30M"], ["End cash Y5", "\u20ac9.63M"], ["Records \u2192 facilities", "3,236 \u2192 228"], ["Golden eval", "28 / 28"], ["AI calls \u00b7 cost", "0 \u00b7 \u20ac0.00"], ["Runtime", "0.92s"]]};
  const STAGES=["read native formats", "extract parameters", "resolve one schema", "dedupe facilities", "compare sources", "arithmetic checks", "conclude"];
+ const FILESTORE={};   // exercise id -> {filename: Uint8Array} (session only)
+ const RUNS={};        // exercise id -> real browser-engine result (session only)
  let S=JSON.parse(localStorage.getItem('runway-ex')||'null');
  if(!S){S={list:[SEED],sel:'eu4',tab:'files'};save();}
  if(!S.list.find(e=>e.id==='eu4')){S.list.unshift(SEED);}
@@ -313,13 +316,48 @@
      +(e.protected?'This is the recorded case pack; edits here are a local mock.':'')+'</p>';
    document.querySelectorAll('.viewtog button').forEach(b=>b.onclick=()=>{S.view=b.dataset.v;save();render();});
    $('addf').onclick=()=>$('fpick').click();
-   $('fpick').onchange=()=>{
-     [...$('fpick').files].forEach(f=>e.files.push({name:f.name,role:'unassigned',fmt:(f.name.split('.').pop()||'').toUpperCase()}));
+   $('fpick').onchange=async()=>{
+     for(const f of [...$('fpick').files]){
+       (FILESTORE[e.id]=FILESTORE[e.id]||{})[f.name]=new Uint8Array(await f.arrayBuffer());
+       if(!e.files.some(x=>x.name===f.name))
+         e.files.push({name:f.name,role:'unassigned',fmt:(f.name.split('.').pop()||'').toUpperCase()});
+     }
      $('fpick').value='';e.dirty=true;save();render();};
    document.querySelectorAll('.stage .del,.ftile .del,.frow .del').forEach(b=>b.onclick=()=>{
      e.files.splice(+b.dataset.i,1);e.dirty=true;save();render();});
  }
 
+ async function realRun(e,m){
+   const log=$('rlog');log.style.display='block';
+   const line=t=>{const d=document.createElement('div');d.className='done';d.textContent=t;
+     log.appendChild(d);d.scrollIntoView({block:'nearest'})};
+   document.querySelectorAll('.mode').forEach(b=>b.disabled=true);
+   const store=FILESTORE[e.id]||{};
+   const missing=e.files.filter(f=>!store[f.name]).map(f=>f.name);
+   if(!e.files.length){log.innerHTML='<div class="pend">add documents in Files first</div>';
+     document.querySelectorAll('.mode').forEach(b=>b.disabled=false);return}
+   if(missing.length){
+     log.innerHTML='<div class="pend">the browser holds file bytes only for this session — '
+       +'re-attach: '+missing.map(esc).join(', ')+'</div>';
+     const pick=document.createElement('button');pick.className='runbtn ghost';pick.textContent='Re-attach files';
+     pick.onclick=()=>$('fpick').click();log.appendChild(pick);
+     document.querySelectorAll('.mode').forEach(b=>b.disabled=false);return}
+   log.innerHTML='';
+   try{
+     const files=e.files.map(f=>({name:f.name,bytes:store[f.name]}));
+     const res=await Engine.run(e.id,files,line);
+     RUNS[e.id]=res;
+     e.hasRun=true;e.dirty=false;e.lastMode=m;e.realAt=Date.now();
+     e.analysis=analyze(e.files);
+     if(m==='afterburner')e.insights=e.analysis;
+     e.lastRun=new Date().toISOString().slice(0,16).replace('T',' ');
+     line('done — opening the evidence report');
+     save();S.res='evidence';S.tab='results';render();
+   }catch(err){
+     line('engine error: '+String(err).slice(0,300));
+     document.querySelectorAll('.mode').forEach(b=>b.disabled=false);
+   }
+ }
  function renderRun(){
    const e=cur();const rerun=e.hasRun?'Re-run':'Run';
    $('stage').innerHTML=`<div class="runwrap">
@@ -338,8 +376,9 @@
        ?'Re-running replays the recorded pipeline run (0.9s, 0 AI calls).'
        :'This static mock stages the run; actual computation happens in the local app.'}</p></div>`;
    $('gores')&&($('gores').onclick=()=>{S.tab='results';save();render();});
-   document.querySelectorAll('.mode').forEach(btn=>btn.onclick=()=>{
+   document.querySelectorAll('.mode').forEach(btn=>btn.onclick=async()=>{
      const m=btn.dataset.m;
+     if(!e.protected){await realRun(e,m);return}
      if(m==='afterburner'&&!getKey()){
        wset.classList.add('open');syncW();
        $('rlog').style.display='block';
@@ -431,23 +470,29 @@
        $('stage').innerHTML=`<div class="emptyres"><b>— · — · — · —</b>
          <p>Run this exercise first.</p></div>`;return;}
      const A=e.analysis;
+     const R=RUNS[e.id];
      const segs=[['evidence','Evidence report'],['deck','Deck'],['dataset','Dataset']];
      if(e.insights)segs.push(['insights','Insights']);
      segs.push(['chat','Ask the data']);
      const seg=segs.some(x=>x[0]===S.res)?S.res:'evidence';
      let body='';
-     if(seg==='evidence')body=miniEvidence(e,A);
-     else if(seg==='deck')body=miniDeck(A);
-     else if(seg==='dataset')body=miniDataset(e,A);
+     if(seg==='evidence')body=R?'<iframe id="realrep" title="evidence"></iframe>':miniEvidence(e,A);
+     else if(seg==='deck')body=(R?'<div class="iband SUFFICIENT"><b>Engine verdict: '
+       +esc(R.facts["Recommendation"])+'</b><span>'+esc(R.facts["Ranking"])+'</span></div>':'')+miniDeck(A);
+     else if(seg==='dataset')body=R?'<div class="facts">'+Object.entries(R.facts).map(([k,v])=>
+       `<div><span>${esc(k)}</span><b>${esc(String(v))}</b></div>`).join('')+'</div>':miniDataset(e,A);
      else if(seg==='insights')body=insightsHTML(A);
      else body=`<div class="emptyres" style="height:auto;padding:40px 0"><b>ASK THE DATA</b>
        <p>The grounded chat answers only from a computed dataset. This exercise does not have one yet —
        run it in the local app, then chat against that run.</p>
        <p><a class="openfull" style="float:none" href="chat/">see it working on the EU4 case</a></p></div>`;
+     const note=R?'Computed by the pipeline in your browser this session; nothing left your machine.'
+       :(e.realAt?'Browser results expired with the session. Re-run to regenerate; structural view below.'
+         :'Structure view, computed in the browser from your files. Full numbers: press Run.');
      $('stage').innerHTML='<div class="seg">'+segs.map(x=>
        `<button data-s="${x[0]}" class="${seg===x[0]?'on':''}">${x[1]}</button>`).join('')+'</div>'
-       +'<p class="recnote">Structure view: computed in the browser from your files. Numbers require the engine (local app).</p>'
-       +body;
+       +'<p class="recnote">'+note+'</p>'+body;
+     if(R&&seg==='evidence')document.getElementById('realrep').srcdoc=R.report;
      document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{S.res=b.dataset.s;save();render();});
      return;
    }

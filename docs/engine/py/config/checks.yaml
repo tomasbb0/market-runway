@@ -1,0 +1,70 @@
+# Validation checks-as-data (stage 6). Each check is declarative; the engine
+# evaluates them against the reconciled dataset and reports PASS / WARN / FAIL.
+checks:
+  - id: CHK-01
+    name: Landscape vs national report agreement
+    kind: cross_source_agreement
+    severity: fail
+    note: Every parameter present in both the Market Landscape and a national
+      screening report must agree (tolerance 0.5%).
+
+  - id: CHK-02
+    name: Competitor volume vs addressable market
+    kind: expression
+    severity: fail
+    market: Germany
+    expression: "onco_tests_per_year <= addressable_fit_positive"
+    note: A vendor cannot process more triage tests than the entire organised
+      addressable volume. Company-reported figures must be checked against
+      primary screening statistics.
+
+  - id: CHK-03
+    name: Competitor claim vs its own analyst share estimate
+    kind: expression
+    severity: warn
+    market: Germany
+    expression: "onco_tests_per_year <= addressable_fit_positive * onco_share_high * 1.10"
+    note: The 300k claim should also be consistent with the 35-40% independent
+      share estimate quoted in the same brief.
+
+  - id: CHK-04
+    name: Rates are valid fractions
+    kind: range
+    severity: fail
+    fields: [participation, fit_positivity, cofinance_rate, sensitivity, specificity, deferral_rate]
+    min: 0.0
+    max: 1.0
+
+  - id: CHK-05
+    name: Deferral rate consistent with sensitivity/specificity
+    kind: expression
+    severity: warn
+    market: company
+    expression: "abs(((1-sensitivity)*implied_prevalence + specificity*(1-implied_prevalence)) - deferral_rate) < 0.01"
+    note: Deferred share = (1-sens)*prev + spec*(1-prev). Solving for the pack's
+      45% deferral implies ~20% significant-pathology prevalence among
+      FIT-positives - internally consistent.
+
+  - id: CHK-06
+    name: Facility capacity plausibility
+    kind: facility
+    severity: warn
+    note: Endoscopy units must report positive annual capacity after
+      normalisation; pathology units carry none by design. Monthly-reported
+      rows must have been annualised (x12).
+
+  - id: CHK-07
+    name: Screened volume arithmetic
+    kind: expression
+    severity: fail
+    per_market: true
+    expression: "abs(addressable_fit_positive - eligible_population*participation/2*fit_positivity) < 1"
+    note: Addressable = eligible x participation / 2 (biennial) x positivity,
+      recomputed from components.
+
+  - id: CHK-08
+    name: Colonoscopy demand vs national endoscopy capacity
+    kind: capacity_pressure
+    severity: info
+    note: FIT-positive referrals compared with deduplicated national endoscopy
+      capacity - a utilisation, not an error, check.
