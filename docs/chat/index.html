@@ -1,21 +1,28 @@
 <!doctype html><html lang="en"><head><title>Ask the data — Helix</title><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Noto+Serif:ital,wght@0,400;0,600;1,400;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Noto+Serif:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
- :root{--bg:#f9f7f5;--sf:#fff;--ink:#1d2939;--deep:#374b60;--soft:#667085;--line:#e6e1da;
-   --acc:#ff4200;--accdark:#c12d00;--softblue:#bdd2e0;--softblue2:#e6eef3;--bordeaux:#661439;
-   --tan:#ad836c;--cream2:#f4f1ec}
+ :root{--bg:#101828;--sf:#1d2939;--ink:#f9f7f5;--deep:#374b60;--soft:#8fa3b8;--line:#243447;
+   --acc:#ff4200;--accdark:#c12d00;--softblue:#bdd2e0;--softblue2:#14263a;--bordeaux:#a34d6e;
+   --tan:#c9a689;--cream2:#0c1522}
  *{box-sizing:border-box}
+ html{scroll-behavior:smooth}
  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 'Instrument Sans',system-ui,sans-serif}
+ ::selection{background:var(--acc);color:#fff}
  .serif{font-family:'Noto Serif',serif}.mono{font-family:'IBM Plex Mono',monospace}
- a{color:var(--deep)}
- .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--tan)}
- .btn{display:inline-block;font:600 15px 'Instrument Sans';border-radius:10px;border:1px solid var(--line);
-   padding:12px 22px;background:var(--sf);color:var(--ink);text-decoration:none;transition:all .15s}
+ a{color:var(--softblue)}
+ .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--tan)}
+ .tag{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--acc);margin-right:10px;vertical-align:1px}
+ .btn{display:inline-block;font:600 15px 'Instrument Sans';border-radius:9px;border:1px solid var(--line);
+   padding:12px 22px;background:var(--sf);color:var(--ink);text-decoration:none;transition:border-color .15s,transform .15s}
  .btn:hover{border-color:var(--acc);transform:translateY(-1px)}
  .btn.primary{background:var(--acc);border-color:var(--acc);color:#fff}
  .btn.primary:hover{background:var(--accdark)}
- @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+ .rule{position:relative;height:1px;background:var(--line);margin:0 auto}
+ .rule::before,.rule::after{content:"";position:absolute;top:-4px;width:9px;height:9px;background:var(--bg);
+   border:1px solid var(--soft);transform:rotate(45deg)}
+ .rule::before{left:0}.rule::after{right:0}
+ @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}html{scroll-behavior:auto}}
 </style>
 <style>
  .wrap{max-width:800px;margin:0 auto;padding:34px 20px 120px;display:flex;flex-direction:column;gap:16px}

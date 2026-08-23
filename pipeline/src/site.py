@@ -19,22 +19,29 @@ DELIV = ROOT.parent / "deliverables"
 
 HEAD = """<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Noto+Serif:ital,wght@0,400;0,600;1,400;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Noto+Serif:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
- :root{--bg:#f9f7f5;--sf:#fff;--ink:#1d2939;--deep:#374b60;--soft:#667085;--line:#e6e1da;
-   --acc:#ff4200;--accdark:#c12d00;--softblue:#bdd2e0;--softblue2:#e6eef3;--bordeaux:#661439;
-   --tan:#ad836c;--cream2:#f4f1ec}
+ :root{--bg:#101828;--sf:#1d2939;--ink:#f9f7f5;--deep:#374b60;--soft:#8fa3b8;--line:#243447;
+   --acc:#ff4200;--accdark:#c12d00;--softblue:#bdd2e0;--softblue2:#14263a;--bordeaux:#a34d6e;
+   --tan:#c9a689;--cream2:#0c1522}
  *{box-sizing:border-box}
+ html{scroll-behavior:smooth}
  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 'Instrument Sans',system-ui,sans-serif}
+ ::selection{background:var(--acc);color:#fff}
  .serif{font-family:'Noto Serif',serif}.mono{font-family:'IBM Plex Mono',monospace}
- a{color:var(--deep)}
- .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--tan)}
- .btn{display:inline-block;font:600 15px 'Instrument Sans';border-radius:10px;border:1px solid var(--line);
-   padding:12px 22px;background:var(--sf);color:var(--ink);text-decoration:none;transition:all .15s}
+ a{color:var(--softblue)}
+ .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--tan)}
+ .tag{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--acc);margin-right:10px;vertical-align:1px}
+ .btn{display:inline-block;font:600 15px 'Instrument Sans';border-radius:9px;border:1px solid var(--line);
+   padding:12px 22px;background:var(--sf);color:var(--ink);text-decoration:none;transition:border-color .15s,transform .15s}
  .btn:hover{border-color:var(--acc);transform:translateY(-1px)}
  .btn.primary{background:var(--acc);border-color:var(--acc);color:#fff}
  .btn.primary:hover{background:var(--accdark)}
- @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+ .rule{position:relative;height:1px;background:var(--line);margin:0 auto}
+ .rule::before,.rule::after{content:"";position:absolute;top:-4px;width:9px;height:9px;background:var(--bg);
+   border:1px solid var(--soft);transform:rotate(45deg)}
+ .rule::before{left:0}.rule::after{right:0}
+ @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}html{scroll-behavior:auto}}
 </style>"""
 
 
@@ -43,67 +50,134 @@ def landing(st) -> str:
     nl = st["conclusion"]["results"][rec]
     man = st["manifest"]
     fac = st["facilities"]["summary"]
-    chips = [
-        (f"{man['total_s']}s", "full pipeline run"),
-        ("28 / 28", "golden-eval fields correct"),
-        (f"{fac['raw_records']:,} → {fac['unique_facilities']}", "register records deduplicated"),
-        (f"€{man['llm_cost_eur']:.2f}", "AI spend (0 calls needed)"),
+    stages = ["01 READ", "02 EXTRACT", "03 UNIFY", "04 DEDUPE", "05 COMPARE", "06 CHECK", "07 CONCLUDE"]
+    lane = " &nbsp;&nbsp;◇&nbsp;&nbsp; ".join(stages)
+    stats = [
+        ("Y3", "BREAK-EVEN", "company EBITDA positive, second reimbursed year"),
+        ("€1.30M", "CASH TROUGH", "the €4.0M runway is never exhausted"),
+        ("159,910", "FIT+ / YEAR", "92% of Germany's volume, none of its barriers"),
+        (f"€{nl.get('system_saving_per_100',0):,}", "SAVED PER 100", "at €650 per avoided colonoscopy"),
     ]
-    chip_html = "".join(f'<div class="chip"><b>{a}</b><span>{b}</span></div>' for a, b in chips)
+    stat_html = "".join(
+        f'<div class="stat"><span class="mono lbl"><i>▲</i>{lbl}</span><b>{big}</b><p>{sub}</p></div>'
+        for big, lbl, sub in stats)
+    rows = [
+        ("deck/", "THE DECK", "five slides · the recommendation and its defence"),
+        ("report/", "THE EVIDENCE", "every file's fate · the checks · the impossible 300k claim, rejected"),
+        ("chat/", "ASK THE DATA", "grounded chat · your key, any provider, detected on paste"),
+    ]
+    row_html = "".join(
+        f'<a class="row" href="{href}"><span class="split big">{title}</span>'
+        f'<span class="mono sub">{sub}</span><span class="arr">→</span></a><div class="rule wide"></div>'
+        for href, title, sub in rows)
     return f"""<!doctype html><html lang="en"><head><title>Runway, the market-entry desk</title>{HEAD}
 <style>
- .hero{{min-height:72vh;display:grid;place-content:center;text-align:center;padding:60px 22px 30px;gap:22px}}
- h1{{font-size:clamp(34px,6vw,58px);margin:0;letter-spacing:-.025em;font-weight:650;line-height:1.08;max-width:17ch}}
- h1 em{{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;color:var(--acc)}}
- .sub{{color:var(--soft);max-width:56ch;margin:0 auto;font-size:17px}}
- .ctas{{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:8px}}
- .chips{{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;padding:10px 22px 70px}}
- .chip{{background:var(--sf);border:1px solid var(--line);border-radius:12px;padding:14px 20px;min-width:150px}}
- .chip b{{display:block;font-size:22px;letter-spacing:-.01em}}
- .chip span{{font-size:12.5px;color:var(--soft)}}
- .rail{{max-width:960px;margin:0 auto 80px;padding:0 22px}}
- .rail-strip{{background:var(--sf);border:1px solid var(--line);border-radius:14px;padding:6px 10px;
-   display:flex;align-items:stretch;overflow-x:auto}}
- .stage{{flex:1;min-width:150px;padding:16px 14px;position:relative}}
- .stage+.stage{{border-left:1px dashed var(--line)}}
- .stage+.stage::before{{content:"→";position:absolute;left:-8px;top:18px;background:var(--sf);
-   color:var(--acc);font-weight:700;padding:0 2px}}
- .stage .n{{font-family:'IBM Plex Mono',monospace;color:var(--acc);font-size:11px;letter-spacing:.08em}}
- .stage b{{display:block;margin:6px 0 3px;font-size:14.5px;letter-spacing:-.01em}}
- .stage p{{margin:0;font-size:12.5px;color:var(--soft);line-height:1.5}}
- .rail-caption{{text-align:center;font-size:13px;color:var(--soft);margin-top:12px}}
- footer{{text-align:center;padding:30px;color:var(--soft);font:12px 'IBM Plex Mono',monospace}}
- .dot{{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--acc);margin-right:8px}}
+ .bar{{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;gap:12px;padding:16px 28px;z-index:9;
+   background:linear-gradient(var(--bg) 60%,transparent)}}
+ .bar b{{font-size:15px;letter-spacing:.02em}} .bar .mono{{color:var(--soft);font-size:11px}}
+ .bar nav{{margin-left:auto;display:flex;gap:20px}}
+ .bar nav a{{font:600 13px 'Instrument Sans';color:var(--softblue);text-decoration:none}}
+ .bar nav a:hover{{color:var(--acc)}}
+ .hero{{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:110px 28px 40px;max-width:1240px;margin:0 auto}}
+ h1{{margin:14px 0 0;font-weight:700;text-transform:uppercase;letter-spacing:-.028em;
+   font-size:clamp(46px,9.2vw,132px);line-height:.98}}
+ h1 .l2{{color:var(--acc);display:block}}
+ h1 .serif{{font-style:italic;font-weight:300;text-transform:none;letter-spacing:0}}
+ .hero .meta{{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;margin-top:34px;flex-wrap:wrap}}
+ .hero .meta p{{max-width:44ch;margin:0;color:var(--soft);font-size:15.5px}}
+ .scrollhint{{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.3em;color:var(--soft)}}
+ .sect{{max-width:1240px;margin:0 auto;padding:90px 28px}}
+ .verdict h2{{margin:16px 0 0;font-weight:700;text-transform:uppercase;letter-spacing:-.02em;
+   font-size:clamp(34px,6vw,84px);line-height:1.02}}
+ .verdict h2 em{{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;text-transform:none;color:var(--acc);letter-spacing:0}}
+ .stats{{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1px;background:var(--line);
+   border:1px solid var(--line);margin-top:46px}}
+ .stat{{background:var(--bg);padding:22px 20px}}
+ .stat .lbl{{font-size:10.5px;letter-spacing:.14em;color:var(--soft)}}
+ .stat .lbl i{{font-style:normal;color:var(--acc);margin-right:8px;font-size:9px}}
+ .stat b{{display:block;font-size:clamp(28px,3vw,40px);letter-spacing:-.02em;margin:8px 0 4px}}
+ .stat p{{margin:0;font-size:12.5px;color:var(--soft)}}
+ .lane{{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;padding:18px 0;
+   font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:.12em;color:var(--softblue);white-space:nowrap}}
+ .lane .in{{display:inline-block;animation:lane 36s linear infinite;padding-right:60px}}
+ .lane:hover .in{{animation-play-state:paused}}
+ @keyframes lane{{to{{transform:translateX(-50%)}}}}
+ @media(prefers-reduced-motion:reduce){{.lane .in{{animation:none}}}}
+ .rows{{display:flex;flex-direction:column}}
+ .row{{display:flex;align-items:baseline;gap:26px;padding:34px 4px;text-decoration:none;color:var(--ink)}}
+ .row .big{{font-weight:700;text-transform:uppercase;letter-spacing:-.02em;font-size:clamp(30px,5vw,64px);line-height:1}}
+ .row .sub{{color:var(--soft);font-size:12px;max-width:34ch;line-height:1.6}}
+ .row .arr{{margin-left:auto;font-size:clamp(24px,3.5vw,40px);color:var(--soft);transition:transform .2s,color .2s}}
+ .row:hover .arr{{color:var(--acc);transform:translateX(10px)}}
+ .row:hover .big{{color:var(--acc)}}
+ .rule.wide{{max-width:1240px}}
+ .method{{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:34px;color:var(--soft);font-size:14px}}
+ .method b{{display:block;color:var(--ink);margin-bottom:6px;font-size:15px}}
+ footer{{text-align:center;padding:40px 20px 50px;color:var(--soft);font:11.5px 'IBM Plex Mono',monospace;letter-spacing:.08em}}
+ /* reveals (initial hidden states only when JS is present) */
+ .split{{display:inline-block;overflow:hidden;vertical-align:bottom}}
+ .js .split .ch{{display:inline-block;transform:translateY(110%);transition:transform .7s cubic-bezier(.2,.6,.1,1)}}
+ .js .on .ch{{transform:translateY(0)}}
+ .js .fade{{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}}
+ .js .fade.on{{opacity:1;transform:none}}
+ @media(prefers-reduced-motion:reduce){{.js .split .ch{{transform:none}}.js .fade{{opacity:1;transform:none}}}}
 </style></head><body>
-<div class="hero">
- <div class="eyebrow"><span class="dot"></span>Runway · the market-entry desk · Helix Optics case</div>
- <h1>Four markets in, <em>one answer out.</em></h1>
- <p class="sub">A seven-stage pipeline reads the raw pack in its native formats, validates every figure,
- deduplicates 3,236 register records into {fac['unique_facilities']} real facilities, catches the planted
- impossibilities. The recommendation: <b>the {rec}</b>, break-even in Year {nl['break_even_year']},
- cash trough €{nl['min_cash']/1e6:.1f}M, the only market that survives the €4.0M runway.</p>
- <div class="ctas">
-  <a class="btn primary" href="deck/">View the deck →</a>
-  <a class="btn" href="report/">Explore the evidence report</a>
-  <a class="btn" href="chat/">Ask the data</a>
+<div class="bar"><span class="tag"></span><b>RUNWAY</b><span class="mono">THE MARKET-ENTRY DESK</span>
+ <nav><a href="deck/">Deck</a><a href="report/">Evidence</a><a href="chat/">Ask the data</a></nav></div>
+
+<section class="hero">
+ <div class="eyebrow"><span class="tag"></span>HELIX OPTICS · FIRST EUROPEAN MARKET · {fac['raw_records']:,} RECORDS READ</div>
+ <h1><span class="split" data-stagger>FOUR MARKETS IN,</span>
+     <span class="l2"><span class="split" data-stagger>ONE <span class="serif">answer</span> OUT.</span></span></h1>
+ <div class="meta">
+  <p>A seven-stage pipeline reads the raw pack in its native formats, validates every figure, deduplicates
+  {fac['raw_records']:,} register records into {fac['unique_facilities']} real facilities, and rejects the
+  planted impossibilities. Deterministic first; AI only where it earns its place.</p>
+  <span class="scrollhint">(&nbsp;&nbsp;SCROLL&nbsp;&nbsp;)</span>
  </div>
-</div>
-<div class="chips">{chip_html}</div>
-<div class="rail"><div class="rail-strip">
- <div class="stage"><span class="n">01 READ</span><b>Native formats</b>
-  <p>PDF, XLSX, HTML, CSV. Zero retyping; every file's fate on the ingestion board.</p></div>
- <div class="stage"><span class="n">02 EXTRACT</span><b>Deterministic first</b>
-  <p>Patterns resolve 74/74 fields here; a schema-guarded AI tier absorbs messier markets.</p></div>
- <div class="stage"><span class="n">03 UNIFY</span><b>One schema</b>
-  <p>Provenance on every value: source, method, pattern.</p></div>
- <div class="stage"><span class="n">04 DEDUPE</span><b>3,236 → 228</b>
-  <p>One row per real facility, rule stated, conflicts surfaced.</p></div>
- <div class="stage"><span class="n">05–06 CHECK</span><b>Nothing silent</b>
-  <p>Source agreement plus arithmetic; the impossible 300k claim dies here.</p></div>
- <div class="stage"><span class="n">07 CONCLUDE</span><b>The model decides</b>
-  <p>One five-year engine, four markets, one ranking; it also feeds the Excel.</p></div>
-</div><div class="rail-caption">The seven stages the brief asks for, in the order they run.</div></div>
-<footer>closed-world analysis: the pack is the sole source of truth. deterministic core · AI at the edges · evidence on every number</footer>
+</section>
+
+<div class="lane"><span class="in">{lane} &nbsp;&nbsp;◇&nbsp;&nbsp; {lane}</span></div>
+
+<section class="sect verdict">
+ <div class="eyebrow fade"><span class="tag"></span>THE VERDICT</div>
+ <h2><span class="split">ENTER THE</span><br><span class="split"><em>Netherlands</em> FIRST.</span></h2>
+ <div class="stats fade">{stat_html}</div>
+</section>
+
+<section class="sect" style="padding-top:0">
+ <div class="eyebrow fade" style="margin-bottom:8px"><span class="tag"></span>EXPLORE</div>
+ <div class="rows">{row_html}</div>
+</section>
+
+<section class="sect method">
+ <div class="fade"><b>Deterministic core.</b>74 of 74 fields resolved by patterns on this pack; the manifest
+  records {man['llm_calls']} AI calls and €{man['llm_cost_eur']:.2f} spent. Eval: 28/28.</div>
+ <div class="fade"><b>Nothing silent.</b>Unrecognised files are flagged, never ignored; capacity conflicts are
+  reported as ranges; the competitor's 300k claim dies in check CHK-02.</div>
+ <div class="fade"><b>Closed world.</b>The pack is the sole source of truth. The research workflow exists,
+  and is deliberately off.</div>
+</section>
+
+<footer>RUNWAY · BUILT ON THE ILOF PALETTE · MARKETS 5–14 ARE A CONFIG ENTRY AWAY</footer>
+<script>
+ document.documentElement.classList.add('js');
+ const rm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+ document.querySelectorAll('.split').forEach(el=>{{
+   if(rm)return;
+   const walk=n=>{{[...n.childNodes].forEach(c=>{{
+     if(c.nodeType===3){{const f=document.createDocumentFragment();
+       [...c.textContent].forEach(ch=>{{const s=document.createElement('span');s.className='ch';
+         s.textContent=ch===' '?'\u00a0':ch;f.appendChild(s)}});n.replaceChild(f,c);}}
+     else walk(c);}})}};
+   walk(el);
+   [...el.querySelectorAll('.ch')].forEach((c,i)=>c.style.transitionDelay=(i*22)+'ms');
+ }});
+ const io=new IntersectionObserver(es=>es.forEach(e=>{{if(e.isIntersecting){{e.target.classList.add('on');io.unobserve(e.target)}}}}),{{threshold:.3}});
+ document.querySelectorAll('.split,.fade').forEach(el=>io.observe(el));
+ addEventListener('load',()=>document.querySelectorAll('.hero .split').forEach(el=>el.classList.add('on')));
+ setTimeout(()=>document.querySelectorAll('.split,.fade').forEach(el=>el.classList.add('on')),1600);
+</script>
 </body></html>"""
 
 
@@ -137,7 +211,7 @@ def deck(st) -> str:
          <div><b>{nl['params']['addressable_fit_positive']:,.0f}/yr</b><span>addressable FIT-positives: 92% of Germany's volume, none of its barriers</span></div>
          <div><b>€{nl.get('system_saving_per_100',0):,} saved</b><span>per 100 patients triaged. The payer wants this</span></div>
         </div>
-        <img src="assets/cash_curves.png" width="1560" height="860" alt="Five-year cash position of all four markets">
+        <img src="assets/cash_curves_dark.png" width="1560" height="860" alt="Five-year cash position of all four markets">
         </div></section>""",
         # S2
         f"""<section class="slide"><div class="in">
@@ -149,7 +223,7 @@ def deck(st) -> str:
          <li><b>The runway dies first.</b> Cash bottoms at {de['min_cash']/1e6:.1f}M, insolvent before the first reimbursed euro.</li>
          <li><b>An incumbent owns the channel.</b> OncoStream has ~3 reimbursed years, 35–40% share, framework agreements.</li>
          <li><b>Its 300k tests/yr claim is impossible:</b> 1.7× the entire organised addressable market (174,240/yr). Rejected by pipeline check CHK-02.</li>
-        </ul><img src="assets/trough.png" width="1240" height="840" alt="Cash trough by market"></div>
+        </ul><img src="assets/trough_dark.png" width="1240" height="840" alt="Cash trough by market"></div>
         <p class="note">Right market later, unaffordable market now. File the German application early (the clock is procedural) and enter once NL cash flow or new capital funds the wait.</p>
         </div></section>""",
         # S3
@@ -162,7 +236,7 @@ def deck(st) -> str:
          <li><b>Open field.</b> No competitor active; second-highest price (€215).</li>
          <li><b>Capacity pressure is policy.</b> Referrals run at ~103% of national endoscopy capacity (deduplicated registers).</li>
          <li><b>The economics clear.</b> 76% unit margin by Y3; five-year end cash €{nl['end_cash']/1e6:.1f}M.</li>
-        </ul><img src="assets/nl_model.png" width="1280" height="840" alt="Netherlands EBITDA and cash"></div>
+        </ul><img src="assets/nl_model_dark.png" width="1280" height="840" alt="Netherlands EBITDA and cash"></div>
         <p class="note">What must be true: reimbursement ≈ month 12 · ramp ~13% of addressable by the second reimbursed year · price holds near €215.</p>
         </div></section>""",
         # S4
@@ -222,9 +296,9 @@ def deck(st) -> str:
  .note{{font-size:13.5px;color:var(--soft);border-top:1px solid var(--line);padding-top:12px;margin:4px 0 0}}
  table.grid{{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}}
  table.grid th,table.grid td{{border:1px solid var(--line);padding:9px 12px;font-size:14px;text-align:center}}
- table.grid th{{background:var(--ink);color:#fff;font:600 11.5px 'IBM Plex Mono',monospace}}
+ table.grid th{{background:var(--deep);color:#fff;font:600 11.5px 'IBM Plex Mono',monospace}}
  table.grid tr th:first-child{{text-align:left}}
- td.good{{background:var(--softblue2);font-weight:650}} td.thin{{background:#f6ead9;font-weight:650}}
+ td.good{{background:var(--softblue2);color:var(--softblue);font-weight:650}} td.thin{{background:#3d2f16;color:#f2d9a7;font-weight:650}}
  td.bad{{background:var(--accdark);color:#fff;font-weight:650}}
  .steps{{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}}
  .steps div{{background:var(--sf);border:1px solid var(--line);border-radius:12px;padding:14px}}
@@ -367,7 +441,7 @@ def build() -> str:
         (SITE / sub).mkdir(parents=True, exist_ok=True)
     (SITE / "index.html").write_text(landing(st))
     (SITE / "deck" / "index.html").write_text(deck(st))
-    for png in ("cash_curves.png", "trough.png", "nl_model.png"):
+    for png in ("cash_curves_dark.png", "trough_dark.png", "nl_model_dark.png"):
         shutil.copy(DELIV / "charts" / png, SITE / "deck" / "assets" / png)
     shutil.copy(run / "report.html", SITE / "report" / "index.html")
     page, data_js = chat(st)

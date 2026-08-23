@@ -32,25 +32,39 @@ MC = {"Netherlands": "#ff4200", "Germany": "#661439", "Portugal": "#374b60", "Po
 CHARTS = ROOT.parent / "deliverables" / "charts"
 FONT = "Arial"
 
-plt.rcParams.update({
+LIGHT_RC = {
     "font.family": FONT, "font.size": 11, "axes.edgecolor": "#e6e1da",
     "axes.linewidth": 0.8, "axes.labelcolor": "#667085", "xtick.color": "#667085",
     "ytick.color": "#667085", "figure.facecolor": "white", "axes.facecolor": "white",
     "axes.grid": True, "grid.color": "#f1ede7", "grid.linewidth": 0.7,
-})
+    "text.color": "#1d2939",
+}
+DARK_RC = {
+    "font.family": FONT, "font.size": 11, "axes.edgecolor": "#2b3a4e",
+    "axes.linewidth": 0.8, "axes.labelcolor": "#bdd2e0", "xtick.color": "#bdd2e0",
+    "ytick.color": "#bdd2e0", "figure.facecolor": "#101828", "axes.facecolor": "#101828",
+    "axes.grid": True, "grid.color": "#1c2a3d", "grid.linewidth": 0.7,
+    "text.color": "#f9f7f5",
+}
+plt.rcParams.update(LIGHT_RC)
+INKC = {"light": "#1d2939", "dark": "#f9f7f5"}
+MC_DARK = {"Netherlands": "#ff4200", "Germany": "#a34d6e", "Portugal": "#bdd2e0", "Poland": "#c9a689"}
 
 
 def _meur(x, _):
     return f"{x/1e6:+.0f}M" if x else "0"
 
 
-def chart_cash_curves(res, ranking):
+def chart_cash_curves(res, ranking, dark=False):
+  with plt.rc_context(DARK_RC if dark else LIGHT_RC):
+    mc = MC_DARK if dark else MC
+    ink = INKC["dark" if dark else "light"]
     fig, ax = plt.subplots(figsize=(7.8, 4.3), dpi=200)
     for m in ranking:
         r = res[m]
         xs = list(range(6))
         ys = [4_000_000 - r["params"]["entry_cost"]] + [y["cash"] for y in r["years"]]
-        ax.plot(xs, ys, color=MC[m], lw=2.6, marker="o", ms=4,
+        ax.plot(xs, ys, color=mc[m], lw=2.6, marker="o", ms=4,
                 label=f"{m}  ({ys[-1]/1e6:+.1f}M)")
     ax.axhline(0, color="#c12d00", ls="--", lw=1.2)
     ax.text(0.06, -700_000, "€0 — insolvency", color="#c12d00", fontsize=9.5, va="top")
@@ -58,60 +72,66 @@ def chart_cash_curves(res, ranking):
     ax.set_xticks(range(6), [f"Y{i}" for i in range(6)])
     ax.yaxis.set_major_formatter(FuncFormatter(_meur))
     ax.set_title("Five-year cash position, €4.0M starting runway", fontsize=12.5,
-                 color="#1d2939", loc="left", pad=10, fontweight="bold")
+                 color=ink, loc="left", pad=10, fontweight="bold")
     ax.legend(frameon=False, fontsize=10, loc="upper left")
     fig.tight_layout()
-    p = CHARTS / "cash_curves.png"
+    p = CHARTS / ("cash_curves_dark.png" if dark else "cash_curves.png")
     fig.savefig(p)
     plt.close(fig)
     return p
 
 
-def chart_trough(res, ranking):
+def chart_trough(res, ranking, dark=False):
+  with plt.rc_context(DARK_RC if dark else LIGHT_RC):
+    mc = MC_DARK if dark else MC
+    ink = INKC["dark" if dark else "light"]
     fig, ax = plt.subplots(figsize=(6.2, 4.2), dpi=200)
     ms = ranking[::-1]
     vals = [res[m]["min_cash"] for m in ms]
-    cols = [MC[m] for m in ms]
+    cols = [mc[m] for m in ms]
     bars = ax.barh(ms, vals, color=cols, height=0.55, zorder=3)
     ax.set_axisbelow(True)
     ax.axvline(0, color="#c12d00", ls="--", lw=1.2)
     for b, v in zip(bars, vals):
         ax.text(v + (80_000 if v > 0 else -80_000), b.get_y() + b.get_height() / 2,
                 f"{v/1e6:+.1f}M", va="center", ha="left" if v > 0 else "right",
-                fontsize=10.5, color="#1d2939", fontweight="bold")
+                fontsize=10.5, color=ink, fontweight="bold")
     ax.set_xlim(min(vals) * 1.35, max(vals) * 2.2)
     ax.xaxis.set_major_formatter(FuncFormatter(_meur))
     ax.set_title("Cash trough — how close each market comes to €0", fontsize=12.5,
-                 color="#1d2939", loc="left", pad=10, fontweight="bold")
+                 color=ink, loc="left", pad=10, fontweight="bold")
     fig.tight_layout()
-    p = CHARTS / "trough.png"
+    p = CHARTS / ("trough_dark.png" if dark else "trough.png")
     fig.savefig(p)
     plt.close(fig)
     return p
 
 
-def chart_nl(res, rec):
+def chart_nl(res, rec, dark=False):
+  with plt.rc_context(DARK_RC if dark else LIGHT_RC):
+    ink = INKC["dark" if dark else "light"]
     r = res[rec]
     years = [f"Y{y['year']}" for y in r["years"]]
     ebitda = [y["ebitda"] for y in r["years"]]
     cash = [y["cash"] for y in r["years"]]
     fig, ax = plt.subplots(figsize=(6.4, 4.2), dpi=200)
-    ax.bar(years, ebitda, color=["#c12d00" if v < 0 else "#374b60" for v in ebitda],
+    neg, pos = ("#ff6a3d", "#4a688a") if dark else ("#c12d00", "#374b60")
+    ax.bar(years, ebitda, color=[neg if v < 0 else pos for v in ebitda],
            width=0.55, label="EBITDA", zorder=3)
     ax.set_axisbelow(True)
     ax2 = ax.twinx()
-    ax2.plot(years, cash, color="#1d2939", lw=2.4, marker="o", ms=4, label="Cash")
+    ax2.plot(years, cash, color=("#f9f7f5" if dark else "#1d2939"), lw=2.4, marker="o", ms=4, label="Cash")
     ax2.grid(False)
-    ax.axhline(0, color="#667085", lw=0.8)
+    ax.axhline(0, color=("#bdd2e0" if dark else "#667085"), lw=0.8)
     ax.yaxis.set_major_formatter(FuncFormatter(_meur))
     ax2.yaxis.set_major_formatter(FuncFormatter(_meur))
     ax.set_title(f"{rec}: EBITDA turns positive in Y{r['break_even_year']}; cash never approaches zero",
-                 fontsize=12.5, color="#1d2939", loc="left", pad=10, fontweight="bold")
+                 fontsize=12.5, color=ink, loc="left", pad=10, fontweight="bold")
     h1, l1 = ax.get_legend_handles_labels()
     h2, l2 = ax2.get_legend_handles_labels()
     ax.legend(h1 + h2, l1 + l2, frameon=False, fontsize=10, loc="upper left")
     fig.tight_layout()
-    p = CHARTS / "nl_model.png"
+    p = CHARTS / ("nl_model_dark.png" if dark else "nl_model.png")
     fig.savefig(p)
     plt.close(fig)
     return p
@@ -185,6 +205,9 @@ def build() -> str:
     c1 = chart_cash_curves(res, ranking)
     c2 = chart_trough(res, ranking)
     c3 = chart_nl(res, rec)
+    chart_cash_curves(res, ranking, dark=True)
+    chart_trough(res, ranking, dark=True)
+    chart_nl(res, rec, dark=True)
 
     prs = Presentation()
     W, H = 13.333, 7.5

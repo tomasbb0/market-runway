@@ -1,21 +1,28 @@
 <!doctype html><html lang="en"><head><title>Helix — the deck</title><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Noto+Serif:ital,wght@0,400;0,600;1,400;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Noto+Serif:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
- :root{--bg:#f9f7f5;--sf:#fff;--ink:#1d2939;--deep:#374b60;--soft:#667085;--line:#e6e1da;
-   --acc:#ff4200;--accdark:#c12d00;--softblue:#bdd2e0;--softblue2:#e6eef3;--bordeaux:#661439;
-   --tan:#ad836c;--cream2:#f4f1ec}
+ :root{--bg:#101828;--sf:#1d2939;--ink:#f9f7f5;--deep:#374b60;--soft:#8fa3b8;--line:#243447;
+   --acc:#ff4200;--accdark:#c12d00;--softblue:#bdd2e0;--softblue2:#14263a;--bordeaux:#a34d6e;
+   --tan:#c9a689;--cream2:#0c1522}
  *{box-sizing:border-box}
+ html{scroll-behavior:smooth}
  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 'Instrument Sans',system-ui,sans-serif}
+ ::selection{background:var(--acc);color:#fff}
  .serif{font-family:'Noto Serif',serif}.mono{font-family:'IBM Plex Mono',monospace}
- a{color:var(--deep)}
- .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--tan)}
- .btn{display:inline-block;font:600 15px 'Instrument Sans';border-radius:10px;border:1px solid var(--line);
-   padding:12px 22px;background:var(--sf);color:var(--ink);text-decoration:none;transition:all .15s}
+ a{color:var(--softblue)}
+ .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--tan)}
+ .tag{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--acc);margin-right:10px;vertical-align:1px}
+ .btn{display:inline-block;font:600 15px 'Instrument Sans';border-radius:9px;border:1px solid var(--line);
+   padding:12px 22px;background:var(--sf);color:var(--ink);text-decoration:none;transition:border-color .15s,transform .15s}
  .btn:hover{border-color:var(--acc);transform:translateY(-1px)}
  .btn.primary{background:var(--acc);border-color:var(--acc);color:#fff}
  .btn.primary:hover{background:var(--accdark)}
- @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+ .rule{position:relative;height:1px;background:var(--line);margin:0 auto}
+ .rule::before,.rule::after{content:"";position:absolute;top:-4px;width:9px;height:9px;background:var(--bg);
+   border:1px solid var(--soft);transform:rotate(45deg)}
+ .rule::before{left:0}.rule::after{right:0}
+ @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}html{scroll-behavior:auto}}
 </style>
 <style>
  html{scroll-snap-type:y proximity;scroll-behavior:smooth}
@@ -37,9 +44,9 @@
  .note{font-size:13.5px;color:var(--soft);border-top:1px solid var(--line);padding-top:12px;margin:4px 0 0}
  table.grid{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
  table.grid th,table.grid td{border:1px solid var(--line);padding:9px 12px;font-size:14px;text-align:center}
- table.grid th{background:var(--ink);color:#fff;font:600 11.5px 'IBM Plex Mono',monospace}
+ table.grid th{background:var(--deep);color:#fff;font:600 11.5px 'IBM Plex Mono',monospace}
  table.grid tr th:first-child{text-align:left}
- td.good{background:var(--softblue2);font-weight:650} td.thin{background:#f6ead9;font-weight:650}
+ td.good{background:var(--softblue2);color:var(--softblue);font-weight:650} td.thin{background:#3d2f16;color:#f2d9a7;font-weight:650}
  td.bad{background:var(--accdark);color:#fff;font-weight:650}
  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
  .steps div{background:var(--sf);border:1px solid var(--line);border-radius:12px;padding:14px}
@@ -62,7 +69,7 @@
          <div><b>159,910/yr</b><span>addressable FIT-positives: 92% of Germany's volume, none of its barriers</span></div>
          <div><b>€7,750 saved</b><span>per 100 patients triaged. The payer wants this</span></div>
         </div>
-        <img src="assets/cash_curves.png" width="1560" height="860" alt="Five-year cash position of all four markets">
+        <img src="assets/cash_curves_dark.png" width="1560" height="860" alt="Five-year cash position of all four markets">
         </div></section><section id="s2" class="slide"><div class="in">
         <div class="eyebrow">Why not the biggest market first</div>
         <h2>Germany is the prize — and the certain death of the runway.</h2>
@@ -72,7 +79,7 @@
          <li><b>The runway dies first.</b> Cash bottoms at -1.4M, insolvent before the first reimbursed euro.</li>
          <li><b>An incumbent owns the channel.</b> OncoStream has ~3 reimbursed years, 35–40% share, framework agreements.</li>
          <li><b>Its 300k tests/yr claim is impossible:</b> 1.7× the entire organised addressable market (174,240/yr). Rejected by pipeline check CHK-02.</li>
-        </ul><img src="assets/trough.png" width="1240" height="840" alt="Cash trough by market"></div>
+        </ul><img src="assets/trough_dark.png" width="1240" height="840" alt="Cash trough by market"></div>
         <p class="note">Right market later, unaffordable market now. File the German application early (the clock is procedural) and enter once NL cash flow or new capital funds the wait.</p>
         </div></section><section id="s3" class="slide"><div class="in">
         <div class="eyebrow">The case for the recommendation</div>
@@ -83,7 +90,7 @@
          <li><b>Open field.</b> No competitor active; second-highest price (€215).</li>
          <li><b>Capacity pressure is policy.</b> Referrals run at ~103% of national endoscopy capacity (deduplicated registers).</li>
          <li><b>The economics clear.</b> 76% unit margin by Y3; five-year end cash €9.6M.</li>
-        </ul><img src="assets/nl_model.png" width="1280" height="840" alt="Netherlands EBITDA and cash"></div>
+        </ul><img src="assets/nl_model_dark.png" width="1280" height="840" alt="Netherlands EBITDA and cash"></div>
         <p class="note">What must be true: reimbursement ≈ month 12 · ramp ~13% of addressable by the second reimbursed year · price holds near €215.</p>
         </div></section><section id="s4" class="slide"><div class="in">
         <div class="eyebrow">Break-even and the range around it</div>
