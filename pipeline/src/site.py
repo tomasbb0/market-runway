@@ -108,6 +108,9 @@ def landing(st) -> str:
  .panehead{{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}}
  .panehead h1{{margin:0;font-size:clamp(24px,3vw,34px);font-weight:700;text-transform:uppercase;letter-spacing:-.02em}}
  .panehead h1 em{{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;text-transform:none;color:var(--acc)}}
+ .panehead h1{{cursor:text;border-bottom:1.5px dashed transparent}}
+ .panehead h1:hover{{border-bottom-color:var(--deep)}}
+ .panehead input.titled{{font:700 clamp(24px,3vw,34px) 'Instrument Sans';text-transform:uppercase;letter-spacing:-.02em;background:var(--sf);color:var(--ink);border:1px solid var(--deep);border-radius:8px;padding:2px 10px;min-width:0;max-width:60vw}}
  .tabs{{display:flex;gap:6px;margin-left:auto}}
  .tab{{font:600 13px 'Instrument Sans';border:1px solid var(--line);background:var(--sf);color:var(--softblue);
    border-radius:9px;padding:8px 18px;cursor:pointer}}
@@ -194,10 +197,11 @@ def landing(st) -> str:
  function renderRail(){{
    $('exlist').innerHTML=S.list.map(e=>
      `<div class="ex ${{e.id===S.sel?'on':''}} ${{e.hasRun?'ran':''}}" data-id="${{e.id}}">
-       <span class="dot"></span><span class="nm" title="double-click to rename">${{esc(e.name)}}</span>
+       <span class="dot"></span><span class="nm" title="click again to rename">${{esc(e.name)}}</span>
        ${{e.protected?'':'<button class="del" title="Delete exercise">✕</button>'}}</div>`).join('');
    document.querySelectorAll('.ex').forEach(el=>{{
      el.onclick=ev=>{{if(ev.target.classList.contains('del'))return;
+       if(el.dataset.id===S.sel&&ev.target.classList.contains('nm')){{rename(el.dataset.id);return}}
        S.sel=el.dataset.id;S.tab=cur().hasRun?'results':'files';save();render();}};
      el.querySelector('.del')?.addEventListener('click',()=>{{
        if(confirm('Delete this exercise and its file list?')){{
@@ -227,6 +231,15 @@ def landing(st) -> str:
    const t=$('title');
    const parts=e.name.split(' ');
    t.innerHTML=parts.length>1?esc(parts[0])+' <em>'+esc(parts.slice(1).join(' ').toLowerCase())+'</em>':esc(e.name);
+   t.title='Click to rename';
+   t.onclick=()=>{{
+     const inp=document.createElement('input');inp.className='titled';inp.maxLength=40;inp.value=e.name;
+     t.replaceWith(inp);inp.focus();inp.select();
+     const done=ok=>{{if(ok){{e.name=inp.value.trim()||e.name;save();}}
+       inp.replaceWith(t);render();}};
+     inp.onkeydown=ev=>{{if(ev.key==='Enter')done(true);if(ev.key==='Escape')done(false);}};
+     inp.onblur=()=>done(true);
+   }};
    document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===S.tab));
    $('tabres').disabled=!e.hasRun;
    $('dirty').classList.toggle('show',!!e.dirty&&e.hasRun);
