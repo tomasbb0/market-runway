@@ -106,7 +106,7 @@ def landing(st) -> str:
  .rail header button{{margin-left:auto;font:600 12px 'Instrument Sans';background:var(--acc);color:#fff;
    border:none;border-radius:7px;padding:6px 10px;cursor:pointer}}
  .rail header button:hover{{background:var(--accdark)}}
- .exlist{{overflow-y:auto;min-height:0;padding:6px}}
+ .exlist{{flex:1;overflow-y:auto;min-height:0;padding:6px}}
  .ex{{display:flex;align-items:center;gap:9px;padding:10px 10px;border-radius:9px;cursor:pointer;color:var(--ink)}}
  .ex:hover{{background:var(--softblue2)}}
  .ex.on{{background:var(--softblue2);outline:1px solid var(--deep)}}
