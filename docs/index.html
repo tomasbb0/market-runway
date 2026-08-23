@@ -123,6 +123,16 @@
    padding:16px 34px;cursor:pointer;letter-spacing:.01em}
  .runbtn:hover{background:var(--accdark)}
  .runbtn.ghost{background:var(--sf);border:1px solid var(--line);color:var(--ink)}
+ .modes{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+ .mode{display:flex;flex-direction:column;gap:6px;align-items:flex-start;text-align:left;cursor:pointer;
+   background:var(--sf);border:1px solid var(--line);border-radius:14px;padding:16px 20px;max-width:270px;
+   color:var(--ink);transition:border-color .15s,transform .15s}
+ .mode:hover{border-color:var(--acc);transform:translateY(-2px)}
+ .mode b{font:700 16px 'Instrument Sans'}
+ .mode span{font-size:12px;color:var(--soft);line-height:1.5}
+ .mode.after{border-color:var(--deep)}
+ .mode.after b{color:var(--acc)}
+ .mode:disabled{opacity:.45;cursor:wait;transform:none}
  .runlog{text-align:left;font:12.5px 'IBM Plex Mono',monospace;color:var(--soft);display:none;min-width:290px}
  .runlog div{padding:3px 0} .runlog .done::before{content:"✓ ";color:var(--acc)}
  .runlog .pend::before{content:"· "}
@@ -265,24 +275,36 @@
  }
 
  function renderRun(){
-   const e=cur();
+   const e=cur();const rerun=e.hasRun?'Re-run':'Run';
    $('stage').innerHTML=`<div class="runwrap">
-     <div class="eyebrow"><span class="tag"></span>${e.hasRun?'LAST RUN · '+(e.lastRun||'recorded'):'NEVER RUN'}</div>
-     <button class="runbtn" id="go">${e.hasRun?'Re-run →':'Initial run →'}</button>
+     <div class="eyebrow"><span class="tag"></span>${e.hasRun
+       ?'LAST RUN · '+(e.lastRun||'recorded')+(e.lastMode?' · '+e.lastMode.toUpperCase():''):'NEVER RUN'}</div>
+     <div class="modes">
+      <button class="mode" data-m="glide"><b>${rerun}: Glide →</b>
+       <span>deterministic core; AI only where patterns fail · seconds, ~€0</span></button>
+      <button class="mode after" data-m="afterburner"><b>${rerun}: Afterburner ⚡</b>
+       <span>everything Glide does, then a frontier model audits every extracted value</span></button>
+     </div>
      ${e.hasRun?'<button class="runbtn ghost" id="gores">View last results</button>':''}
-     <div class="runlog" id="rlog">${STAGES.map(s=>'<div class="pend">'+s+'</div>').join('')}</div>
+     <div class="runlog" id="rlog"></div>
      <p style="color:var(--soft);font-size:12px;max-width:46ch">${e.protected
        ?'Re-running replays the recorded pipeline run (0.9s, 0 AI calls).'
        :'This static mock stages the run; actual computation happens in the local app.'}</p></div>`;
    $('gores')&&($('gores').onclick=()=>{S.tab='results';save();render();});
-   $('go').onclick=()=>{
-     const log=$('rlog');log.style.display='block';$('go').disabled=true;
+   document.querySelectorAll('.mode').forEach(btn=>btn.onclick=()=>{
+     const m=btn.dataset.m;
+     const steps=[...STAGES,...(m==='afterburner'?['audit every extraction (frontier model)']:[])];
+     const log=$('rlog');log.innerHTML=steps.map(x=>'<div class="pend">'+x+'</div>').join('');
+     log.style.display='block';
+     document.querySelectorAll('.mode').forEach(b=>b.disabled=true);
      const rows=[...log.children];let i=0;
-     const tick=()=>{if(i<rows.length){rows[i].className='done';i++;setTimeout(tick,210)}
-       else{e.hasRun=true;e.dirty=false;e.lastRun=new Date().toISOString().slice(0,16).replace('T',' ');
+     const tick=()=>{if(i<rows.length){rows[i].className='done';i++;
+         setTimeout(tick,m==='afterburner'&&i>STAGES.length-1?420:210)}
+       else{e.hasRun=true;e.dirty=false;e.lastMode=m;
+         e.lastRun=new Date().toISOString().slice(0,16).replace('T',' ');
          save();S.tab='results';render();}};
      setTimeout(tick,250);
-   };
+   });
  }
 
  function renderResults(){

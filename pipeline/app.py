@@ -330,13 +330,15 @@ def workspace(ws_name):
       <div style="display:flex;flex-direction:column;gap:18px">
         <form class="card" method="post" action="/w/{ws.name}/run" style="display:flex;flex-direction:column;gap:10px">
           <h2 style="margin:0">Run the pipeline</h2>
-          <select name="ai">
-            <option value="auto" selected>AI: auto — deterministic first, per-field fallback</option>
-            <option value="off">AI: off — deterministic only, gaps reported</option>
-            <option value="max">AI: max — auto + audit of every extraction</option></select>
           {key_field}
-          <button class="primary">Run →</button>
-          <span class="hint">read native → extract → one schema → dedupe facilities → compare sources → arithmetic checks → conclusion</span>
+          <button class="primary" name="ai" value="auto" style="text-align:left">
+            <span style="font-size:15px">Glide run →</span><br>
+            <span style="font-weight:400;font-size:11.5px;opacity:.85">deterministic core; AI only where patterns fail · seconds, ~€0</span></button>
+          <button name="ai" value="max" style="text-align:left;border-color:var(--deep)">
+            <span style="font-size:15px;color:var(--acc)">Afterburner run ⚡</span><br>
+            <span style="font-weight:400;font-size:11.5px;color:var(--soft)">Glide + a frontier model audits every extracted value (needs a key)</span></button>
+          <span class="hint">read native → extract → one schema → dedupe → compare → checks → conclusion
+           · <button class="ghost" name="ai" value="off" style="font-size:11px;padding:0">or run with AI fully off</button></span>
         </form>
         <div class="card"><h2>Runs</h2>{runrows}</div>
       </div>
