@@ -203,7 +203,8 @@ def landing(st) -> str:
  .seg button{{font:600 12px 'Instrument Sans';border:1px solid var(--line);background:transparent;
    color:var(--softblue);border-radius:99px;padding:7px 15px;cursor:pointer}}
  .seg button.on{{background:var(--softblue2);border-color:var(--deep);color:var(--ink)}}
- iframe{{width:100%;height:calc(100% - 52px);border:1px solid var(--line);border-radius:10px;background:#fff}}
+ iframe{{width:100%;height:calc(100% - 78px);border:1px solid var(--line);border-radius:10px;background:#fff}}
+ .recnote{{margin:0 0 10px;font:11.5px 'IBM Plex Mono',monospace;color:var(--soft);letter-spacing:.02em}}
  .facts{{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1px;background:var(--line);
    border:1px solid var(--line)}}
  .facts div{{background:var(--bg);padding:16px}}
@@ -395,7 +396,8 @@ def landing(st) -> str:
        else{{e.hasRun=true;e.dirty=false;e.lastMode=m;
          if(m==='afterburner')e.insights=analyze(e.files);
          e.lastRun=new Date().toISOString().slice(0,16).replace('T',' ');
-         save();S.res=m==='afterburner'?'insights':S.res;S.tab='results';render();}}}};
+         save();S.res=e.protected?'evidence':(m==='afterburner'?'insights':S.res);
+         S.tab='results';render();}}}};
      setTimeout(tick,250);
    }});
  }}
@@ -447,8 +449,11 @@ def landing(st) -> str:
      const src={{evidence:'report/',deck:'deck/',chat:'chat/'}}[seg];
      body=`<a class="openfull" href="${{src}}">open full ↗</a><iframe src="${{src}}" title="${{seg}}"></iframe>`;
    }}
+   const recnote=(seg!=='insights')?
+     '<p class="recnote">Recorded from the real pipeline run. File edits in this mock never regenerate these '
+     +'artifacts (Insights grades your current file base); regeneration is the local app\'s job.</p>':'';
    $('stage').innerHTML='<div class="seg">'+segs.map(x=>
-     `<button data-s="${{x[0]}}" class="${{seg===x[0]?'on':''}}">${{x[1]}}</button>`).join('')+'</div>'+body;
+     `<button data-s="${{x[0]}}" class="${{seg===x[0]?'on':''}}">${{x[1]}}</button>`).join('')+'</div>'+recnote+body;
    document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{{S.res=b.dataset.s;save();render();}});
  }}
 
