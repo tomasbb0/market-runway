@@ -223,6 +223,9 @@ def landing(st) -> str:
  .ichip.PARTIAL{{background:#3d2f16;color:#f2d9a7}}
  .ichip.INSUFFICIENT{{background:#3d1c16;color:#f2b3a7}}
  .ichip.PEND{{background:transparent;border:1px dashed var(--soft);color:var(--soft)}}
+ .ichip.AGREE{{background:var(--softblue2);color:var(--softblue)}}
+ .ichip.DISAGREE{{background:#3d1c16;color:#f2b3a7}}
+ .ichip.SKIPPED{{background:transparent;border:1px dashed var(--soft);color:var(--soft)}}
  .mini h3{{font:600 13px 'Instrument Sans';margin:20px 0 10px;letter-spacing:.01em}}
  .mini h3:first-child{{margin-top:0}}
  .steps{{display:grid;gap:12px}}
@@ -277,7 +280,19 @@ def landing(st) -> str:
  const SEED={seed};
  const STAGES={stages_js};
  const FILESTORE={{}};   // exercise id -> {{filename: Uint8Array}} (session only)
- const RUNS={{}};        // exercise id -> real browser-engine result (session only)
+ const RUNS={{}};        // exercise id -> real browser-engine result
+ const IDB={{db:null,
+  open(){{return new Promise(res=>{{const q=indexedDB.open('runway',1);
+    q.onupgradeneeded=()=>{{q.result.createObjectStore('files');q.result.createObjectStore('runs')}};
+    q.onsuccess=()=>{{IDB.db=q.result;res()}};q.onerror=()=>res()}})}},
+  req(r){{return new Promise(res=>{{r.onsuccess=()=>res(r.result);r.onerror=()=>res(undefined)}})}},
+  put(st,k,v){{try{{IDB.db&&IDB.db.transaction(st,'readwrite').objectStore(st).put(v,k)}}catch(err){{}}}},
+  del(st,k){{try{{IDB.db&&IDB.db.transaction(st,'readwrite').objectStore(st).delete(k)}}catch(err){{}}}},
+  async all(st){{if(!IDB.db)return[];
+    const ks=await IDB.req(IDB.db.transaction(st).objectStore(st).getAllKeys());
+    const vs=await IDB.req(IDB.db.transaction(st).objectStore(st).getAll());
+    return (ks||[]).map((k,i)=>[k,(vs||[])[i]])}}
+ }};
  let S=JSON.parse(localStorage.getItem('runway-ex')||'null');
  if(!S){{S={{list:[SEED],sel:'eu4',tab:'files'}};save();}}
  if(!S.list.find(e=>e.id==='eu4')){{S.list.unshift(SEED);}}
@@ -296,7 +311,10 @@ def landing(st) -> str:
        S.sel=el.dataset.id;S.tab=cur().hasRun?'results':'files';save();render();}};
      el.querySelector('.del')?.addEventListener('click',()=>{{
        if(confirm('Delete this exercise and its file list?')){{
-         S.list=S.list.filter(x=>x.id!==el.dataset.id);
+         const id=el.dataset.id;
+         Object.keys(FILESTORE[id]||{{}}).forEach(n=>IDB.del('files',id+'|'+n));
+         delete FILESTORE[id];delete RUNS[id];IDB.del('runs',id);
+         S.list=S.list.filter(x=>x.id!==id);
          if(S.sel===el.dataset.id)S.sel=S.list[0]?.id;save();render();}}}});
      el.querySelector('.nm').ondblclick=()=>rename(el.dataset.id);
    }});
@@ -334,6 +352,8 @@ def landing(st) -> str:
    document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===S.tab));
    $('tabres').disabled=!e.hasRun;
    $('dirty').classList.toggle('show',!!e.dirty&&e.hasRun);
+   if(S.tab==='run'&&!e.protected&&window.Engine&&!Engine.isReady())
+     Engine.init(()=>{{}}).catch(()=>{{}});
    ({{files:renderFiles,run:renderRun,results:renderResults}})[S.tab]();
  }}
  document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{{
@@ -366,15 +386,78 @@ def landing(st) -> str:
    $('addf').onclick=()=>$('fpick').click();
    $('fpick').onchange=async()=>{{
      for(const f of [...$('fpick').files]){{
-       (FILESTORE[e.id]=FILESTORE[e.id]||{{}})[f.name]=new Uint8Array(await f.arrayBuffer());
+       const ua=new Uint8Array(await f.arrayBuffer());
+       (FILESTORE[e.id]=FILESTORE[e.id]||{{}})[f.name]=ua;
+       IDB.put('files',e.id+'|'+f.name,ua);
        if(!e.files.some(x=>x.name===f.name))
          e.files.push({{name:f.name,role:'unassigned',fmt:(f.name.split('.').pop()||'').toUpperCase()}});
      }}
      $('fpick').value='';e.dirty=true;save();render();}};
    document.querySelectorAll('.stage .del,.ftile .del,.frow .del').forEach(b=>b.onclick=()=>{{
+     const nm=(e.files[+b.dataset.i]||{{}}).name;
+     if(nm){{delete (FILESTORE[e.id]||{{}})[nm];IDB.del('files',e.id+'|'+nm);}}
      e.files.splice(+b.dataset.i,1);e.dirty=true;save();render();}});
  }}
 
+ async function providerCall(p,key,model,prompt){{
+   if(p==='anthropic'){{
+     const r=await fetch('https://api.anthropic.com/v1/messages',{{method:'POST',headers:{{
+       'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01',
+       'anthropic-dangerous-direct-browser-access':'true'}},
+       body:JSON.stringify({{model,max_tokens:700,messages:[{{role:'user',content:prompt}}]}})}});
+     const j=await r.json();if(j.error)throw j.error.message;return j.content[0].text;}}
+   if(p==='openai'){{
+     const r=await fetch('https://api.openai.com/v1/chat/completions',{{method:'POST',headers:{{
+       'content-type':'application/json','authorization':'Bearer '+key}},
+       body:JSON.stringify({{model,max_completion_tokens:700,messages:[{{role:'user',content:prompt}}]}})}});
+     const j=await r.json();if(j.error)throw j.error.message;return j.choices[0].message.content;}}
+   if(p==='google'){{
+     const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+key,
+       {{method:'POST',headers:{{'content-type':'application/json'}},
+        body:JSON.stringify({{contents:[{{role:'user',parts:[{{text:prompt}}]}}],
+          generationConfig:{{maxOutputTokens:700,temperature:0}}}})}});
+     const j=await r.json();if(j.error)throw j.error.message;return j.candidates[0].content.parts[0].text;}}
+   throw 'unknown provider';
+ }}
+ async function browserAudit(res,line){{
+   const key=getKey(),p=detectProvider(key);
+   const mdl=localStorage.getItem('mdl');
+   const model=PROVIDERS[p].models[mdl]?mdl:Object.keys(PROVIDERS[p].models)[0];
+   const bySrc={{}};
+   res.targets.forEach(t=>{{if(res.doc_texts[t.source])(bySrc[t.source]=bySrc[t.source]||[]).push(t)}});
+   const out=[];let a=0,d=0,sk=0;
+   for(const [src,items] of Object.entries(bySrc)){{
+     const prompt='Extract exactly these parameters from the document below. Reply with ONLY a JSON object '
+       +'mapping each parameter name to a number, or null if absent. Express percentages as fractions '
+       +'(43% means 0.43). Parameters: '+items.map(t=>t.param).join(', ')
+       +'.'+String.fromCharCode(10)+'DOCUMENT:'+String.fromCharCode(10)+res.doc_texts[src];
+     try{{
+       const raw=await providerCall(p,key,model,prompt);
+       const jm=raw.match(/{{[^]*}}/);const got=JSON.parse(jm?jm[0]:raw);
+       items.forEach(t=>{{
+         let g=got[t.param];
+         if(typeof g!=='number'){{out.push({{...t,model:null,verdict:'SKIPPED'}});sk++;return}}
+         if(t.value<=1&&g>1)g=g/100;
+         const ok=Math.abs(g-t.value)<=Math.max(Math.abs(t.value)*.01,1e-9);
+         out.push({{...t,model:g,verdict:ok?'AGREE':'DISAGREE'}});ok?a++:d++;}});
+       line('audit '+src+': '+items.length+' value(s) checked');
+     }}catch(err){{items.forEach(t=>{{out.push({{...t,model:null,verdict:'SKIPPED'}});sk++}});
+       line('audit '+src+' failed: '+String(err).slice(0,120));}}
+   }}
+   line('model audit: '+a+' agree · '+d+' disagree · '+sk+' skipped');
+   return{{list:out,agree:a,dis:d,skipped:sk,model:PROVIDERS[p].label+' · '+PROVIDERS[p].models[model]}};
+ }}
+ function auditHTML(au){{
+   const cls=au.dis?'PARTIAL':'SUFFICIENT';
+   const rows=au.list.map(t=>'<tr><td>'+esc(t.scope)+' · '+esc(t.param)+'</td><td>'+t.value
+     +'</td><td>'+(t.model===null?'—':t.model)+'</td><td><span class="ichip '+t.verdict+'">'+t.verdict
+     +'</span></td></tr>').join('');
+   return '<div class="iband '+cls+'" style="margin-top:16px"><b>Model audit: '+au.agree+' agree · '
+     +au.dis+' disagree'+(au.skipped?' · '+au.skipped+' skipped':'')+'</b><span>'+esc(au.model)
+     +', called from this browser with your key</span></div>'
+     +'<table class="itable"><thead><tr><th>Field</th><th>Engine</th><th>Model</th><th>Verdict</th></tr></thead><tbody>'
+     +rows+'</tbody></table>';
+ }}
  async function realRun(e,m){{
    const log=$('rlog');log.style.display='block';
    const line=t=>{{const d=document.createElement('div');d.className='done';d.textContent=t;
@@ -394,7 +477,12 @@ def landing(st) -> str:
    try{{
      const files=e.files.map(f=>({{name:f.name,bytes:store[f.name]}}));
      const res=await Engine.run(e.id,files,line);
-     RUNS[e.id]=res;
+     if(m==='afterburner'){{
+       if(!getKey())line('audit skipped: add an API key in Settings to enable the model audit');
+       else try{{res.audit=await browserAudit(res,line);}}
+       catch(err){{line('audit failed: '+String(err).slice(0,200));}}
+     }}
+     RUNS[e.id]=res;IDB.put('runs',e.id,res);
      e.hasRun=true;e.dirty=false;e.lastMode=m;e.realAt=Date.now();
      e.analysis=analyze(e.files);
      if(m==='afterburner')e.insights=e.analysis;
@@ -415,14 +503,14 @@ def landing(st) -> str:
       <button class="mode" data-m="glide"><b>${{rerun}}: Glide</b>
        <span>deterministic core; AI only where patterns fail · seconds, ~€0</span></button>
       <button class="mode after" data-m="afterburner"><b>${{rerun}}: Afterburner</b>
-       <span>Glide, then a frontier model audits every value and grades whether the documents
-       are sufficient · needs an API key (Settings, bottom-left)</span></button>
+       <span>Glide, then a frontier model re-checks every extracted value in this browser and
+       grades document sufficiency · key via Settings, bottom-left</span></button>
      </div>
      ${{e.hasRun?'<button class="runbtn ghost" id="gores">View last results</button>':''}}
      <div class="runlog" id="rlog"></div>
      <p style="color:var(--soft);font-size:12px;max-width:46ch">${{e.protected
        ?'Re-running replays the recorded pipeline run (0.9s, 0 AI calls).'
-       :'This static mock stages the run; actual computation happens in the local app.'}}</p></div>`;
+       :'Runs execute in your browser; files and results persist on this device.'}}</p></div>`;
    $('gores')&&($('gores').onclick=()=>{{S.tab='results';save();render();}});
    document.querySelectorAll('.mode').forEach(btn=>btn.onclick=async()=>{{
      const m=btn.dataset.m;
@@ -529,13 +617,13 @@ def landing(st) -> str:
        +esc(R.facts["Recommendation"])+'</b><span>'+esc(R.facts["Ranking"])+'</span></div>':'')+miniDeck(A);
      else if(seg==='dataset')body=R?'<div class="facts">'+Object.entries(R.facts).map(([k,v])=>
        `<div><span>${{esc(k)}}</span><b>${{esc(String(v))}}</b></div>`).join('')+'</div>':miniDataset(e,A);
-     else if(seg==='insights')body=insightsHTML(A);
+     else if(seg==='insights')body=insightsHTML(A)+(R&&R.audit?auditHTML(R.audit):'');
      else body=`<div class="emptyres" style="height:auto;padding:40px 0"><b>ASK THE DATA</b>
        <p>The grounded chat answers only from a computed dataset. This exercise does not have one yet —
        run it in the local app, then chat against that run.</p>
        <p><a class="openfull" style="float:none" href="chat/">see it working on the EU4 case</a></p></div>`;
      const note=R?'Computed by the pipeline in your browser this session; nothing left your machine.'
-       :(e.realAt?'Browser results expired with the session. Re-run to regenerate; structural view below.'
+       :(e.realAt?'Results are not on this device. Re-run to regenerate; structural view below.'
          :'Structure view, computed in the browser from your files. Full numbers: press Run.');
      $('stage').innerHTML='<div class="seg">'+segs.map(x=>
        `<button data-s="${{x[0]}}" class="${{seg===x[0]?'on':''}}">${{x[1]}}</button>`).join('')+'</div>'
@@ -633,6 +721,11 @@ def landing(st) -> str:
      extras:[seen.competitor&&'competitor brief',seen.funding&&'funding call',seen.master&&'master registry'].filter(Boolean)}};
  }}
  render();
+ (async()=>{{await IDB.open();
+   for(const [k,v] of await IDB.all('files')){{const i=k.indexOf('|');
+     (FILESTORE[k.slice(0,i)]=FILESTORE[k.slice(0,i)]||{{}})[k.slice(i+1)]=new Uint8Array(v);}}
+   for(const [k,v] of await IDB.all('runs'))RUNS[k]=v;
+   render();}})();
 </script>
 </body></html>"""
 
@@ -1185,7 +1278,11 @@ window.Engine = (() => {
       'sys.path.insert(0, "/app")\n' +
       'import web_run\n' +
       'r = web_run.run(' + JSON.stringify(ws) + ')\n' +
+      'targets = [{"scope": sc, "param": p, "value": e["value"], "source": e["source"]}\\n' +
+      '  for sc, d in r["state"]["dataset"].items() for p, e in d.items()\\n' +
+      '  if e["method"] == "DET" and isinstance(e["value"], (int, float))]\\n' +
       'json.dumps({"summary": r["summary"], "report": r["report"], ' +
+      '"targets": targets, "doc_texts": r["doc_texts"], ' +
       '"facts": {"Recommendation": r["summary"]["recommendation"] or "none", ' +
       '"Ranking": " > ".join(r["summary"]["ranking"]) or "-", ' +
       '"Deterministic fields": r["summary"]["det"], ' +

@@ -81,7 +81,9 @@ def run(ws_name: str, ai: str = "off") -> dict:
     state_path.write_text(json.dumps(state, default=str))
     build_report(str(state_path))
     report_html = (out / "report.html").read_text()
-    return {"state": state, "report": report_html,
+    doc_texts = {k: (d.text or "")[:9000] for k, d in docs.items()
+                 if d.status == "parsed" and d.text}
+    return {"state": state, "report": report_html, "doc_texts": doc_texts,
             "summary": {"recommendation": conclusion["recommendation"],
                         "ranking": conclusion["ranking"],
                         "unresolved": len(unresolved), "det": det,

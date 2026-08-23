@@ -38,7 +38,11 @@ window.Engine = (() => {
       'sys.path.insert(0, "/app")\n' +
       'import web_run\n' +
       'r = web_run.run(' + JSON.stringify(ws) + ')\n' +
+      'targets = [{"scope": sc, "param": p, "value": e["value"], "source": e["source"]}\\n' +
+      '  for sc, d in r["state"]["dataset"].items() for p, e in d.items()\\n' +
+      '  if e["method"] == "DET" and isinstance(e["value"], (int, float))]\\n' +
       'json.dumps({"summary": r["summary"], "report": r["report"], ' +
+      '"targets": targets, "doc_texts": r["doc_texts"], ' +
       '"facts": {"Recommendation": r["summary"]["recommendation"] or "none", ' +
       '"Ranking": " > ".join(r["summary"]["ranking"]) or "-", ' +
       '"Deterministic fields": r["summary"]["det"], ' +
