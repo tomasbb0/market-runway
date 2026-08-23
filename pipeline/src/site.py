@@ -366,7 +366,7 @@ def landing(st) -> str:
      <div class="eyebrow"><span class="tag"></span>${{e.hasRun
        ?'LAST RUN · '+(e.lastRun||'recorded')+(e.lastMode?' · '+e.lastMode.toUpperCase():''):'NEVER RUN'}}</div>
      <div class="modes">
-      <button class="mode" data-m="glide"><b>${{rerun}}: Glide →</b>
+      <button class="mode" data-m="glide"><b>${{rerun}}: Glide</b>
        <span>deterministic core; AI only where patterns fail · seconds, ~€0</span></button>
       <button class="mode after" data-m="afterburner"><b>${{rerun}}: Afterburner</b>
        <span>Glide, then a frontier model audits every value and grades whether the documents

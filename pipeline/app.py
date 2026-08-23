@@ -332,7 +332,7 @@ def workspace(ws_name):
           <h2 style="margin:0">Run the pipeline</h2>
           {key_field}
           <button class="primary" name="ai" value="auto" style="text-align:left">
-            <span style="font-size:15px">Glide run →</span><br>
+            <span style="font-size:15px">Glide run</span><br>
             <span style="font-weight:400;font-size:11.5px;opacity:.85">deterministic core; AI only where patterns fail · seconds, ~€0</span></button>
           <button name="ai" value="max" style="text-align:left;border-color:var(--deep)">
             <span style="font-size:15px;color:var(--acc)">Afterburner run</span><br>
