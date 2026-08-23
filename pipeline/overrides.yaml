@@ -1,0 +1,14 @@
+# Manual overrides - the human-in-the-loop layer.
+# The pipeline applies these AFTER extraction and validation, logs each one,
+# badges the value as MANUAL in the dashboard and the Excel sources tab, and
+# they survive every re-run. Never hand-edit data/out/ files (regenerated).
+#
+# Format:
+# - field: <market>.<parameter>      e.g. Germany.fit_positivity
+#   value: <new value>
+#   reason: "<why - required>"
+#   author: <who>
+#
+# No overrides are active for this run: the pack is treated as the closed
+# source of truth.
+overrides: []

@@ -1,0 +1,171 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Helix Optics — Market-Entry Pipeline Report</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Noto+Serif:ital,wght@0,600;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+ :root{--bg:#f9f7f5;--sf:#FFFFFF;--ink:#1d2939;--soft:#667085;--line:#e6e1da;
+   --acc:#374b60;--acc2:#1d2939;--accsoft:#e6eef3;--hot:#ff4200;--warn:#ad836c;--warnsoft:#f6ead9;
+   --fail:#c12d00;--failsoft:#f8e3dc;--ok:#374b60}
+ *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);
+   font:15px/1.5 'Instrument Sans',system-ui,sans-serif;padding:34px 22px 70px}
+ .wrap{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:26px}
+ h1,h2{font-family:'Instrument Sans',system-ui;font-weight:650;letter-spacing:-.01em;margin:0}
+ h1{font-size:27px} h2{font-size:17px;margin-bottom:10px}
+ .mono{font-family:'IBM Plex Mono',monospace;font-size:12px}
+ .soft{color:var(--soft)}
+ .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--hot)}
+ .runbar{display:flex;gap:14px;flex-wrap:wrap;align-items:center;background:var(--sf);border:1px solid var(--line);
+   border-radius:10px;padding:10px 16px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--soft)}
+ .verdict{background:var(--accsoft);border:1px solid var(--line);border-left:4px solid var(--hot);
+   border-radius:10px;padding:16px 20px;font-size:16.5px}
+ section{background:var(--sf);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+ table{border-collapse:collapse;width:100%;font-size:13.5px}
+ .tablewrap{overflow-x:auto}
+ th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+ thead th{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--soft)}
+ tbody tr:last-child td{border-bottom:none}
+ td{font-variant-numeric:tabular-nums}
+ .badge{font-family:'IBM Plex Mono',monospace;font-size:10px;border-radius:99px;padding:1px 7px;vertical-align:1px}
+ .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:8px}
+ .fcard{display:flex;gap:10px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;align-items:center}
+ .fstat{width:26px;height:26px;border-radius:7px;display:grid;place-content:center;font-weight:700;flex:none}
+ .fstat.ok{background:var(--accsoft);color:var(--acc2)} .fstat.warn{background:var(--warnsoft);color:var(--warn)}
+ .fstat.fail{background:var(--failsoft);color:var(--fail)}
+ .fname{font-size:13px;font-weight:600} .fmeta{font-size:11.5px;color:var(--soft);font-family:'IBM Plex Mono',monospace}
+ .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:12px}
+ .tile{border:1px solid var(--line);border-radius:9px;padding:10px 12px}
+ .tile b{display:block;font-size:20px;font-weight:650} .tile span{font-size:12px;color:var(--soft)}
+ .finding{border:1px solid var(--line);border-radius:9px;padding:10px 14px;margin-bottom:8px}
+ .finding.fail{background:var(--failsoft);border-color:#E4B8B8}
+ .finding.warn{background:var(--warnsoft)}
+ .fpill{font-family:'IBM Plex Mono',monospace;font-size:10.5px;border-radius:99px;padding:1px 8px;margin-right:8px;background:var(--line)}
+ .fail .fpill{background:var(--fail);color:#fff} .warn .fpill{background:var(--warn);color:#fff}
+ .ok .fpill{background:var(--acc);color:#fff} .info .fpill{background:var(--soft);color:#fff}
+ .fdetail{font-size:13.5px;margin-top:4px} .fnote{font-size:12.5px;color:var(--soft);font-style:italic;margin-top:3px}
+ tr.ok td:nth-child(3){color:var(--ok);font-weight:600} tr.fail td:nth-child(3){color:var(--fail);font-weight:700}
+ td.src{font-size:12.5px;color:var(--soft)}
+ .gap{border:1px solid var(--line);border-radius:9px;padding:12px 14px;margin-bottom:8px}
+ .gaphead{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+ .research{margin-left:auto;border:1px solid var(--line);background:var(--bg);color:var(--soft);
+   border-radius:99px;padding:3px 12px;font:12px 'IBM Plex Mono',monospace}
+ .gapwhy{font-size:13.5px;margin-top:5px} .gap i{color:var(--soft)}
+ details{margin-top:6px;font-size:13px} summary{cursor:pointer;color:var(--acc2)}
+ tr.winner td{background:var(--accsoft)}
+ .pill{font-family:'IBM Plex Mono',monospace;font-size:10.5px;border-radius:99px;padding:1px 8px}
+ .pill.ok{background:var(--accsoft);color:var(--acc2)} .pill.fail{background:var(--failsoft);color:var(--fail)}
+ td.pos{color:var(--ok);font-weight:600} td.neg{color:var(--fail)}
+ .tick{font:10.5px 'IBM Plex Mono',monospace;fill:var(--soft)} .lbl{font:11.5px 'IBM Plex Mono',monospace}
+ .rule{background:var(--bg);border-radius:8px;padding:10px 14px;font-size:13px;margin-top:10px}
+ footer{text-align:center;font:11.5px 'IBM Plex Mono',monospace;color:var(--soft)}
+ @media print{body{background:#fff;padding:0} section{break-inside:avoid}}
+</style></head><body><div class="wrap">
+
+<header>
+  <div class="eyebrow">Helix Optics · market-entry assessment · pipeline run report</div>
+  <h1>Four markets in, one recommendation out</h1>
+</header>
+
+<div class="runbar"><span>run 23 Aug 2026 15:28 UTC</span><span>ai mode: auto</span>
+  <span>llm calls: 0 · cost €0.00</span>
+  <span>runtime 0.9s</span><span>eval 28/28</span>
+  <span>extraction: 74 det / 0 ai / 0 manual / 0 unresolved</span></div>
+
+<div class="verdict"><b>Recommendation: enter the Netherlands first.</b> Break-even in Year 3,
+ cash trough €1.30M, five-year end cash €9.63M. The only market of the four that
+ does not exhaust the €4.0M runway. Each 100 patients triaged saves the Dutch system €7,750.</div>
+
+<section><h2>1 · Ingestion — every file, its fate</h2><div class="grid"><div class="fcard"><div class="fstat ok">✓</div>
+          <div><div class="fname">1_Company_Briefing.pdf</div>
+          <div class="fmeta">PDF · 174ms · sha 68aeddf8</div></div></div><div class="fcard"><div class="fstat ok">✓</div>
+          <div><div class="fname">2_Market_Landscape.pdf</div>
+          <div class="fmeta">PDF · 295ms · sha 3458005e</div></div></div><div class="fcard"><div class="fstat ok">✓</div>
+          <div><div class="fname">4_Funding_Call.pdf</div>
+          <div class="fmeta">PDF · 54ms · sha c93d4464</div></div></div><div class="fcard"><div class="fstat ok">✓</div>
+          <div><div class="fname">6_Competitor_Brief_OncoStream.pdf</div>
+          <div class="fmeta">PDF · 53ms · sha acb9e7b1</div></div></div><div class="fcard"><div class="fstat ok">✓</div>
+          <div><div class="fname">3a_Facilities_Portugal.csv</div>
+          <div class="fmeta">CSV · 0ms · sha d4344ba8</div></div></div><div class="fcard"><div class="fstat ok">✓</div>
+          <div><div class="fname">5a_Screening_Report_Portugal.pdf</div>
+          <div class="fmeta">PDF · 57ms · sha 55f5291e</div></div></div><div class="fcard"><div class="fstat ok">✓</div>
+          <div><div class="fname">3b_Facilities_Germany.xlsx</div>
+          <div class="fmeta">XLSX · 53ms · sha fdf06f71</div></div></div><div class="fcard"><div class="fstat ok">✓</div>
+          <div><div class="fname">5b_Screening_Report_Germany.pdf</div>
+          <div class="fmeta">PDF · 47ms · sha 3079b24e</div></div></div><div class="fcard"><div class="fstat ok">✓</div>
+          <div><div class="fname">3c_Facilities_Netherlands.html</div>
+          <div class="fmeta">HTML · 46ms · sha 8917d4ac</div></div></div><div class="fcard"><div class="fstat ok">✓</div>
+          <div><div class="fname">5c_Screening_Report_Netherlands.html</div>
+          <div class="fmeta">HTML · 14ms · sha fde335a6</div></div></div><div class="fcard"><div class="fstat ok">✓</div>
+          <div><div class="fname">3d_Facilities_Poland.csv</div>
+          <div class="fmeta">CSV · 0ms · sha 48ced7ba</div></div></div><div class="fcard"><div class="fstat ok">✓</div>
+          <div><div class="fname">5d_Screening_Report_Poland.xlsx</div>
+          <div class="fmeta">XLSX · 3ms · sha 38e4fa80</div></div></div><div class="fcard"><div class="fstat ok">✓</div>
+          <div><div class="fname">3e_Master_Registry.csv</div>
+          <div class="fmeta">CSV · 0ms · sha 3ade7285</div></div></div></div></section>
+
+<section><h2>2–3 · Canonical dataset (method-badged)</h2>
+ <div class="tablewrap"><table><thead><tr><th>Parameter</th><th>Portugal</th><th>Germany</th><th>Netherlands</th><th>Poland</th></tr></thead>
+ <tbody><tr><th>Eligible population 50–74</th><td>3,050,000 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>26,400,000 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>4,950,000 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>11,200,000 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td></tr><tr><th>Participation</th><td>43.0% <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>22.0% <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>71.0% <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>17.0% <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td></tr><tr><th>FIT positivity</th><td>6.2% <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>6.0% <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>9.1% <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>6.5% <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td></tr><tr><th>Annual screened</th><td>655,750 <span class="badge" style="background:#6670851A;color:#667085">DERIVED</span></td><td>2,904,000 <span class="badge" style="background:#6670851A;color:#667085">DERIVED</span></td><td>1,757,250 <span class="badge" style="background:#6670851A;color:#667085">DERIVED</span></td><td>952,000 <span class="badge" style="background:#6670851A;color:#667085">DERIVED</span></td></tr><tr><th>Addressable FIT+ / yr</th><td>40,656 <span class="badge" style="background:#6670851A;color:#667085">DERIVED</span></td><td>174,240 <span class="badge" style="background:#6670851A;color:#667085">DERIVED</span></td><td>159,910 <span class="badge" style="background:#6670851A;color:#667085">DERIVED</span></td><td>61,880 <span class="badge" style="background:#6670851A;color:#667085">DERIVED</span></td></tr><tr><th>Price per test</th><td>€155 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>€235 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>€215 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>€115 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td></tr><tr><th>Months to reimbursement</th><td>12 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>24 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>12 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>12 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td></tr><tr><th>Colonoscopy tariff</th><td>€400 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>€700 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>€650 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>€300 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td></tr><tr><th>One-time entry cost</th><td>€120,000 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>€450,000 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>€200,000 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>€150,000 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td></tr><tr><th>In-market cost / yr</th><td>€250,000 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>€600,000 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>€350,000 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td><td>€300,000 <span class="badge" style="background:#374b601A;color:#374b60">DET</span></td></tr></tbody></table></div>
+ <div class="rule">Precedence: national screening report → landscape table → other. Full provenance per value in
+ <span class="mono">markets.csv</span>; manual corrections belong in <span class="mono">overrides.yaml</span>, never in outputs.</div></section>
+
+<section><h2>4 · Facilities — one row per real unit</h2>
+ <div class="tiles">
+  <div class="tile"><b>3,236</b><span>raw register records</span></div>
+  <div class="tile"><b>228</b><span>real facilities</span></div>
+  <div class="tile"><b>126</b><span>monthly rows ×12</span></div>
+  <div class="tile"><b>6</b><span>corrupted rows handled</span></div>
+  <div class="tile"><b>208</b><span>type conflicts (majority vote)</span></div>
+  <div class="tile"><b>226</b><span>capacity conflicts (median + range)</span></div>
+ </div>
+ <div class="tablewrap"><table><thead><tr><th>UID</th><th>Facility</th><th>Country</th><th>Type (votes)</th><th>Capacity/yr [range]</th><th># records</th></tr></thead>
+ <tbody><tr><td class="mono">HLX-GE-001</td><td>Charite Universitaetsmedizin · Unit 1</td><td>Germany</td><td>Endoscopy <span class="mono soft">(Endoscopy:13/Pathology:4)</span></td><td>3800 <span class="mono soft">[1500–5200]</span></td><td>17</td></tr><tr><td class="mono">HLX-GE-002</td><td>Charite Universitaetsmedizin · Unit 2</td><td>Germany</td><td>Endoscopy <span class="mono soft">(Endoscopy:18/Pathology:4)</span></td><td>2900 <span class="mono soft">[850–4100]</span></td><td>22</td></tr><tr><td class="mono">HLX-GE-003</td><td>Charite Universitaetsmedizin · Unit 3</td><td>Germany</td><td>Endoscopy <span class="mono soft">(Endoscopy:28/Pathology:9)</span></td><td>2900 <span class="mono soft">[850–5200]</span></td><td>37</td></tr><tr><td class="mono">HLX-GE-004</td><td>Charite Universitaetsmedizin · Unit 4</td><td>Germany</td><td>Endoscopy <span class="mono soft">(Endoscopy:18/Pathology:5)</span></td><td>3500 <span class="mono soft">[850–5200]</span></td><td>23</td></tr><tr><td class="mono">HLX-GE-005</td><td>Charite Universitaetsmedizin · Unit 5</td><td>Germany</td><td>Endoscopy <span class="mono soft">(Endoscopy:10/Pathology:3)</span></td><td>2900 <span class="mono soft">[850–4100]</span></td><td>13</td></tr><tr><td class="mono">HLX-GE-006</td><td>Charite Universitaetsmedizin · Unit 6</td><td>Germany</td><td>Endoscopy <span class="mono soft">(Endoscopy:18/Pathology:2)</span></td><td>3204 <span class="mono soft">[852–5200]</span></td><td>20</td></tr></tbody></table></div>
+ <div class="rule"><b>The rule:</b> repair unambiguous column-shifts, else exclude (6 handled) → normalise
+ (diacritics; Germany's 126 monthly capacities ×12; ENDO/PATH/'Endoscopy Unit' → one label) →
+ entity = (country, canonical institution, unit nº); register ids are untrusted → master-registry names mapped via a
+ curated, fuzzy-seeded alias table; national register is authoritative → type by majority vote, capacity as
+ median of non-null values with min–max spread reported. Disagreements are surfaced, never silently resolved.</div></section>
+
+<section><h2>5 · Source agreement</h2>
+ <div class="tablewrap"><table><thead><tr><th>Scope</th><th>Parameter</th><th>Verdict</th><th>Sources</th></tr></thead>
+ <tbody><tr class="ok"><td>Germany</td><td>colonoscopy_tariff</td><td>AGREE</td><td class="src"><b>screening_report</b>: 700 · <b>market_landscape</b>: 700</td></tr><tr class="ok"><td>Germany</td><td>eligible_population</td><td>AGREE</td><td class="src"><b>screening_report</b>: 26400000 · <b>market_landscape</b>: 26400000</td></tr><tr class="ok"><td>Germany</td><td>fit_positivity</td><td>AGREE</td><td class="src"><b>screening_report</b>: 0.06 · <b>market_landscape</b>: 0.06</td></tr><tr class="ok"><td>Germany</td><td>participation</td><td>AGREE</td><td class="src"><b>screening_report</b>: 0.22 · <b>market_landscape</b>: 0.22</td></tr><tr class="ok"><td>Germany</td><td>price_per_test</td><td>AGREE</td><td class="src"><b>screening_report</b>: 235 · <b>market_landscape</b>: 235</td></tr><tr class="ok"><td>Germany</td><td>time_to_reimbursement_months</td><td>AGREE</td><td class="src"><b>screening_report</b>: 24 · <b>market_landscape</b>: 24</td></tr><tr class="ok"><td>Netherlands</td><td>colonoscopy_tariff</td><td>AGREE</td><td class="src"><b>screening_report</b>: 650 · <b>market_landscape</b>: 650</td></tr><tr class="ok"><td>Netherlands</td><td>eligible_population</td><td>AGREE</td><td class="src"><b>screening_report</b>: 4950000 · <b>market_landscape</b>: 4950000</td></tr><tr class="ok"><td>Netherlands</td><td>fit_positivity</td><td>AGREE</td><td class="src"><b>screening_report</b>: 0.091 · <b>market_landscape</b>: 0.091</td></tr><tr class="ok"><td>Netherlands</td><td>participation</td><td>AGREE</td><td class="src"><b>screening_report</b>: 0.71 · <b>market_landscape</b>: 0.71</td></tr><tr class="ok"><td>Netherlands</td><td>price_per_test</td><td>AGREE</td><td class="src"><b>screening_report</b>: 215 · <b>market_landscape</b>: 215</td></tr><tr class="ok"><td>Netherlands</td><td>time_to_reimbursement_months</td><td>AGREE</td><td class="src"><b>screening_report</b>: 12 · <b>market_landscape</b>: 12</td></tr><tr class="ok"><td>Poland</td><td>colonoscopy_tariff</td><td>AGREE</td><td class="src"><b>screening_report</b>: 300 · <b>market_landscape</b>: 300</td></tr><tr class="ok"><td>Poland</td><td>eligible_population</td><td>AGREE</td><td class="src"><b>screening_report</b>: 11200000 · <b>market_landscape</b>: 11200000</td></tr><tr class="ok"><td>Poland</td><td>fit_positivity</td><td>AGREE</td><td class="src"><b>screening_report</b>: 0.065 · <b>market_landscape</b>: 0.065</td></tr><tr class="ok"><td>Poland</td><td>participation</td><td>AGREE</td><td class="src"><b>screening_report</b>: 0.17 · <b>market_landscape</b>: 0.17</td></tr><tr class="ok"><td>Poland</td><td>price_per_test</td><td>AGREE</td><td class="src"><b>screening_report</b>: 115 · <b>market_landscape</b>: 115</td></tr><tr class="ok"><td>Poland</td><td>time_to_reimbursement_months</td><td>AGREE</td><td class="src"><b>screening_report</b>: 12 · <b>market_landscape</b>: 12</td></tr><tr class="ok"><td>Portugal</td><td>colonoscopy_tariff</td><td>AGREE</td><td class="src"><b>screening_report</b>: 400 · <b>market_landscape</b>: 400</td></tr><tr class="ok"><td>Portugal</td><td>eligible_population</td><td>AGREE</td><td class="src"><b>screening_report</b>: 3050000 · <b>market_landscape</b>: 3050000</td></tr><tr class="ok"><td>Portugal</td><td>fit_positivity</td><td>AGREE</td><td class="src"><b>screening_report</b>: 0.062 · <b>market_landscape</b>: 0.062</td></tr><tr class="ok"><td>Portugal</td><td>participation</td><td>AGREE</td><td class="src"><b>screening_report</b>: 0.43 · <b>market_landscape</b>: 0.43</td></tr><tr class="ok"><td>Portugal</td><td>price_per_test</td><td>AGREE</td><td class="src"><b>screening_report</b>: 155 · <b>market_landscape</b>: 155</td></tr><tr class="ok"><td>Portugal</td><td>time_to_reimbursement_months</td><td>AGREE</td><td class="src"><b>screening_report</b>: 12 · <b>market_landscape</b>: 12</td></tr></tbody></table></div></section>
+
+<section><h2>6 · Validation findings</h2><div class="finding ok"><div class="fhead"><span class="fpill">PASS</span><b>CHK-01</b> Landscape vs national report agreement</div><div class="fdetail">24 multi-source parameters compared; 0 disagreement(s)</div></div><div class="finding fail"><div class="fhead"><span class="fpill">FAIL</span><b>CHK-02</b> Competitor volume vs addressable market</div><div class="fdetail">OncoStream claims 300,000 tests/yr but Germany&#x27;s entire organised addressable volume is 174,240/yr (1.7x the whole market). Company-reported figure REJECTED for modelling; the independent 35-40% share estimate (~61-70k tests/yr) is retained instead.</div><div class="fnote">A vendor cannot process more triage tests than the entire organised addressable volume. Company-reported figures must be checked against primary screening statistics.</div></div><div class="finding warn"><div class="fhead"><span class="fpill">WARN</span><b>CHK-03</b> Competitor claim vs its own analyst share estimate</div><div class="fdetail">fails for Germany</div><div class="fnote">The 300k claim should also be consistent with the 35-40% independent share estimate quoted in the same brief.</div></div><div class="finding ok"><div class="fhead"><span class="fpill">PASS</span><b>CHK-04</b> Rates are valid fractions</div><div class="fdetail">0 out-of-range value(s)</div></div><div class="finding ok"><div class="fhead"><span class="fpill">PASS</span><b>CHK-05</b> Deferral rate consistent with sensitivity/specificity</div><div class="fdetail">holds for company</div></div><div class="finding ok"><div class="fhead"><span class="fpill">PASS</span><b>CHK-06</b> Facility capacity plausibility</div><div class="fdetail">126 monthly rows annualised x12; 0 endoscopy unit(s) without resolvable capacity</div></div><div class="finding ok"><div class="fhead"><span class="fpill">PASS</span><b>CHK-07</b> Screened volume arithmetic</div><div class="fdetail">holds for Portugal, Germany, Netherlands, Poland</div></div><div class="finding info"><div class="fhead"><span class="fpill">INFO</span><b>CHK-08</b> Colonoscopy demand vs national endoscopy capacity</div><div class="fdetail">Portugal: 40,656 referrals vs 165,425 register capacity (25% utilisation) | Germany: 174,240 referrals vs 156,433 register capacity (111% utilisation) | Netherlands: 159,910 referrals vs 155,800 register capacity (103% utilisation) | Poland: 61,880 referrals vs 145,125 register capacity (43% utilisation)</div><div class="fnote">FIT-positive referrals compared with deduplicated national endoscopy capacity - a utilisation, not an error, check.</div></div></section>
+
+<section><h2>Evidence gaps — and the research workflow, deliberately off</h2><div class="gap"><div class="gaphead"><b>GAP-01</b> · Germany · opportunistic testing volume
+          <button class="research" disabled title="Disabled: this assessment treats the pack as a closed world. In production this launches the sourcing workflow, and found documents land in quarantine until a human approves them.">Research this ⏸</button></div>
+          <div class="gapwhy">Explicitly not centrally reported; excluded from the base case per the national report. <i>Upside only - could enlarge German addressable volume.</i></div>
+          <details><summary>Research plan (what the sourcing workflow would run)</summary><ul><li>Query: KBV/G-BA opportunistic FIT volume statistics</li><li>Source type: statutory insurance billing data (EBM codes)</li><li>Fills: Germany.opportunistic_volume (quarantined until human-approved)</li></ul></details></div><div class="gap"><div class="gaphead"><b>GAP-02</b> · all · competitor list price
+          <button class="research" disabled title="Disabled: this assessment treats the pack as a closed world. In production this launches the sourcing workflow, and found documents land in quarantine until a human approves them.">Research this ⏸</button></div>
+          <div class="gapwhy">Competitor brief says &#x27;broadly similar list price&#x27; - no number anywhere in the pack. <i>Pricing pressure scenario in NL/PT/PL cannot be quantified.</i></div>
+          <details><summary>Research plan (what the sourcing workflow would run)</summary><ul><li>Query: OncoStream tender records, national procurement portals</li><li>Source type: public tender award notices</li><li>Fills: competitor.list_price per market (quarantined until human-approved)</li></ul></details></div><div class="gap"><div class="gaphead"><b>GAP-03</b> · company · IVDR certification timeline
+          <button class="research" disabled title="Disabled: this assessment treats the pack as a closed world. In production this launches the sourcing workflow, and found documents land in quarantine until a human approves them.">Research this ⏸</button></div>
+          <div class="gapwhy">Single source (company briefing, &#x27;expected within about a year&#x27;); no corroboration. <i>A slip would not block CE-marked sales but matters for tenders.</i></div>
+          <details><summary>Research plan (what the sourcing workflow would run)</summary><ul><li>Query: notified-body queue times for IVDR class C assays</li><li>Source type: MedTech Europe / notified body reports</li><li>Fills: company.ivdr_expected_months (quarantined until human-approved)</li></ul></details></div><div class="gap"><div class="gaphead"><b>GAP-04</b> · all · penetration benchmark
+          <button class="research" disabled title="Disabled: this assessment treats the pack as a closed world. In production this launches the sourcing workflow, and found documents land in quarantine until a human approves them.">Research this ⏸</button></div>
+          <div class="gapwhy">Ramp rests on ONE comparable pilot (&#x27;one fifth of eligible volume within three years&#x27;). <i>The single most sensitive model input; the ±50% ramp scenario brackets it.</i></div>
+          <details><summary>Research plan (what the sourcing workflow would run)</summary><ul><li>Query: published uptake curves for triage assays post-reimbursement</li><li>Source type: peer-reviewed screening-programme evaluations</li><li>Fills: company.penetration_benchmark corroboration (quarantined until human-approved)</li></ul></details></div>
+ <div class="rule">The pack is treated as the <b>closed source of truth</b>: no external data was mixed in.
+ In production the Research action launches a sourcing workflow whose finds land in quarantine —
+ parsed and previewed, entering the dataset only after human approval (provenance <i>EXTERNAL/approved-by</i>).</div></section>
+
+<section><h2>7 · Conclusion — the five-year engine, all four markets</h2>
+ <svg viewBox="0 0 640 260" role="img" aria-label="Five-year cash position per market">
+      <line x1="42" y1="158.8" x2="626" y2="158.8" stroke="#c12d00" stroke-dasharray="5 4" stroke-width="1"/>
+      <text x="44" y="153.8" class="tick" fill="#c12d00">€0 — insolvency</text>
+      <polyline points="42.0,101.6 158.8,134.0 275.6,139.3 392.4,120.4 509.2,72.1 626.0,14.0" fill="none" stroke="#ff4200" stroke-width="2.5" /><circle cx="626.0" cy="14.0" r="3.5" fill="#ff4200"/><polyline points="42.0,105.4 158.8,141.5 275.6,177.6 392.4,179.9 509.2,152.1 626.0,88.2" fill="none" stroke="#661439" stroke-width="2.5" /><circle cx="626.0" cy="88.2" r="3.5" fill="#661439"/><polyline points="42.0,100.4 158.8,131.3 275.6,157.8 392.4,180.4 509.2,198.0 626.0,213.9" fill="none" stroke="#374b60" stroke-width="2.5" /><circle cx="626.0" cy="213.9" r="3.5" fill="#374b60"/><polyline points="42.0,100.9 158.8,132.5 275.6,160.1 392.4,183.9 509.2,203.0 626.0,220.0" fill="none" stroke="#ad836c" stroke-width="2.5" /><circle cx="626.0" cy="220.0" r="3.5" fill="#ad836c"/>
+      <text text-anchor="end" y="10" class="lbl"><tspan x="632" dy="15" fill="#ff4200">Netherlands +9.6M</tspan><tspan x="632" dy="15" fill="#661439">Germany +4.7M</tspan><tspan x="632" dy="15" fill="#374b60">Portugal -3.7M</tspan><tspan x="632" dy="15" fill="#ad836c">Poland -4.1M</tspan></text>
+      <text x="42.0" y="244" text-anchor="middle" class="tick">Y0</text><text x="158.8" y="244" text-anchor="middle" class="tick">Y1</text><text x="275.6" y="244" text-anchor="middle" class="tick">Y2</text><text x="392.4" y="244" text-anchor="middle" class="tick">Y3</text><text x="509.2" y="244" text-anchor="middle" class="tick">Y4</text><text x="626.0" y="244" text-anchor="middle" class="tick">Y5</text>
+    </svg>
+ <div class="tablewrap"><table><thead><tr><th>#</th><th>Market</th><th>Addressable FIT+/yr</th><th>Price</th>
+  <th>Break-even</th><th>Cash trough</th><th>End cash Y5</th><th></th></tr></thead><tbody><tr class="winner"><td>1</td><td><b>Netherlands</b></td><td>159,910</td><td>€215</td><td>Year 3</td><td>€1.30M</td><td>€9.63M</td><td><span class="pill ok">survives</span></td></tr><tr class=""><td>2</td><td><b>Germany</b></td><td>174,240</td><td>€235</td><td>Year 4</td><td>€-1.41M</td><td>€4.70M</td><td><span class="pill fail">insolvent</span></td></tr><tr class=""><td>3</td><td><b>Portugal</b></td><td>40,656</td><td>€155</td><td>—</td><td>€-3.67M</td><td>€-3.67M</td><td><span class="pill fail">insolvent</span></td></tr><tr class=""><td>4</td><td><b>Poland</b></td><td>61,880</td><td>€115</td><td>—</td><td>€-4.07M</td><td>€-4.07M</td><td><span class="pill fail">insolvent</span></td></tr></tbody></table></div>
+ <h2 style="margin-top:18px">Netherlands — year by year</h2>
+ <div class="tablewrap"><table><thead><tr><th>Year</th><th>Ramp</th><th>Tests</th><th>Revenue</th><th>COGS/test</th>
+  <th>Gross margin</th><th>EBITDA</th><th>Cash</th></tr></thead><tbody><tr><td>Y1</td><td>0%</td><td>0</td><td>€0</td><td>€58</td><td>€0</td><td class="neg">€-2,150,000</td><td>€1,650,000</td></tr><tr><td>Y2</td><td>7%</td><td>11,194</td><td>€2,406,646</td><td>€54</td><td>€1,796,589</td><td class="neg">€-353,411</td><td>€1,296,589</td></tr><tr><td>Y3</td><td>13%</td><td>20,788</td><td>€4,469,484</td><td>€51</td><td>€3,409,281</td><td class="pos">€1,259,281</td><td>€2,555,870</td></tr><tr><td>Y4</td><td>20%</td><td>31,982</td><td>€6,876,130</td><td>€48</td><td>€5,356,985</td><td class="pos">€3,206,985</td><td>€5,762,855</td></tr><tr><td>Y5</td><td>22%</td><td>35,180</td><td>€7,563,743</td><td>€44</td><td>€6,015,814</td><td class="pos">€3,865,814</td><td>€9,628,669</td></tr></tbody></table></div>
+ <div class="rule">Same engine as the Excel model (assumptions editable there); ramp anchored on the pack's benchmark
+ — a comparable assay reached ~20% of eligible FIT-positive volume within 3 years of reimbursement. Germany's
+ pre-reimbursement revenue is held at zero per its national report; its 24-month pathway consumes the runway before
+ first revenue — the largest market is unaffordable now, not unattractive forever.</div></section>
+
+<footer>generated by the pipeline · inputs 13 files sha-pinned · deterministic core, AI at the edges, evidence everywhere</footer>
+</div></body></html>

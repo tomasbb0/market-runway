@@ -1,0 +1,29 @@
+# Market pack configuration.
+# Adding a new market = add an entry here + drop its files in data/raw. No code changes.
+company_docs:
+  company_briefing: {file: 1_Company_Briefing.pdf, format: pdf}
+  market_landscape: {file: 2_Market_Landscape.pdf, format: pdf}
+  funding_call: {file: 4_Funding_Call.pdf, format: pdf}
+  competitor_brief: {file: 6_Competitor_Brief_OncoStream.pdf, format: pdf}
+
+markets:
+  Portugal:
+    screening_report: {file: 5a_Screening_Report_Portugal.pdf, format: pdf}
+    facility_register: {file: 3a_Facilities_Portugal.csv, format: csv,
+      columns: {id: facility_id, name: facility_name, country: country, type: type, capacity: annual_colonoscopy_capacity}}
+  Germany:
+    screening_report: {file: 5b_Screening_Report_Germany.pdf, format: pdf}
+    facility_register: {file: 3b_Facilities_Germany.xlsx, format: xlsx, sheet: Facilities,
+      columns: {id: site_id, name: site_name, country: country, type: category, capacity: capacity, period: reporting_period}}
+  Netherlands:
+    screening_report: {file: 5c_Screening_Report_Netherlands.html, format: html}
+    facility_register: {file: 3c_Facilities_Netherlands.html, format: html,
+      columns: {id: unit_ref, name: name, country: country, type: unit_type, capacity: capacity_per_year}}
+  Poland:
+    screening_report: {file: 5d_Screening_Report_Poland.xlsx, format: xlsx, sheet: Sheet1}
+    facility_register: {file: 3d_Facilities_Poland.csv, format: csv,
+      columns: {id: id, name: name, country: country, type: type, capacity: capacity_annual}}
+
+shared_docs:
+  master_registry: {file: 3e_Master_Registry.csv, format: csv,
+    columns: {id: registry_ref, name: canonical_name, country: country, type: type, capacity: capacity, note: note}}

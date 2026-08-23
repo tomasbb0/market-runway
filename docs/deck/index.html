@@ -1,0 +1,129 @@
+<!doctype html><html lang="en"><head><title>Helix — the deck</title><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Noto+Serif:ital,wght@0,400;0,600;1,400;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+ :root{--bg:#f9f7f5;--sf:#fff;--ink:#1d2939;--deep:#374b60;--soft:#667085;--line:#e6e1da;
+   --acc:#ff4200;--accdark:#c12d00;--softblue:#bdd2e0;--softblue2:#e6eef3;--bordeaux:#661439;
+   --tan:#ad836c;--cream2:#f4f1ec}
+ *{box-sizing:border-box}
+ body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 'Instrument Sans',system-ui,sans-serif}
+ .serif{font-family:'Noto Serif',serif}.mono{font-family:'IBM Plex Mono',monospace}
+ a{color:var(--deep)}
+ .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--tan)}
+ .btn{display:inline-block;font:600 15px 'Instrument Sans';border-radius:10px;border:1px solid var(--line);
+   padding:12px 22px;background:var(--sf);color:var(--ink);text-decoration:none;transition:all .15s}
+ .btn:hover{border-color:var(--acc);transform:translateY(-1px)}
+ .btn.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+ .btn.primary:hover{background:var(--accdark)}
+ @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+<style>
+ html{scroll-snap-type:y proximity;scroll-behavior:smooth}
+ .slide{min-height:100vh;scroll-snap-align:start;display:grid;place-content:center;padding:56px 24px;border-bottom:1px solid var(--line)}
+ .in{max-width:1020px;display:flex;flex-direction:column;gap:18px}
+ h1{font-size:clamp(36px,6vw,60px);margin:0;letter-spacing:-.025em;line-height:1.05;font-weight:650}
+ h2{font-size:clamp(26px,3.6vw,38px);margin:0;letter-spacing:-.02em;line-height:1.15;font-weight:650}
+ h1 em,h2 em{font-family:'Noto Serif',serif;font-style:italic;font-weight:600;color:var(--acc)}
+ .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+ .stats div{background:var(--sf);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+ .stats b{display:block;font-size:22px;letter-spacing:-.01em} .stats span{font-size:12.5px;color:var(--soft)}
+ img{max-width:100%;border-radius:12px;border:1px solid var(--line);background:#fff}
+ .cols{display:grid;grid-template-columns:1.05fr 1fr;gap:26px;align-items:center}
+ @media(max-width:880px){.cols{grid-template-columns:1fr}}
+ ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+ li{padding-left:18px;position:relative;font-size:15.5px}
+ li::before{content:"▪";position:absolute;left:0;color:var(--acc)}
+ li b{font-weight:650} li,li i{color:var(--ink)} li{color:var(--soft)} li b{color:var(--ink)}
+ .note{font-size:13.5px;color:var(--soft);border-top:1px solid var(--line);padding-top:12px;margin:4px 0 0}
+ table.grid{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+ table.grid th,table.grid td{border:1px solid var(--line);padding:9px 12px;font-size:14px;text-align:center}
+ table.grid th{background:var(--ink);color:#fff;font:600 11.5px 'IBM Plex Mono',monospace}
+ table.grid tr th:first-child{text-align:left}
+ td.good{background:var(--softblue2);font-weight:650} td.thin{background:#f6ead9;font-weight:650}
+ td.bad{background:var(--accdark);color:#fff;font-weight:650}
+ .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+ .steps div{background:var(--sf);border:1px solid var(--line);border-radius:12px;padding:14px}
+ .steps span{font:600 11px 'IBM Plex Mono',monospace;color:var(--acc)}
+ .steps b{display:block;margin:4px 0 2px} .steps p{margin:0;font-size:12.5px;color:var(--soft)}
+ nav.dots{position:fixed;right:18px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:9}
+ nav.dots a{width:9px;height:9px;border-radius:50%;background:var(--line);transition:background .2s}
+ nav.dots a.on{background:var(--acc)}
+ .back{position:fixed;top:16px;left:18px;z-index:9;font:600 13px 'Instrument Sans';color:var(--soft);text-decoration:none;background:var(--sf);border:1px solid var(--line);border-radius:99px;padding:7px 14px}
+ @media print{.slide{min-height:auto;page-break-after:always}nav.dots,.back{display:none}}
+</style></head><body>
+<a class="back" href="../">← Runway</a>
+<nav class="dots"><a href="#s1" data-i="0"></a><a href="#s2" data-i="1"></a><a href="#s3" data-i="2"></a><a href="#s4" data-i="3"></a><a href="#s5" data-i="4"></a></nav>
+<div id="s1"></div><section class="slide hero"><div class="in">
+        <div class="eyebrow">Helix Optics · first European market · board recommendation</div>
+        <h1>Enter the <em>Netherlands</em> first.</h1>
+        <div class="stats">
+         <div><b>Break-even Y3</b><span>company EBITDA positive — second reimbursed year</span></div>
+         <div><b>€1.30M</b><span>cash trough — the runway is never exhausted</span></div>
+         <div><b>159,910/yr</b><span>addressable FIT-positives — 92% of Germany's volume, none of its barriers</span></div>
+         <div><b>€7,750 saved</b><span>per 100 patients triaged — the payer wants this</span></div>
+        </div>
+        <img src="assets/cash_curves.png" alt="Five-year cash position of all four markets">
+        </div></section><div id="s2"></div><section class="slide"><div class="in">
+        <div class="eyebrow">Why not the biggest market first</div>
+        <h2>Germany is the prize — and the certain death of the runway.</h2>
+        <div class="cols"><ul>
+         <li><b>24 months to reimbursed revenue.</b> Procedural — investigators, lab partners and prior studies do <i>not</i> shorten it (its own national report says so).</li>
+         <li><b>Pre-reimbursement revenue ≈ €0.</b> Selective contracts and self-pay: "negligible volume".</li>
+         <li><b>The runway dies first.</b> Cash bottoms at -1.4M — insolvent before the first reimbursed euro.</li>
+         <li><b>An incumbent owns the channel.</b> OncoStream: ~3 years reimbursed, 35–40% share, framework agreements.</li>
+         <li><b>Its 300k tests/yr claim is impossible</b> — 1.7× the entire organised addressable market (174,240/yr). Rejected by pipeline check CHK-02.</li>
+        </ul><img src="assets/trough.png" alt="Cash trough by market"></div>
+        <p class="note">Right market later, unaffordable market now: file the German application early — the clock is procedural — and enter once NL cash flow or new capital funds the wait.</p>
+        </div></section><div id="s3"></div><section class="slide"><div class="in">
+        <div class="eyebrow">The case for the recommendation</div>
+        <h2>The Netherlands: fastest to revenue, and the payer is <em>motivated</em>.</h2>
+        <div class="cols"><ul>
+         <li><b>Volume without the barriers.</b> 71% participation × 9.1% positivity → 159,910 FIT-positives a year.</li>
+         <li><b>12 months to reimbursement.</b> One centralised, national procurement decision.</li>
+         <li><b>Open field.</b> No competitor active; second-highest price (€215).</li>
+         <li><b>Capacity pressure is policy.</b> Referrals run at ~103% of national endoscopy capacity (deduplicated registers).</li>
+         <li><b>The economics clear.</b> 76% unit margin by Y3; five-year end cash €9.6M.</li>
+        </ul><img src="assets/nl_model.png" alt="Netherlands EBITDA and cash"></div>
+        <p class="note">What must be true: reimbursement ≈ month 12 · ramp ~13% of addressable by the second reimbursed year · price holds near €215.</p>
+        </div></section><div id="s4"></div><section class="slide"><div class="in">
+        <div class="eyebrow">Break-even and the range around it</div>
+        <h2>Where the case bends — and where it breaks.</h2>
+        <div class="cols">
+        <ul>
+         <li><b>Ramp is the sensitive input.</b> At half the benchmark the trough falls to ≈€0.2M — survival with nothing spare.</li>
+         <li><b>Delay is the killer when combined.</b> Half-ramp <i>and</i> 24 months → −€2.1M: insolvent. Either alone is survivable.</li>
+         <li><b>Price is the cushion.</b> Every €10 ≈ €0.2–0.3M of annual EBITDA at scale.</li>
+         <li><b>Kill condition, stated up front.</b> No reimbursement by month 18 → cut in-market spend and bridge.</li>
+        </ul>
+        <div><table class="grid"><tr><th>cash trough<br>ramp ↓ delay →</th><th>12 mo</th><th>18 mo</th><th>24 mo</th></tr><tr><th>ramp ×50%</th><td class="bad">-0.0M</td><td class="bad">-2.1M</td><td class="bad">-2.1M</td></tr><tr><th>ramp ×75%</th><td class="thin">+0.8M</td><td class="bad">-1.3M</td><td class="bad">-1.3M</td></tr><tr><th>ramp ×100%</th><td class="good">+1.3M</td><td class="bad">-0.8M</td><td class="bad">-0.8M</td></tr><tr><th>ramp ×125%</th><td class="good">+1.6M</td><td class="bad">-0.5M</td><td class="bad">-0.5M</td></tr></table>
+        <p class="note">The same grid lives as formulas in the Excel — assumptions change, everything recalculates.</p></div>
+        </div></div></section><div id="s5"></div><section class="slide"><div class="in">
+        <div class="eyebrow">After the first market</div>
+        <h2>Sequence, triggers, and what we <em>refuse</em> to do.</h2>
+        <div class="steps">
+         <div><span>NOW→Y1</span><b>Netherlands entry</b><p>€200k entry · file reimbursement immediately · first revenue ~month 13</p></div>
+         <div><span>Y1</span><b>Start Germany's clock</b><p>the 24-month pathway is procedural — file while NL scales, spend €0</p></div>
+         <div><span>Y2</span><b>Portugal</b><p>€120k entry, home turf, contribution-positive add-on</p></div>
+         <div><span>Y3+</span><b>Germany, funded</b><p>enter once the wait is funded · Poland stays parked (€115 price)</p></div>
+        </div>
+        <ul>
+         <li><b>Accelerate</b> — NL year-1 penetration ≥7% and price ≥€200 → pull Portugal forward, raise on proven uptake.</li>
+         <li><b>Delay</b> — reimbursement past month 15 or ramp &lt; half plan → freeze Portugal, cut burn.</li>
+         <li><b>Abandon</b> — nothing by month 18 → stop-loss; the German filing and the Portuguese R&D base (€500k grant, R&D-only) keep two doors open.</li>
+         <li><b>Refuse</b> — chasing Germany's volume with an unfunded 24-month gap, or booking the R&D grant as launch money.</li>
+        </ul>
+        <p class="note">74 values extracted deterministically · 0 AI calls · eval 28/28 · 0.9s end-to-end — markets 5–14 are a config entry away.</p>
+        </div></section>
+<script>
+ const dots=[...document.querySelectorAll('nav.dots a')];
+ const slides=[...document.querySelectorAll('.slide')];
+ const io=new IntersectionObserver(es=>es.forEach(e=>{
+   if(e.isIntersecting){const i=slides.indexOf(e.target);dots.forEach((d,j)=>d.classList.toggle('on',i===j))}
+ }),{threshold:.5});
+ slides.forEach(s=>io.observe(s));
+ addEventListener('keydown',e=>{
+   const i=dots.findIndex(d=>d.classList.contains('on'));
+   if(e.key==='ArrowDown'||e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();slides[Math.min(i+1,4)].scrollIntoView()}
+   if(e.key==='ArrowUp'||e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();slides[Math.max(i-1,0)].scrollIntoView()}
+ });
+</script></body></html>

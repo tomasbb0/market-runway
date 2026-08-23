@@ -1,0 +1,76 @@
+<!doctype html><html lang="en"><head><title>Ask the data — Helix</title><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Noto+Serif:ital,wght@0,400;0,600;1,400;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+ :root{--bg:#f9f7f5;--sf:#fff;--ink:#1d2939;--deep:#374b60;--soft:#667085;--line:#e6e1da;
+   --acc:#ff4200;--accdark:#c12d00;--softblue:#bdd2e0;--softblue2:#e6eef3;--bordeaux:#661439;
+   --tan:#ad836c;--cream2:#f4f1ec}
+ *{box-sizing:border-box}
+ body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 'Instrument Sans',system-ui,sans-serif}
+ .serif{font-family:'Noto Serif',serif}.mono{font-family:'IBM Plex Mono',monospace}
+ a{color:var(--deep)}
+ .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--tan)}
+ .btn{display:inline-block;font:600 15px 'Instrument Sans';border-radius:10px;border:1px solid var(--line);
+   padding:12px 22px;background:var(--sf);color:var(--ink);text-decoration:none;transition:all .15s}
+ .btn:hover{border-color:var(--acc);transform:translateY(-1px)}
+ .btn.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+ .btn.primary:hover{background:var(--accdark)}
+ @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+<style>
+ .wrap{max-width:800px;margin:0 auto;padding:34px 20px 120px;display:flex;flex-direction:column;gap:16px}
+ h1{font-size:26px;margin:0;letter-spacing:-.02em} h1 em{font-family:'Noto Serif',serif;font-style:italic;color:var(--acc)}
+ .msg{border-radius:14px;padding:12px 16px;max-width:88%;font-size:14.5px;white-space:pre-wrap}
+ .msg.user{background:var(--deep);color:#fff;align-self:flex-end}
+ .msg.ai{background:var(--sf);border:1px solid var(--line);align-self:flex-start}
+ #msgs{display:flex;flex-direction:column;gap:10px}
+ .bar{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--line);padding:12px}
+ .bar .in{max-width:800px;margin:0 auto;display:flex;gap:10px}
+ input,select,button{font:14px 'Instrument Sans';border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:var(--sf);color:var(--ink)}
+ #q{flex:1} button.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600;cursor:pointer}
+ .hint{font-size:13px;color:var(--soft)}
+ .back{font:600 13px 'Instrument Sans';color:var(--soft);text-decoration:none}
+</style></head><body>
+<div class="wrap">
+ <a class="back" href="../">← Runway</a>
+ <div><div class="eyebrow">Helix Optics · ask the data</div>
+ <h1>Chat with the <em>validated</em> dataset</h1>
+ <p class="hint">Answers come only from the pipeline's validated output (embedded in this page). Your API key stays
+ in your browser — calls go straight from here to Anthropic, no server in between. This static edition is read-only;
+ the local app can additionally apply overrides and re-run the pipeline.</p></div>
+ <div id="msgs"></div>
+</div>
+<div class="bar"><div class="in">
+ <select id="model">
+  <option value="claude-sonnet-5" selected>Sonnet 5</option>
+  <option value="claude-haiku-4-5-20251001">Haiku 4.5</option>
+  <option value="claude-fable-5">Fable 5</option></select>
+ <input id="key" type="password" placeholder="Anthropic API key" style="width:180px;font-family:'IBM Plex Mono',monospace;font-size:12px">
+ <input id="q" placeholder="e.g. Why not Germany? What drives break-even?" onkeydown="if(event.key==='Enter')send()">
+ <button class="primary" onclick="send()">Send</button>
+</div></div>
+<script src="data.js"></script>
+<script>
+ const SYSTEM=`You are the analyst assistant for a market-entry assessment. Answer ONLY from the JSON dataset
+provided (the pipeline's validated output). If something is not in it, say "not in the validated dataset" -
+never guess. Cite a figure's source and method when giving numbers. Be concise. Currency EUR.
+DATASET: `+JSON.stringify(window.DATASET);
+ const msgs=document.getElementById('msgs');let hist=[];
+ const keyEl=document.getElementById('key');keyEl.value=localStorage.getItem('ak')||'';
+ function render(role,text){const d=document.createElement('div');d.className='msg '+(role==='user'?'user':'ai');
+   d.textContent=text;msgs.appendChild(d);d.scrollIntoView({behavior:'smooth',block:'end'})}
+ async function send(){
+   const q=document.getElementById('q');const t=q.value.trim();if(!t)return;q.value='';
+   const key=keyEl.value.trim();if(!key){render('ai','⚠ Paste your Anthropic API key first (it stays in your browser).');return}
+   localStorage.setItem('ak',key);render('user',t);hist.push({role:'user',content:t});
+   try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{
+      'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:document.getElementById('model').value,max_tokens:900,system:SYSTEM,messages:hist.slice(-20)})});
+    const j=await r.json();
+    if(j.error){render('ai','⚠ '+j.error.message);return}
+    const text=j.content[0].text;render('ai',text);hist.push({role:'assistant',content:text});
+   }catch(e){render('ai','⚠ '+e)}
+ }
+</script></body></html>

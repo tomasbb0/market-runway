@@ -1,0 +1,31 @@
+# Golden evaluation set: hand-verified values read directly from the source
+# documents. `python run.py --eval` scores the extractor against these.
+# Never change a golden value to make a test pass - fix the extractor.
+- {market: Portugal,    param: eligible_population,           expect: 3050000}
+- {market: Portugal,    param: participation,                 expect: 0.43}
+- {market: Portugal,    param: fit_positivity,                expect: 0.062}
+- {market: Portugal,    param: price_per_test,                expect: 155}
+- {market: Portugal,    param: colonoscopy_tariff,            expect: 400}
+- {market: Portugal,    param: time_to_reimbursement_months,  expect: 12}
+- {market: Germany,     param: eligible_population,           expect: 26400000}
+- {market: Germany,     param: participation,                 expect: 0.22}
+- {market: Germany,     param: fit_positivity,                expect: 0.06}
+- {market: Germany,     param: price_per_test,                expect: 235}
+- {market: Germany,     param: time_to_reimbursement_months,  expect: 24}
+- {market: Netherlands, param: eligible_population,           expect: 4950000}
+- {market: Netherlands, param: participation,                 expect: 0.71}
+- {market: Netherlands, param: fit_positivity,                expect: 0.091}
+- {market: Netherlands, param: price_per_test,                expect: 215}
+- {market: Netherlands, param: colonoscopy_tariff,            expect: 650}
+- {market: Poland,      param: eligible_population,           expect: 11200000}
+- {market: Poland,      param: participation,                 expect: 0.17}
+- {market: Poland,      param: fit_positivity,                expect: 0.065}
+- {market: Poland,      param: price_per_test,                expect: 115}
+- {market: company,     param: cash_runway,                   expect: 4000000}
+- {market: company,     param: corporate_cost_per_year,       expect: 1800000}
+- {market: company,     param: cogs_year1,                    expect: 58}
+- {market: company,     param: cogs_year5,                    expect: 44}
+- {market: company,     param: deferral_rate,                 expect: 0.45}
+- {market: competitor,  param: onco_tests_per_year,           expect: 300000}
+- {market: funding,     param: grant_max,                     expect: 500000}
+- {market: funding,     param: cofinance_rate,                expect: 0.60}

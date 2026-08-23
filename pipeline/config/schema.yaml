@@ -1,0 +1,75 @@
+# Canonical parameter schema + Tier-A (deterministic) extraction patterns.
+# Each parameter: which docs may carry it, regex patterns over document text/tables,
+# expected unit, and validation range. A field no pattern resolves escalates to
+# Tier B (LLM) in --ai auto/max, or is reported UNRESOLVED in --ai off.
+market_parameters:
+  eligible_population:
+    unit: persons
+    range: [100000, 100000000]
+    patterns:
+      - 'Eligible population \(50[-–—]?\s?74\)\s*\|?\s*([\d,\.]{4,})'
+      - 'eligible (?:resident )?population(?: aged 50 to 74)? is approximately ([\d\.,]+)\s?million'
+  participation:
+    unit: fraction
+    range: [0.0, 1.0]
+    patterns:
+      - '(?:Programme|Organised programme) participation\s*\|?\s*([\d\.]+)%'
+      - '[Uu]ptake across the organised\s*programme stands at ([\d\.]+) per cent'
+      - '[Pp]articipation in the organised offer is ([\d\.]+) per cent'
+  fit_positivity:
+    unit: fraction
+    range: [0.0, 1.0]
+    patterns:
+      - 'FIT positivity rate\s*\|?\s*([\d\.]+)%'
+      - 'FIT positivity is ([\d\.]+) per cent'
+      - '([\d\.]+) per cent are positive at the'
+  price_per_test:
+    unit: EUR
+    range: [10, 2000]
+    patterns:
+      - 'reimbursed price (?:in the order )?of (?:approximately )?EUR ([\d\.,]+) per test'
+      - 'Indicative reimbursed price, triage test\s*\|?\s*([\d\.,]+)'
+  time_to_reimbursement_months:
+    unit: months
+    range: [0, 60]
+    patterns:
+      - 'within (?:about|approximately) (twelve|twenty-four|\d+) months'
+      - 'approximately (twelve|twenty-four|\d+) months between application and routine'
+      - 'Time to reimbursed volume\s*\|?\s*(\d+)'
+      - 'reimbursed volume within\s*approximately (twelve|twenty-four|\d+) months'
+  colonoscopy_tariff:
+    unit: EUR
+    range: [50, 5000]
+    patterns:
+      - 'Colonoscopy reimbursement tariff\s*\|?\s*(?:EUR )?([\d\.,]+)'
+  screening_interval:
+    unit: label
+    patterns:
+      - 'Screening interval\s*\|?\s*(Biennial)'
+      - '(two-year(?: \(biennial\))?|biennial) cycle'
+
+landscape_parameters:   # only exist in the internal Market Landscape table
+  entry_cost: {unit: EUR, range: [10000, 5000000]}
+  inmarket_cost_per_year: {unit: EUR, range: [10000, 5000000]}
+
+company_parameters:
+  cash_runway: {unit: EUR, patterns: ['Cash on hand \(runway\)\s*\|?\s*EUR ([\d\.]+) million']}
+  corporate_cost_per_year: {unit: EUR, patterns: ['Corporate operating cost.*?EUR ([\d\.]+) million per year']}
+  cogs_year1: {unit: EUR, patterns: ['Cost of goods is approximately EUR ([\d\.]+) per test today']}
+  cogs_year5: {unit: EUR, patterns: ['fall with volume to approximately EUR ([\d\.]+) per\s*test by the fifth year']}
+  sensitivity: {unit: fraction, patterns: ['([\d\.]+) percent sensitivity']}
+  specificity: {unit: fraction, patterns: ['([\d\.]+) percent specificity']}
+  deferral_rate: {unit: fraction, patterns: ['approximately ([\d\.]+) percent of FIT-positive patients to be safely deferred']}
+  penetration_benchmark: {unit: fraction, patterns: ['reached roughly\s*one (fifth) of eligible FIT-positive volume within three years']}
+
+competitor_parameters:
+  onco_tests_per_year: {unit: tests, patterns: ['approximately ([\d\.,]+) triage tests per year']}
+  onco_share_low: {unit: fraction, patterns: ['share at ([\d\.]+)[-–]\d+% of\s*addressable']}
+  onco_share_high: {unit: fraction, patterns: ['share at [\d\.]+[-–]([\d\.]+)% of\s*addressable']}
+  onco_years_reimbursed: {unit: years, patterns: ['reimbursed in Germany for roughly (three) years']}
+
+funding_parameters:
+  grant_max: {unit: EUR, patterns: ['Maximum grant per project\s*\|?\s*EUR ([\d\.,]+)']}
+  cofinance_rate: {unit: fraction, patterns: ['Co-financing rate\s*\|?\s*([\d\.]+)% of eligible costs']}
+
+word_numbers: {twelve: 12, 'twenty-four': 24, fifth: 0.2, three: 3, one: 1}

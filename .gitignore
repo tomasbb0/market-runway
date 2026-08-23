@@ -1,0 +1,13 @@
+# local-only material: the case pack and per-workspace data never leave this machine
+raw/
+pipeline/data/
+pipeline/workspaces/
+pipeline/cache/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+nohup.out
+# personal / process files, not part of the public showcase
+tracker.html
+SUBMISSION_GUIDE.md
