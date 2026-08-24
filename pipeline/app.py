@@ -488,7 +488,7 @@ STYLE = """
  .railcol{display:flex;flex-direction:column;gap:14px;min-height:0}
  .railcol .rail{flex:1;min-height:0}
  .railchat{background:var(--sf);border:1px solid var(--line);border-radius:14px;display:flex;
-   flex-direction:column;flex:0 0 auto;height:280px;overflow:hidden;
+   flex-direction:column;flex:0 0 auto;height:280px;min-height:0;overflow:hidden;
    box-shadow:0 18px 50px -30px rgba(0,0,0,.8);transition:height .35s ease}
  .railchat.dragging{transition:none}
  .rcgrip{flex:0 0 10px;cursor:ns-resize;touch-action:none}
@@ -526,7 +526,8 @@ STYLE = """
  .rcws{margin-left:6px;color:var(--soft);letter-spacing:0;text-transform:none;
    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
  .railchat.closed .rchead{justify-content:center;height:100%;padding:0 14px;align-items:center}
- .railchat.closed .rcws,.railchat.closed .rcfbtn,.railchat.closed .rcgrip{display:none}
+ .railchat.closed .rcws,.railchat.closed .rcfbtn,.railchat.closed .rcgrip,
+ .railchat.closed .rcmsgs,.railchat.closed .rcin,.railchat.closed .rcfilter{display:none}
  .rcfilter{position:absolute;top:38px;left:8px;right:8px;z-index:40;background:var(--sf);
    border:1px solid var(--line);border-radius:10px;max-height:230px;overflow-y:auto;display:none;
    box-shadow:0 16px 40px rgba(16,28,49,.25)}
