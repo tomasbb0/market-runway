@@ -55,6 +55,9 @@ EXTS = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
         'stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;'
         'vertical-align:-1px;margin-left:5px">'
         '<path d="M14 5h5v5M19 5l-8 8M19 14v4a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h4"/></svg>')
+DLI = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" '
+       'stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">'
+       '<path d="M12 4v11M7 10l5 5 5-5M5 19h14"/></svg>')
 GEARS = ('<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd"><path d="M18.79 10.31 '
          'L21.70 10.64 L21.70 13.36 L18.79 13.69 L18.00 15.61 L19.83 17.90 L17.90 19.83 L15.61 18.00 '
          'L13.69 18.79 L13.36 21.70 L10.64 21.70 L10.31 18.79 L8.39 18.00 L6.10 19.83 L4.17 17.90 '
@@ -559,6 +562,9 @@ STYLE = """
  .rowgrip:hover::after,.rowgrip.dragging::after{background:rgba(255,255,255,.28)}
  .folwrap.lift{opacity:.45}
  .folwrap[draggable=true]{cursor:grab}
+ .pdfdl{display:grid;place-items:center;width:30px;height:30px;border:1px solid var(--line);
+   border-radius:8px;color:var(--soft)}
+ .pdfdl:hover{color:var(--acc);border-color:var(--acc)}
  </style>"""
 
 
@@ -950,9 +956,12 @@ def workspace(ws_name):
             except Exception:  # noqa: BLE001
                 pass
         ts = datetime.strptime(run.name, "%Y%m%d-%H%M%S").strftime("%d %b · %H:%M")
+        repbtn = (f'<a class="btn" href="/w/{ws.name}/results/{run.name}">Report</a>'
+                  f'<a class="pdfdl" href="/w/{ws.name}/report/{run.name}/pdf" '
+                  f'title="Download as PDF">{DLI}</a>'
+                  if (run / "state.json").exists() else "")
         runrows += (f'<div class="runrow"><span class="stamp">{ts}</span>'
-                    f'<span class="rec" style="flex:1">{rec}</span>{chip}'
-                    f'<a class="btn" href="/w/{ws.name}/results/{run.name}">Report</a>'
+                    f'<span class="rec" style="flex:1">{rec}</span>{chip}{repbtn}'
                     f'<form method="post" action="/w/{ws.name}/runs/{run.name}/delete" '
                     f'onsubmit="return confirm(\'Delete this run and its report?\')">'
                     f'<button class="rdel" title="Delete run">{TRASH}</button></form></div>')
@@ -1254,7 +1263,7 @@ def run_view(ws_name, token):
                 yield "<!-- hb -->"
                 idle = 0.0
         ok = bool(t["ok"])
-        actions = (f'<a class="btn primary" href="/w/{ws.name}/results/{t["run"]}">Open the report →</a>'
+        actions = (f'<a class="btn primary" href="/w/{ws.name}#report-{t["run"]}">Open the report →</a>'
                    '' if ok and t["run"] else "")
         yield ('</pre><div style="display:flex;gap:10px;margin-top:12px">' + actions
                + f'<a class="btn" href="/w/{ws.name}">← workspace</a></div>'
@@ -1399,6 +1408,24 @@ def results_view(ws_name, run_name):
             f'<div class="segbody" id="sb-insights" style="display:none">{ins}</div></div>'
             + SEG_JS.replace("__WS__", ws.name))
     return page(f"Results — {ws.name}", body, f"/ {ws.name} / results", rail=rail_html(ws.name, run=run.name, view=f"the results windows of run {run.name}"))
+
+
+@app.get("/w/<ws_name>/report/<run_name>/pdf")
+def report_pdf(ws_name, run_name):
+    ws = ws_dir(ws_name)
+    run = ws / "runs" / Path(run_name).name
+    src = run / "report.html"
+    if not src.exists():
+        return redirect(f"/w/{ws.name}")
+    out = run / "report.pdf"
+    if not out.exists() or out.stat().st_mtime < src.stat().st_mtime:
+        try:
+            from weasyprint import HTML
+            HTML(string=src.read_text(), base_url=str(run)).write_pdf(str(out))
+        except Exception as e:  # noqa: BLE001
+            return Response(f"PDF engine unavailable on this host: {html.escape(str(e))}", status=503)
+    return send_file(out, as_attachment=True,
+                     download_name=f"MarketRunway_Report_{run.name}.pdf")
 
 
 @app.get("/w/<ws_name>/runs/<run_name>/f/<name>")
