@@ -478,9 +478,15 @@ STYLE = """
    padding:10px 12px;overflow-x:auto;margin:0 0 10px}
  .msg.ai pre code{background:none;border:none;padding:0}
  .msg.ai h3{margin:0 0 8px;font-size:15px}
- .railchat{border-top:1px solid var(--line);display:flex;flex-direction:column;flex:0 0 auto;
-   height:280px;max-height:45%;min-height:190px;transition:height .35s ease;overflow:hidden}
- .railchat.closed{height:37px;min-height:0;max-height:none}
+ .railcol{display:flex;flex-direction:column;gap:14px;min-height:0}
+ .railcol .rail{flex:1;min-height:0}
+ .railchat{background:var(--sf);border:1px solid var(--line);border-radius:14px;display:flex;
+   flex-direction:column;flex:0 0 auto;height:280px;overflow:hidden;
+   box-shadow:0 18px 50px -30px rgba(0,0,0,.8);transition:height .35s ease}
+ .railchat.dragging{transition:none}
+ .rcgrip{flex:0 0 10px;cursor:ns-resize;touch-action:none}
+ .rcgrip::after{content:"";display:block;width:38px;height:3px;border-radius:2px;
+   background:var(--line);margin:4px auto 0}
  .rctog{margin-left:auto;border:none;background:none;color:var(--soft);cursor:pointer;
    padding:2px;display:grid;place-items:center}
  .rctog:hover{color:var(--ink)}
@@ -496,6 +502,19 @@ STYLE = """
    border:1px solid var(--line);border-radius:4px;padding:0 4px}
  .rcin{display:flex;gap:6px;padding:10px 12px;border-top:1px solid var(--line)}
  .rcin input{flex:1;font-size:12.5px;min-width:0}
+ /* light inner windows on the dark shell — tokens flip inside these containers */
+ .card,.rail,.railchat,.stage2,dialog{
+   --sf:#ffffff;--bg:#f7fafd;--ink:#17263f;--soft:#5c7392;--line:#d4deec;
+   --cream2:#e6edf6;--softblue:#3a5a80;--softblue2:#e2eaf5;--tan:#6b81a3;
+   --acc:#0090c8;--accdark:#006e99;--okbg:#ddefe3;--warnbg:#f6ead9;--failbg:#f8e3dc;
+   background:#edf2f9;color:var(--ink)}
+ dialog{background:#ffffff}
+ .card .chip.warn,.rail .chip.warn,.stage2 .chip.warn,.railchat .chip.warn{color:#7a5510}
+ .card .chip.fail,.rail .chip.fail,.stage2 .chip.fail,.railchat .chip.fail{color:#b3341c}
+ .card .ftile{background:#ffffff}
+ .card .ftile::after{background:#dbe4f0}
+ .card .ftile:hover::after{background:#c7d4e6}
+ .railchat .rcmsgs .u{color:#fff}
  </style>"""
 
 
@@ -595,10 +614,21 @@ RAILCHAT_JS = ('<script>(function(){'
     "add('a',fmt(j.text));hist.push({role:'assistant',content:j.text});}"
     "catch(e){th.remove();add('a','⚠ network error — try again')}};"
     "q.addEventListener('keydown',function(e){if(e.key==='Enter')rcSend()});"
-    "var rc=document.querySelector('.railchat'),tg=document.getElementById('rctog');"
-    "if(tg){tg.onclick=function(){rc.classList.toggle('closed');"
-    "try{localStorage.setItem('rc-__WS__',rc.classList.contains('closed')?'1':'0')}catch(e){}};"
-    "try{if(localStorage.getItem('rc-__WS__')==='1')rc.classList.add('closed')}catch(e){}}"
+    "var rc=document.querySelector('.railchat'),tg=document.getElementById('rctog'),"
+    "gp=document.querySelector('.rcgrip');"
+    "var svH=parseInt(localStorage.getItem('rch-__WS__'))||280;"
+    "var cl=localStorage.getItem('rc-__WS__')==='1';"
+    "function setH(h){rc.style.height=h+'px'}"
+    "if(rc){rc.classList.toggle('closed',cl);setH(cl?42:svH);}"
+    "if(tg){tg.onclick=function(){cl=!cl;rc.classList.toggle('closed',cl);setH(cl?42:svH);"
+    "try{localStorage.setItem('rc-__WS__',cl?'1':'0')}catch(e){}};}"
+    "if(gp){gp.addEventListener('pointerdown',function(e){if(cl)return;e.preventDefault();"
+    "var y0=e.clientY,h0=rc.offsetHeight;rc.classList.add('dragging');"
+    "function mv(ev){setH(Math.max(120,Math.min(window.innerHeight*0.75,h0+(y0-ev.clientY))))}"
+    "function up(){rc.classList.remove('dragging');svH=rc.offsetHeight;"
+    "try{localStorage.setItem('rch-__WS__',svH)}catch(e){}"
+    "window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up)}"
+    "window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up)});}"
     '})();</script>')
 
 NEWWS_DLG = (
@@ -639,10 +669,12 @@ def rail_html(current: str, run: str = None, view: str = "") -> str:
             f'<form method="post" action="/w/{ws.name}/delete" '
             f'onsubmit="return confirm(\'Delete {ws.name} and everything in it?\')">'
             f'<button class="danger">Delete</button></form></div></div>')
-    return (f'<aside class="rail"><header><span class="mono">EXERCISES</span>'
+    return ('<div class="railcol">'
+            f'<aside class="rail"><header><span class="mono">EXERCISES</span>'
             '<button onclick="document.getElementById(\'newws\').showModal()">+ New</button></header>'
-            f'<div class="exlist">{items}</div>'
-            f'<div class="railchat"><div class="rchead">ASK THE DATA{ROBOT}'
+            f'<div class="exlist">{items}</div></aside>'
+            f'<div class="railchat"><div class="rcgrip" title="Drag to resize"></div>'
+            f'<div class="rchead">ASK THE DATA{ROBOT}'
             f'<span style="letter-spacing:0;text-transform:none;color:var(--soft);margin-left:6px">'
             f'{html.escape(current)}</span>'
             '<button class="rctog" id="rctog" aria-label="Collapse chat">'
@@ -651,9 +683,9 @@ def rail_html(current: str, run: str = None, view: str = "") -> str:
             "</button></div>"
             '<div class="rcmsgs" id="rcmsgs"><div class="a" style="color:var(--soft)">Grounded on '
             + ("the open report" if run else "this exercise") + ". Ask anything.</div></div>"
-            '<div class="rcin"><input id="rcq" placeholder="Ask about this exercise…" autocomplete="off">'
+            '<div class="rcin"><input type="text" id="rcq" placeholder="Type" autocomplete="off" style="padding:7px 11px;font-size:12.5px">'
             '<button class="primary" style="font-size:12px;padding:6px 12px" onclick="rcSend()">Ask</button>'
-            '</div></div></aside>'
+            '</div></div></div>'
             + NEWWS_DLG + RAIL_JS
             + RAILCHAT_JS.replace("__WS__", current).replace("__RUN__", run or "")
                          .replace("__VIEW__", view.replace("'", "")))
