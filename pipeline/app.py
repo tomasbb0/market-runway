@@ -448,6 +448,7 @@ STYLE = """
  input.titled{font:700 26px 'Instrument Sans';text-transform:uppercase;letter-spacing:-.02em;
    background:var(--sf);color:var(--ink);border:1px solid var(--deep);border-radius:8px;
    padding:2px 10px;min-width:0;max-width:48vw}
+ .homescroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:22px}
  </style>"""
 
 
@@ -483,7 +484,14 @@ def nav(crumbs=""):
             f'<span class="crumb">{crumbs}</span><span class="right">{key_chip}</span></nav>')
 
 
-def page(title, body, crumbs="", rail=None):
+def page(title, body, crumbs="", rail=None, shell=False):
+    if shell:
+        innav = nav(crumbs).replace("<nav>", '<nav class="innav">', 1)
+        body = (f'<section class="deskpanel">{innav}'
+                f'<div class="homescroll">{body}</div></section>')
+        return (f'<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex">'
+                f'<title>{html.escape(title)}</title>{STYLE}<body class="lightbg">'
+                f'<div class="wrap fluid">{body}</div></body>')
     if rail:
         innav = nav(crumbs).replace("<nav>", '<nav class="innav">', 1)
         body = (f'<section class="deskpanel">{innav}'
@@ -593,7 +601,7 @@ def home():
           <button type="button" onclick="this.closest('dialog').close()">Cancel</button>
           <button class="primary">Create</button></div>
       </form></dialog>"""
-    return page("Runway — workspaces", body)
+    return page("Runway — workspaces", body, shell=True)
 
 
 @app.post("/new")
