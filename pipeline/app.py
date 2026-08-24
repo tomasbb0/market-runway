@@ -224,7 +224,7 @@ STYLE = """
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Noto+Serif:ital,wght@0,400;0,600;1,400;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
  :root{--bg:#101828;--sf:#1d2939;--ink:#f9f7f5;--deep:#374b60;--soft:#8fa3b8;--line:#243447;
-   --acc:#ff4200;--accdark:#c12d00;--softblue:#bdd2e0;--softblue2:#14263a;--bordeaux:#a34d6e;
+   --acc:#00d4ff;--accdark:#00a3d9;--softblue:#bdd2e0;--softblue2:#14263a;--bordeaux:#a34d6e;
    --tan:#c9a689;--cream2:#0c1522;--ok:#bdd2e0;--okbg:#14263a;--warnbg:#3d2f16;--failbg:#3d1c16}
  *{box-sizing:border-box}
  body{margin:0;color:var(--ink);font:15.5px/1.55 'Instrument Sans',system-ui,sans-serif;
@@ -252,7 +252,7 @@ STYLE = """
  .folder.new{border-style:dashed;color:var(--soft)} .folder.new:hover{color:var(--acc)}
  button,.btn{font:600 14px 'Instrument Sans';border-radius:9px;border:1px solid var(--line);
    padding:9px 16px;background:var(--sf);color:var(--ink);cursor:pointer;text-decoration:none;display:inline-block}
- button.primary,.btn.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+ button.primary,.btn.primary{background:var(--acc);border-color:var(--acc);color:#06202e}
  button.primary:hover,.btn.primary:hover{background:var(--accdark)}
  button.ghost{border:none;background:none;color:var(--soft);padding:4px 6px}
  button.ghost:hover{color:var(--accdark)}
@@ -280,7 +280,7 @@ STYLE = """
  @media(max-width:860px){.two{grid-template-columns:1fr}}
  pre.log{background:#0c1522;border:1px solid var(--line);color:#e8e2d9;border-radius:12px;padding:16px;font:12.5px 'IBM Plex Mono',monospace;overflow-x:auto;line-height:1.55;white-space:pre-wrap}
  .pb{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin:12px 0 4px}
- .pb i{display:block;height:100%;width:4%;background:linear-gradient(90deg,var(--acc),#ff7a4d);
+ .pb i{display:block;height:100%;width:4%;background:linear-gradient(90deg,var(--acc),#7ae9ff);
    border-radius:99px;transition:width .5s ease;position:relative;overflow:hidden}
  .pb i::after{content:"";position:absolute;inset:0;
    background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
@@ -312,7 +312,8 @@ STYLE = """
  .mode.after{border-color:var(--deep)} .mode.after b{color:var(--acc)}
  .viewtog{display:flex;gap:6px}
  .viewtog button{font:600 12px 'IBM Plex Mono',monospace;border:1px solid var(--line);background:transparent;
-   color:var(--soft);border-radius:7px;width:30px;height:26px;cursor:pointer}
+   color:var(--soft);border-radius:7px;width:30px;height:26px;cursor:pointer;
+   display:grid;place-items:center;line-height:1;padding:0}
  .viewtog button.on{background:var(--softblue2);color:var(--ink);border-color:var(--deep)}
  .fgridV{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
  .ftile{aspect-ratio:1;border:1px solid var(--line);border-radius:11px;position:relative;padding:12px 10px;
@@ -349,7 +350,7 @@ STYLE = """
    box-shadow:0 18px 50px -30px rgba(0,0,0,.8);position:sticky;top:14px;max-height:calc(100vh - 90px)}
  .rail header{display:flex;align-items:center;gap:8px;padding:13px 14px;border-bottom:1px solid var(--line)}
  .rail header .mono{font-size:10px;letter-spacing:.18em;color:var(--tan)}
- .rail header button{margin-left:auto;font-weight:600;font-size:12px;background:var(--acc);color:#fff;
+ .rail header button{margin-left:auto;font-weight:600;font-size:12px;background:var(--acc);color:#06202e;
    border:none;border-radius:7px;padding:6px 10px;cursor:pointer}
  .rail header button:hover{background:var(--accdark)}
  .exlist{flex:1;overflow-y:auto;min-height:0;padding:10px;display:flex;flex-direction:column;gap:9px}
@@ -405,7 +406,7 @@ STYLE = """
  .fdrop button{display:block;width:100%;text-align:left;border:none;background:none;color:var(--ink);
    font-size:12.5px;font-weight:600;padding:9px 13px;cursor:pointer;border-radius:0}
  .fdrop button:hover{background:var(--softblue2)}
- .fdrop button.danger{color:var(--acc)}
+ .fdrop button.danger{color:#ff6d5a}
  </style>"""
 
 
