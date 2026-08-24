@@ -250,17 +250,17 @@ STYLE = """
    background:var(--bg) fixed;
    background-image:radial-gradient(900px 600px at 12% -10%,rgba(47,74,115,.5),transparent 60%),
      radial-gradient(800px 560px at 105% 8%,rgba(0,212,255,.06),transparent 55%)}
- body.lightbg{background:#f7f9fc;height:100vh;overflow:hidden;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)' opacity='0.05'/%3E%3C/svg%3E")}
+ body.lightbg{background:#eaf1fa;height:100vh;overflow:hidden;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)' opacity='0.05'/%3E%3C/svg%3E"),radial-gradient(950px 640px at 12% -10%,rgba(0,163,217,.14),transparent 60%),radial-gradient(860px 600px at 104% 10%,rgba(47,74,115,.12),transparent 58%),radial-gradient(700px 520px at 50% 115%,rgba(0,212,255,.08),transparent 60%)}
  body.lightbg .wrap{height:100%;box-sizing:border-box;padding:22px}
  body.lightbg .deskpanel{flex:1;min-height:0}
  body.lightbg .desk{flex:1;min-height:0;align-items:stretch}
  body.lightbg .rail{position:static;max-height:none;min-height:0}
- body.lightbg .pane2{min-height:0;overflow:hidden}
+ body.lightbg .pane2{min-height:0;overflow:visible}
  body.lightbg #pane-files{flex:1;min-height:0;display:flex;flex-direction:column}
  body.lightbg #fl-list{flex:1;min-height:0;overflow-y:auto}
  body.lightbg #fl-grid{flex:1;min-height:0;overflow-y:auto;align-content:start}
  body.lightbg #pane-runs{flex:1;min-height:0;align-items:stretch}
- body.lightbg #pane-runs .card{min-height:0;display:flex;flex-direction:column;overflow:hidden}
+ body.lightbg #pane-runs .card{min-height:0;display:flex;flex-direction:column;overflow:visible}
  body.lightbg .runscroll{flex:1;min-height:0;overflow-y:auto}
  body.lightbg .stage2{height:auto;flex:1;min-height:0}
  @media(max-width:900px){body.lightbg{height:auto;overflow:auto}
@@ -540,10 +540,10 @@ STYLE = """
  .rcfrow:hover .rcren{opacity:1} .rcren:hover{color:var(--ink)}
  /* inline report expansion in the Runs window */
  .two{transition:grid-template-columns .35s ease}
- .two > form.card{min-width:0;overflow:hidden;transition:opacity .3s ease,padding .35s ease}
+ .two > form.card{min-width:0;transition:opacity .3s ease,padding .35s ease}
  #pane-runs.wide{grid-template-columns:0fr 0px 1fr}
  #pane-runs.wide .rowgrip{pointer-events:none}
- #pane-runs.wide > form.card{opacity:0;padding:0;border-width:0}
+ #pane-runs.wide > form.card{opacity:0;padding:0;border-width:0;overflow:hidden}
  .repwrap{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}
  .repwrap iframe{flex:1;width:100%;border:none;border-radius:10px;
    background:transparent;min-height:300px}
@@ -591,6 +591,7 @@ STYLE = """
    --okbg:#ddefe3;--warnbg:#f6ead9;--failbg:#f8e3dc;color:var(--ink)}
  .deskpanel::before,.deskpanel::after{display:none}
  .card,.rail,.railchat,.stage2{border-color:rgba(23,38,63,.10)}
+ .segbody iframe[data-autoh]{min-height:0;border:none;background:transparent;border-radius:0}
  </style>"""
 
 
@@ -1310,7 +1311,10 @@ SEG_JS = ('<script>(function(){var KEY="seg-__WS__";'
           'document.getElementById("sg-"+x).classList.toggle("on",x===s);});'
           'try{localStorage.setItem(KEY,s)}catch(e){}'
           'var f=document.querySelector("#sb-"+s+" iframe");'
-          'if(f&&!f.getAttribute("src"))f.src=f.dataset.src;}'
+          'if(f&&!f.getAttribute("src")){f.src=f.dataset.src;'
+          'if(f.dataset.autoh)f.onload=function(){var fit=function(){try{'
+          'f.style.height=(f.contentDocument.documentElement.scrollHeight+24)+"px";'
+          'f.style.flex="none"}catch(e){}};fit();setTimeout(fit,700)}}}'
           'segs.forEach(function(x){document.getElementById("sg-"+x).onclick=function(){show(x)}});'
           'var init="evidence";'
           'try{var st=localStorage.getItem(KEY);if(segs.indexOf(st)>=0)init=st}catch(e){}'
@@ -1359,7 +1363,8 @@ def results_view(ws_name, run_name):
           or "full grids in the evidence report")),
         ("S5", "Sequencing", seq),
     ]
-    ev = f'<iframe data-src="/w/{ws.name}/report/{run.name}" title="evidence"></iframe>' 
+    ev = (f'<iframe data-src="/w/{ws.name}/report/{run.name}?bare=1" data-autoh="1" '
+          f'title="evidence"></iframe>')
     deck = ""
     if rec:
         deck += (f'<div class="iband"><b>Engine verdict: enter {rec} first</b>'
@@ -1582,6 +1587,10 @@ def report(ws_name, run_name):
             "b.textContent=j.ok?'Researched — draft below':'Research this';if(!j.ok)b.disabled=false;});"
             "</script></body>")
         doc = doc.replace("</body>", hook, 1)
+    if request.args.get("bare"):
+        doc = doc.replace("</body>", (
+            "<style>body{background:transparent !important;margin:0;padding:0}"
+            ".wrap{max-width:none;padding:2px 4px 18px}</style></body>"), 1)
     return Response(doc, mimetype="text/html")
 
 
