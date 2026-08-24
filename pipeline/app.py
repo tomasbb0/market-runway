@@ -231,7 +231,14 @@ STYLE = """
    background:var(--bg) fixed;
    background-image:radial-gradient(900px 600px at 12% -10%,rgba(55,75,96,.55),transparent 60%),
      radial-gradient(800px 560px at 105% 8%,rgba(0,212,255,.06),transparent 55%)}
- body.lightbg{background:#ffffff;background-image:none}
+ body.lightbg{background:#ffffff;background-image:none;height:100vh;overflow:hidden}
+ body.lightbg .wrap{height:100%;box-sizing:border-box;padding:22px}
+ body.lightbg .deskpanel{flex:1;min-height:0}
+ body.lightbg .desk{flex:1;min-height:0;align-items:stretch}
+ body.lightbg .rail{position:static;max-height:none;min-height:0}
+ body.lightbg .pane2{min-height:0;overflow-y:auto;padding-right:2px}
+ @media(max-width:900px){body.lightbg{height:auto;overflow:auto}
+   body.lightbg .pane2{overflow:visible}}
  a{color:var(--deep)} .serif{font-family:'Noto Serif',serif} .mono{font-family:'IBM Plex Mono',monospace}
  nav{display:flex;align-items:center;gap:10px;padding:16px 26px;border-bottom:1px solid var(--line);background:var(--sf)}
  nav .dot{width:11px;height:11px;border-radius:50%;background:var(--acc)}
