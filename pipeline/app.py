@@ -320,7 +320,7 @@ STYLE = """
    padding:12px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
    text-align:center;clip-path:polygon(0 0,calc(100% - 24px) 0,100% 24px,100% 100%,0 100%)}
  .ftile::after{content:"";position:absolute;top:0;right:0;width:24px;height:24px;
-   background:var(--softblue2);clip-path:polygon(0 0,0 100%,100% 100%)}
+   background:#101f30;clip-path:polygon(0 0,0 100%,100% 100%)}
  .ftile:hover::after{background:var(--deep)}
  .ftile .chip{white-space:normal;max-width:100%;line-height:1.6;border-radius:10px}
  .ftile .fmt{font:600 11px 'IBM Plex Mono',monospace;background:var(--softblue2);color:var(--softblue);
@@ -420,6 +420,9 @@ STYLE = """
    font-size:26px;font-weight:600;line-height:1;background:transparent;clip-path:none}
  .ftile.addtile::after{display:none}
  .ftile.addtile:hover{color:var(--acc);border-color:var(--acc)}
+ .xtitle{text-transform:uppercase;letter-spacing:-.02em}
+ .xtitle em{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;
+   text-transform:lowercase;color:var(--softblue)}
  </style>"""
 
 
@@ -494,6 +497,15 @@ NEWWS_DLG = (
     '<div style="display:flex;gap:10px;justify-content:flex-end">'
     '<button type="button" onclick="this.closest(\'dialog\').close()">Cancel</button>'
     '<button class="primary">Create</button></div></form></dialog>')
+
+
+def fancy_title(name: str) -> str:
+    """First word caps in the sans face; the rest lowercase in the serif italic."""
+    parts = [p for p in re.split(r"[-_ ]+", name.strip()) if p]
+    if len(parts) > 1:
+        return (html.escape(parts[0].upper())
+                + " <em>" + html.escape(" ".join(parts[1:]).lower()) + "</em>")
+    return html.escape(name)
 
 
 def rail_html(current: str) -> str:
@@ -674,7 +686,7 @@ def workspace(ws_name):
 
     body = f"""
     <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-      <h1 style="font-size:26px">{ws.name}</h1>
+      <h1 class="xtitle" style="font-size:26px">{fancy_title(ws.name)}</h1>
       <a href="/w/{ws.name}/chat" class="btn">Ask the data{ROBOT}</a>
       <div class="tabsbar">
         <button class="tabbtn" id="tb-files" onclick="setTab('files')">Files</button>
