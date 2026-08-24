@@ -478,6 +478,24 @@ STYLE = """
    padding:10px 12px;overflow-x:auto;margin:0 0 10px}
  .msg.ai pre code{background:none;border:none;padding:0}
  .msg.ai h3{margin:0 0 8px;font-size:15px}
+ .railchat{border-top:1px solid var(--line);display:flex;flex-direction:column;flex:0 0 auto;
+   height:280px;max-height:45%;min-height:190px;transition:height .35s ease;overflow:hidden}
+ .railchat.closed{height:37px;min-height:0;max-height:none}
+ .rctog{margin-left:auto;border:none;background:none;color:var(--soft);cursor:pointer;
+   padding:2px;display:grid;place-items:center}
+ .rctog:hover{color:var(--ink)}
+ .rctog svg{width:14px;height:14px;transition:transform .3s}
+ .railchat.closed .rctog svg{transform:rotate(180deg)}
+ .rchead{padding:10px 14px 6px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;
+   letter-spacing:.14em;color:var(--tan);text-transform:uppercase;display:flex;align-items:center}
+ .rcmsgs{flex:1;min-height:0;overflow-y:auto;padding:4px 14px 8px;display:flex;flex-direction:column;
+   gap:8px;font-size:12.5px;line-height:1.5}
+ .rcmsgs .u{align-self:flex-end;background:var(--deep);color:#fff;border-radius:10px;padding:6px 10px;max-width:92%}
+ .rcmsgs .a{align-self:flex-start;max-width:100%}
+ .rcmsgs .a code{font-family:'IBM Plex Mono',monospace;font-size:11.5px;background:var(--cream2);
+   border:1px solid var(--line);border-radius:4px;padding:0 4px}
+ .rcin{display:flex;gap:6px;padding:10px 12px;border-top:1px solid var(--line)}
+ .rcin input{flex:1;font-size:12.5px;min-width:0}
  </style>"""
 
 
@@ -556,6 +574,33 @@ RAIL_JS = ('<script>document.querySelectorAll(".fmenu").forEach(function(b){'
            'if(!e.target.closest(".folwrap"))document.querySelectorAll(".folwrap.open").forEach('
            'function(o){o.classList.remove("open")})});</script>')
 
+RAILCHAT_JS = ('<script>(function(){'
+    "var q=document.getElementById('rcq'),ms=document.getElementById('rcmsgs');"
+    'if(!q)return;var hist=[];'
+    "function fmt(s){var d=document.createElement('div');d.textContent=s;var h=d.innerHTML;"
+    "return h.replace(/\\*\\*([^*]+)\\*\\*/g,'<strong>$1</strong>')"
+    ".replace(/`([^`\\n]+)`/g,'<code>$1</code>')}"
+    "function add(cls,htm){var d=document.createElement('div');d.className=cls;d.innerHTML=htm;"
+    'ms.appendChild(d);ms.scrollTop=ms.scrollHeight;return d}'
+    'window.rcSend=async function(){'
+    "var t=q.value.trim();if(!t)return;q.value='';"
+    "add('u',fmt(t));hist.push({role:'user',content:t});"
+    "var th=document.createElement('div');th.className='thinking';th.textContent='Thinking';"
+    'ms.appendChild(th);ms.scrollTop=ms.scrollHeight;'
+    "try{var r=await fetch('/w/__WS__/chat/send',{method:'POST',"
+    "headers:{'Content-Type':'application/json'},"
+    "body:JSON.stringify({messages:hist,run:'__RUN__'||null,context:'__VIEW__'})});"
+    'var j=await r.json();th.remove();'
+    "if(j.error){add('a','⚠ '+fmt(j.error));return}"
+    "add('a',fmt(j.text));hist.push({role:'assistant',content:j.text});}"
+    "catch(e){th.remove();add('a','⚠ network error — try again')}};"
+    "q.addEventListener('keydown',function(e){if(e.key==='Enter')rcSend()});"
+    "var rc=document.querySelector('.railchat'),tg=document.getElementById('rctog');"
+    "if(tg){tg.onclick=function(){rc.classList.toggle('closed');"
+    "try{localStorage.setItem('rc-__WS__',rc.classList.contains('closed')?'1':'0')}catch(e){}};"
+    "try{if(localStorage.getItem('rc-__WS__')==='1')rc.classList.add('closed')}catch(e){}}"
+    '})();</script>')
+
 NEWWS_DLG = (
     '<dialog id="newws" style="border:1px solid var(--line);border-radius:14px;padding:22px;max-width:380px">'
     '<form method="post" action="/new" style="display:flex;flex-direction:column;gap:12px">'
@@ -575,7 +620,7 @@ def fancy_title(name: str) -> str:
     return html.escape(name)
 
 
-def rail_html(current: str) -> str:
+def rail_html(current: str, run: str = None, view: str = "") -> str:
     """The v1 exercises rail — every workspace as a little folder."""
     wss = list_workspaces()
     items = ""
@@ -597,9 +642,21 @@ def rail_html(current: str) -> str:
     return (f'<aside class="rail"><header><span class="mono">EXERCISES</span>'
             '<button onclick="document.getElementById(\'newws\').showModal()">+ New</button></header>'
             f'<div class="exlist">{items}</div>'
-            f'<button class="railset" onclick="navKey()">{GEARS}<span>Settings</span></button>'
-            f'<footer>MARKET RUNWAY · {len(wss)} EXERCISE{"S" if len(wss) != 1 else ""}</footer></aside>'
-            + NEWWS_DLG + RAIL_JS)
+            f'<div class="railchat"><div class="rchead">ASK THE DATA{ROBOT}'
+            f'<span style="letter-spacing:0;text-transform:none;color:var(--soft);margin-left:6px">'
+            f'{html.escape(current)}</span>'
+            '<button class="rctog" id="rctog" aria-label="Collapse chat">'
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" '
+            'stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>'
+            "</button></div>"
+            '<div class="rcmsgs" id="rcmsgs"><div class="a" style="color:var(--soft)">Grounded on '
+            + ("the open report" if run else "this exercise") + ". Ask anything.</div></div>"
+            '<div class="rcin"><input id="rcq" placeholder="Ask about this exercise…" autocomplete="off">'
+            '<button class="primary" style="font-size:12px;padding:6px 12px" onclick="rcSend()">Ask</button>'
+            '</div></div></aside>'
+            + NEWWS_DLG + RAIL_JS
+            + RAILCHAT_JS.replace("__WS__", current).replace("__RUN__", run or "")
+                         .replace("__VIEW__", view.replace("'", "")))
 
 
 # ---------------------------------------------------------------- home
@@ -831,7 +888,7 @@ def workspace(ws_name):
         if(e.key==='Escape')done(false)}});
        inp.addEventListener('blur',()=>done(true));}});}}
     </script>"""
-    return page(f"{ws.name} — Market Runway", body, f"/ {ws.name}", rail=rail_html(ws.name))
+    return page(f"{ws.name} — Market Runway", body, f"/ {ws.name}", rail=rail_html(ws.name, view="the workspace Files and Runs view"))
 
 
 @app.post("/w/<ws_name>/files/upload")
@@ -959,7 +1016,7 @@ def run_view(ws_name, token):
         return out
 
     def generate():
-        full = page("Run — Market Runway", "@@CUT@@", f"/ {ws.name} / run", rail=rail_html(ws.name))
+        full = page("Run — Market Runway", "@@CUT@@", f"/ {ws.name} / run", rail=rail_html(ws.name, view="a live pipeline run streaming"))
         head, tail = full.split("@@CUT@@")
         yield head + (
             f'<div><div class="eyebrow">{ws.name} · pipeline run · {mode_label}</div>'
@@ -1099,7 +1156,7 @@ def results_view(ws_name, run_name):
             f'<div class="segbody" id="sb-dataset" style="display:none">{dataset}</div>'
             f'<div class="segbody" id="sb-chat" style="display:none">{chat}</div></div>'
             + SEG_JS.replace("__WS__", ws.name))
-    return page(f"Results — {ws.name}", body, f"/ {ws.name} / results", rail=rail_html(ws.name))
+    return page(f"Results — {ws.name}", body, f"/ {ws.name} / results", rail=rail_html(ws.name, run=run.name, view=f"the results windows of run {run.name}"))
 
 
 @app.get("/w/<ws_name>/runs/<run_name>/f/<name>")
@@ -1223,8 +1280,10 @@ def report(ws_name, run_name):
 
 
 # ---------------------------------------------------------------- chat
-def _grounding(ws: Path) -> tuple[str, str]:
-    run = latest_run(ws)
+def _grounding(ws: Path, run_name: str = None) -> tuple[str, str]:
+    run = (ws / "runs" / Path(run_name).name) if run_name else latest_run(ws)
+    if run_name and not (run / "state.json").exists():
+        run = latest_run(ws)
     if not run or not (run / "state.json").exists():
         return "", ""
     st = json.load(open(run / "state.json"))
@@ -1374,7 +1433,7 @@ def chat_page(ws_name):
     if request.args.get("embed"):
         doc = page(f"Chat — {ws.name}", body, f"/ {ws.name} / chat")
         return re.sub(r"<nav>.*?</nav>", "", doc, count=1, flags=re.S)
-    return page(f"Chat — {ws.name}", body, f"/ {ws.name} / chat", rail=rail_html(ws.name))
+    return page(f"Chat — {ws.name}", body, f"/ {ws.name} / chat", rail=rail_html(ws.name, view="the full-page chat"))
 
 
 @app.post("/w/<ws_name>/chat/send")
@@ -1390,7 +1449,7 @@ def chat_send(ws_name):
     provider = sk().get("provider")
     if not provider:
         return jsonify({"error": "Key format not recognised. Expected sk-ant-… (Anthropic), sk-… (OpenAI) or AIza… (Gemini)."})
-    grounding, run_name = _grounding(ws)
+    grounding, run_name = _grounding(ws, data.get("run"))
     if not grounding:
         return jsonify({"error": "No completed run in this workspace yet."})
     models = PROVIDERS[provider]["models"]
@@ -1398,7 +1457,9 @@ def chat_send(ws_name):
     try:
         msgs = [{"role": m["role"], "content": m["content"]}
                 for m in data.get("messages", []) if m.get("role") in ("user", "assistant")][-20:]
-        text = _chat_call(provider, sk()["value"], model, SYSTEM + grounding, msgs)
+        ctx = (data.get("context") or "").strip()[:200]
+        sysmsg = SYSTEM + grounding + (f"\n\nThe user is currently looking at: {ctx}" if ctx else "")
+        text = _chat_call(provider, sk()["value"], model, sysmsg, msgs)
         return jsonify({"text": text})
     except Exception as e:  # noqa: BLE001
         return jsonify({"error": f"{PROVIDERS[provider]['label']} call failed ({type(e).__name__}): {e}"})
