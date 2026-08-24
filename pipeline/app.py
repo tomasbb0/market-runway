@@ -21,6 +21,8 @@ import os
 import re
 import subprocess
 import sys
+import threading
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -42,6 +44,7 @@ app.config["MAX_CONTENT_LENGTH"] = 30 * 1024 * 1024   # 30 MB per upload batch
 RUNWAY_PASS = os.environ.get("RUNWAY_PASS", "")
 
 KEYS: dict = {}   # per-browser-session provider keys; never written to disk
+RUNTASKS: dict = {}   # run token -> {lines, done, ok, ws, run}
 
 
 app.config["PERMANENT_SESSION_LIFETIME"] = 60 * 60 * 24 * 30   # 30 days
@@ -249,6 +252,16 @@ STYLE = """
  .two{display:grid;grid-template-columns:1.25fr 1fr;gap:18px;align-items:start}
  @media(max-width:860px){.two{grid-template-columns:1fr}}
  pre.log{background:#1d2939;color:#e8e2d9;border-radius:12px;padding:16px;font:12.5px 'IBM Plex Mono',monospace;overflow-x:auto;line-height:1.55;white-space:pre-wrap}
+ .pb{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin:12px 0 4px}
+ .pb i{display:block;height:100%;width:4%;background:linear-gradient(90deg,var(--acc),#ff7a4d);
+   border-radius:99px;transition:width .5s ease;position:relative;overflow:hidden}
+ .pb i::after{content:"";position:absolute;inset:0;
+   background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
+   animation:pbs 1.1s linear infinite}
+ .pb.done i{background:#2F7D4F} .pb.done i::after,.pb.fail i::after{animation:none}
+ .pb.fail i{background:#c12d00;width:100% !important}
+ @keyframes pbs{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+ @media(prefers-reduced-motion:reduce){.pb i::after{animation:none}}
  details.pillpop{position:relative;display:inline-block}
  details.pillpop summary{list-style:none;cursor:pointer}
  details.pillpop summary::-webkit-details-marker{display:none}
@@ -569,7 +582,52 @@ def run_ws(ws_name):
         env["RUNWAY_PROVIDER"] = sk()["provider"]
         if sk()["provider"] == "anthropic":
             env["ANTHROPIC_API_KEY"] = sk()["value"]
-    mode_label = {"auto": "Glide", "max": "Afterburner", "off": "AI off"}.get(ai, ai)
+    token = uuid.uuid4().hex[:12]
+    RUNTASKS[token] = {"lines": [], "done": False, "ok": None, "ws": ws.name, "run": None, "ai": ai}
+    threading.Thread(target=_runner, args=(token, ws.name, ai, env), daemon=True).start()
+    return redirect(f"/w/{ws.name}/run/{token}", code=303)
+
+
+def _runner(token, ws_name, ai, env):
+    t = RUNTASKS[token]
+    try:
+        proc = subprocess.Popen([PY, str(ROOT / "run.py"), "--ai", ai, "--workspace", ws_name],
+                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                text=True, cwd=ROOT, env=env, bufsize=1)
+        for line in proc.stdout:
+            t["lines"].append(ANSI.sub("", line.rstrip()))
+        proc.wait()
+        run = latest_run(ws_dir(ws_name))
+        ok = proc.returncode == 0 and run is not None
+        if ok:
+            t["lines"].append("generating the evidence report…")
+            subprocess.run([PY, "-c",
+                            f"import sys; sys.path.insert(0,'{ROOT}'); from src.report import build; build(r'{run}/state.json')"],
+                           cwd=ROOT, capture_output=True, timeout=120)
+            t["run"] = run.name
+        t["ok"] = ok
+    except Exception as e:  # noqa: BLE001
+        t["lines"].append(f"runner error: {e}")
+        t["ok"] = False
+    t["done"] = True
+
+
+def _stage_of(line: str):
+    m = re.search(r"\[stage (\d)\]", line)
+    if m:
+        return int(m.group(1))
+    if "generating the evidence report" in line:
+        return 8
+    return None
+
+
+@app.get("/w/<ws_name>/run/<token>")
+def run_view(ws_name, token):
+    ws = ws_dir(ws_name)
+    t = RUNTASKS.get(token)
+    if t is None or t["ws"] != ws.name:
+        return redirect(f"/w/{ws.name}")
+    mode_label = {"auto": "Glide", "max": "Afterburner", "off": "AI off"}.get(t["ai"], t["ai"])
 
     def colorize(line: str) -> str:
         e = html.escape(line)
@@ -577,34 +635,48 @@ def run_ws(ws_name):
                  .replace("FAIL", '<span class="fail">FAIL</span>')
                  .replace("WARN", '<span class="warn">WARN</span>'))
 
+    def emit(line):
+        out = colorize(line) + "\n"
+        n = _stage_of(line)
+        if n:
+            out += f'<script>bar({n})</script>'
+        return out
+
     def generate():
         head = page("Run — Runway", "", f"/ {ws.name} / run")
-        head = head.split("<div class=\"wrap\">")[0]
+        head = head.split('<div class="wrap">')[0]
         yield head + (
             f'<div class="wrap"><div><div class="eyebrow">{ws.name} · pipeline run · {mode_label}</div>'
-            '<h1 style="font-size:26px" id="rt">Running…</h1></div>'
+            '<h1 style="font-size:26px" id="rt">Running…</h1>'
+            '<div class="pb" id="pb"><i></i></div></div>'
+            '<script>function bar(n){document.querySelector("#pb i").style.width='
+            'Math.min(96,Math.round(n/8*100))+"%"}</script>'
             '<pre class="log" id="lg">')
         yield "<!--" + " " * 2048 + "-->\n"
-        proc = subprocess.Popen([PY, str(ROOT / "run.py"), "--ai", ai, "--workspace", ws.name],
-                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                text=True, cwd=ROOT, env=env, bufsize=1)
-        for line in proc.stdout:
-            yield colorize(ANSI.sub("", line.rstrip())) + "\n"
-        proc.wait()
-        run = latest_run(ws)
-        ok = proc.returncode == 0 and run is not None
-        if ok:
-            yield 'generating the evidence report…\n'
-            subprocess.run([PY, "-c",
-                            f"import sys; sys.path.insert(0,'{ROOT}'); from src.report import build; build(r'{run}/state.json')"],
-                           cwd=ROOT, capture_output=True, timeout=120)
-        actions = (f'<a class="btn primary" href="/w/{ws.name}/report/{run.name}">Open the report →</a>'
-                   f'<a class="btn" href="/w/{ws.name}/chat">Ask the data</a>' if ok else "")
-        yield ('</pre><div style="display:flex;gap:10px">' + actions
+        i = 0
+        idle = 0.0
+        while True:
+            lines = t["lines"]
+            while i < len(lines):
+                yield emit(lines[i])
+                i += 1
+                idle = 0.0
+            if t["done"]:
+                break
+            time.sleep(0.25)
+            idle += 0.25
+            if idle >= 3.0:
+                yield "<!-- hb -->"
+                idle = 0.0
+        ok = bool(t["ok"])
+        actions = (f'<a class="btn primary" href="/w/{ws.name}/report/{t["run"]}">Open the report →</a>'
+                   f'<a class="btn" href="/w/{ws.name}/chat">Ask the data</a>' if ok and t["run"] else "")
+        yield ('</pre><div style="display:flex;gap:10px;margin-top:12px">' + actions
                + f'<a class="btn" href="/w/{ws.name}">← workspace</a></div>'
                + '<script>document.getElementById("rt").textContent='
                + ('"Run complete"' if ok else '"Run failed"')
-               + ';</script></div></body></html>')
+               + f';document.getElementById("pb").classList.add("{"done" if ok else "fail"}");'
+               + 'document.querySelector("#pb i").style.width="100%";</script></div></body></html>')
 
     return Response(stream_with_context(generate()), mimetype="text/html",
                     headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})

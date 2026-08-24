@@ -122,9 +122,10 @@ def extract_all(docs: dict, schema: dict, mode: str) -> tuple[list[Extraction], 
     # deterministic value from its source document; disagreements are reported,
     # never silently applied (the deterministic value stays canonical).
     if mode == "max":
-        for e in out:
-            if e.method != "DET" or e.source not in docs:
-                continue
+        det_all = [e for e in out if e.method == "DET" and e.source in docs]
+        for _ai_i, e in enumerate(det_all):
+            if _ai_i % 10 == 0:
+                print(f"  audit progress: {_ai_i}/{len(det_all)} values re-checked", flush=True)
             ans = llm.extract_field(docs[e.source].text, e.scope, e.param,
                                     e.unit, mode)
             if ans is None:
