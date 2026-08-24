@@ -323,7 +323,7 @@ STYLE = """
  .pb i::after{content:"";position:absolute;inset:0;
    background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
    animation:pbs 1.1s linear infinite}
- .pb.done i{background:#2F7D4F} .pb.done i::after,.pb.fail i::after{animation:none}
+ .pb.done i::after,.pb.fail i::after{animation:none}
  .pb.fail i{background:#c12d00;width:100% !important}
  @keyframes pbs{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
  @media(prefers-reduced-motion:reduce){.pb i::after{animation:none}}
@@ -698,6 +698,7 @@ RAIL_JS = ('<script>document.querySelectorAll(".fmenu").forEach(function(b){'
            "w.parentNode.insertBefore(DRAGW,e.clientY<r.top+r.height/2?w:w.nextSibling)});});"
            "var exl=document.querySelector('.exlist');"
            "if(exl)exl.addEventListener('dragover',function(e){if(DRAGW)e.preventDefault()});"
+           "document.addEventListener('DOMContentLoaded',function(){"
            "var cg=document.getElementById('colgrip');"
            "if(cg){var dk=cg.parentElement;"
            "try{var sw=parseInt(localStorage.getItem('mr-railw'));"
@@ -710,6 +711,7 @@ RAIL_JS = ('<script>document.querySelectorAll(".fmenu").forEach(function(b){'
            "try{localStorage.setItem('mr-railw',dk.querySelector('.railcol').offsetWidth)}catch(e){}"
            "window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up)}"
            "window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up)});}"
+           "});"
            '</script>')
 
 RAILCHAT_JS = ('<script>(function(){'
@@ -1311,7 +1313,10 @@ def run_view(ws_name, token):
                + ('"Run complete"' if ok else '"Run failed"')
                + f';document.getElementById("pb").classList.add("{"done" if ok else "fail"}");'
                + 'document.querySelector("#pb i").style.width="100%";'
-               + 'var l=document.getElementById("lg");l.scrollTop=l.scrollHeight;</script>' + tail)
+               + 'var l=document.getElementById("lg");l.scrollTop=l.scrollHeight;'
+               + (f'setTimeout(function(){{location.href="/w/{ws.name}#report-{t["run"]}"}},700);'
+                  if ok and t["run"] else '')
+               + '</script>' + tail)
 
     return Response(stream_with_context(generate()), mimetype="text/html",
                     headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
