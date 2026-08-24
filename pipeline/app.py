@@ -884,13 +884,13 @@ def home():
               '<div class="tab" style="background:var(--line)"></div><div class="body" style="display:grid;place-content:center">'
               '<b>+ New search</b><div class="meta">start a market assessment</div></div></a>')
     body = f"""
-    <section class="card" style="display:flex;flex-direction:column;gap:22px">
+    <section class="card" style="display:flex;flex-direction:column;gap:22px;flex:1;min-height:0">
     <div><div class="eyebrow">Market Runway · the market-entry desk</div>
     <h1>Every market, <em>one folder away.</em></h1>
     <p class="hint" style="max-width:60ch">Drop a market pack into a workspace, run the seven-stage pipeline,
     and get a validated dataset, a ranked recommendation and a full evidence report. Deterministic first;
     AI only where it earns its place.</p></div>
-    <div class="grid">{cards}</div>
+    <div class="grid" style="overflow-y:auto;min-height:0;flex:1;align-content:start">{cards}</div>
     </section>
     <dialog id="newws" style="border:1px solid var(--line);border-radius:14px;padding:22px;max-width:380px">
       <form method="post" action="/new" style="display:flex;flex-direction:column;gap:12px">
