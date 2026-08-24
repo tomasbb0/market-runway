@@ -344,7 +344,11 @@
        if(!e.files.some(x=>x.name===f.name))
          e.files.push({name:f.name,role:'unassigned',fmt:(f.name.split('.').pop()||'').toUpperCase()});
      }
-     $('fpick').value='';e.dirty=true;save();render();};
+     $('fpick').value='';e.dirty=true;save();render();
+     if(window.__autorun){const mm=window.__autorun;window.__autorun=null;
+       const st=FILESTORE[e.id]||{};
+       if(e.files.every(f=>st[f.name])){S.tab='run';save();render();setTimeout(()=>realRun(e,mm),50);}}
+   };
    document.querySelectorAll('.stage .del,.ftile .del,.frow .del').forEach(b=>b.onclick=()=>{
      const nm=(e.files[+b.dataset.i]||{}).name;
      if(nm){delete (FILESTORE[e.id]||{})[nm];IDB.del('files',e.id+'|'+nm);}
@@ -420,10 +424,11 @@
    if(!e.files.length){log.innerHTML='<div class="pend">add documents in Files first</div>';
      document.querySelectorAll('.mode').forEach(b=>b.disabled=false);return}
    if(missing.length){
-     log.innerHTML='<div class="pend">the browser holds file bytes only for this session — '
-       +'re-attach: '+missing.map(esc).join(', ')+'</div>';
-     const pick=document.createElement('button');pick.className='runbtn ghost';pick.textContent='Re-attach files';
-     pick.onclick=()=>$('fpick').click();log.appendChild(pick);
+     log.innerHTML='<div class="pend">This exercise predates on-device storage, so the file contents were '
+       +'never saved — only the names. Select the files once more (all at once is fine) and the run starts '
+       +'by itself. Missing: '+missing.map(esc).join(', ')+'</div>';
+     const pick=document.createElement('button');pick.className='runbtn ghost';pick.textContent='Select the files';
+     pick.onclick=()=>{window.__autorun=m;$('fpick').click()};log.appendChild(pick);
      document.querySelectorAll('.mode').forEach(b=>b.disabled=false);return}
    log.innerHTML='';
    try{
