@@ -51,6 +51,17 @@ TRASH = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-widt
          'stroke-linecap="round" stroke-linejoin="round">'
          '<path d="M4 7h16M10 7V5h4v2M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>')
 
+EXTS = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" '
+        'stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;'
+        'vertical-align:-1px;margin-left:5px">'
+        '<path d="M14 5h5v5M19 5l-8 8M19 14v4a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h4"/></svg>')
+GEARS = ('<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd"><path d="M18.79 10.31 '
+         'L21.70 10.64 L21.70 13.36 L18.79 13.69 L18.00 15.61 L19.83 17.90 L17.90 19.83 L15.61 18.00 '
+         'L13.69 18.79 L13.36 21.70 L10.64 21.70 L10.31 18.79 L8.39 18.00 L6.10 19.83 L4.17 17.90 '
+         'L6.00 15.61 L5.21 13.69 L2.30 13.36 L2.30 10.64 L5.21 10.31 L6.00 8.39 L4.17 6.10 L6.10 4.17 '
+         'L8.39 6.00 L10.31 5.21 L10.64 2.30 L13.36 2.30 L13.69 5.21 L15.61 6.00 L17.90 4.17 L19.83 6.10 '
+         'L18.00 8.39 Z M15.1 12 A3.1 3.1 0 1 0 8.9 12 A3.1 3.1 0 1 0 15.1 12 Z"/></svg>')
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("RUNWAY_SECRET") or os.urandom(24).hex()
 app.config["MAX_CONTENT_LENGTH"] = 30 * 1024 * 1024   # 30 MB per upload batch
@@ -323,7 +334,55 @@ STYLE = """
    font:12.5px 'IBM Plex Mono',monospace;margin-top:8px;white-space:pre-wrap}
  .chatinput{display:flex;gap:10px;position:sticky;bottom:0;background:var(--bg);padding:12px 0}
  .chatinput input[type=text]{flex:1}
-</style>"""
+/* v1 desk layout — exercises rail + results stage (ported from market-runway) */
+ .desk{display:grid;grid-template-columns:270px 1fr;gap:18px;align-items:start}
+ @media(max-width:900px){.desk{grid-template-columns:1fr}}
+ .pane2{display:flex;flex-direction:column;gap:14px;min-width:0}
+ .rail{background:var(--sf);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;
+   box-shadow:0 18px 50px -30px rgba(0,0,0,.8);position:sticky;top:14px;max-height:calc(100vh - 90px)}
+ .rail header{display:flex;align-items:center;gap:8px;padding:13px 14px;border-bottom:1px solid var(--line)}
+ .rail header .mono{font-size:10px;letter-spacing:.18em;color:var(--tan)}
+ .rail header button{margin-left:auto;font-weight:600;font-size:12px;background:var(--acc);color:#fff;
+   border:none;border-radius:7px;padding:6px 10px;cursor:pointer}
+ .rail header button:hover{background:var(--accdark)}
+ .exlist{flex:1;overflow-y:auto;min-height:0;padding:10px;display:flex;flex-direction:column;gap:9px}
+ .fol{display:block;text-decoration:none;color:var(--ink)}
+ .fol .ftab{width:30px;height:8px;background:var(--deep);border-radius:4px 4px 0 0;margin-bottom:-1px}
+ .fol .fbody{background:var(--cream2);border:1px solid var(--line);border-radius:0 8px 8px 8px;padding:9px 11px}
+ .fol b{font-size:13px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .fol .meta{font-size:11px;color:var(--soft);margin-top:2px;line-height:1.5}
+ .fol:hover .fbody,.fol.on .fbody{border-color:var(--acc)} .fol.on .ftab{background:var(--acc)}
+ .railset{display:flex;align-items:center;gap:9px;padding:12px 14px;border:none;border-top:1px solid var(--line);
+   background:none;color:var(--softblue);cursor:pointer;font-weight:600;font-size:13px;text-align:left;width:100%}
+ .railset:hover{color:var(--ink)} .railset svg{width:15px;height:15px}
+ .rail footer{padding:10px 14px;border-top:1px solid var(--line);font-family:'IBM Plex Mono',monospace;
+   font-size:10px;letter-spacing:.1em;color:var(--soft)}
+ .stage2{background:var(--sf);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;
+   flex-direction:column;min-height:420px;height:calc(100vh - 215px)}
+ .seg{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+ .seg button{font-weight:600;font-size:12px;border:1px solid var(--line);background:transparent;
+   color:var(--softblue);border-radius:99px;padding:7px 14px;cursor:pointer}
+ .seg button.on{background:var(--softblue2);border-color:var(--deep);color:var(--ink)}
+ .recnote{margin:0 0 10px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--soft);letter-spacing:.02em}
+ .segbody{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column}
+ .segbody iframe{flex:1;width:100%;border:1px solid var(--line);border-radius:10px;background:var(--sf);min-height:320px}
+ .openfull{font-weight:600;font-size:12px;color:var(--softblue);text-decoration:none;align-self:flex-end;margin-bottom:8px}
+ .openfull:hover{color:var(--acc)}
+ .facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1px;background:var(--line);
+   border:1px solid var(--line);border-radius:12px;overflow:hidden}
+ .facts div{background:var(--bg);padding:16px}
+ .facts span{display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;
+   color:var(--soft);text-transform:uppercase}
+ .facts b{font-size:20px;letter-spacing:-.01em}
+ .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+ .steps>div{background:var(--cream2);border:1px solid var(--line);border-radius:12px;padding:14px}
+ .steps span{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;color:var(--tan)}
+ .steps b{display:block;margin:4px 0 6px;font-size:14.5px}
+ .steps p{margin:0;font-size:12.5px;color:var(--soft);line-height:1.5}
+ .iband{display:flex;flex-direction:column;gap:3px;background:var(--softblue2);border:1px solid var(--deep);
+   border-radius:12px;padding:13px 16px;margin-bottom:12px}
+ .iband b{font-size:14.5px} .iband span{font-size:12px;color:var(--soft)}
+ </style>"""
 
 
 def nav(crumbs=""):
@@ -358,7 +417,9 @@ def nav(crumbs=""):
             f'<span class="crumb">{crumbs}</span><span class="right">{key_chip}</span></nav>')
 
 
-def page(title, body, crumbs=""):
+def page(title, body, crumbs="", rail=None):
+    if rail:
+        body = f'<div class="desk">{rail}<div class="pane2">{body}</div></div>'
     return (f'<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex">'
             f'<title>{html.escape(title)}</title>{STYLE}{nav(crumbs)}<div class="wrap">{body}</div>')
 
@@ -376,6 +437,36 @@ def ws_summary(ws: Path) -> dict:
         except Exception:  # noqa: BLE001
             pass
     return {"files": len(files), "runs": len(runs), "rec": rec, "markets": markets}
+
+
+NEWWS_DLG = (
+    '<dialog id="newws" style="border:1px solid var(--line);border-radius:14px;padding:22px;max-width:380px">'
+    '<form method="post" action="/new" style="display:flex;flex-direction:column;gap:12px">'
+    '<h2 style="margin:0">New exercise</h2>'
+    '<input type="text" name="name" placeholder="e.g. Spain 2027" required>'
+    '<div style="display:flex;gap:10px;justify-content:flex-end">'
+    '<button type="button" onclick="this.closest(\'dialog\').close()">Cancel</button>'
+    '<button class="primary">Create</button></div></form></dialog>')
+
+
+def rail_html(current: str) -> str:
+    """The v1 exercises rail — every workspace as a little folder."""
+    wss = list_workspaces()
+    items = ""
+    for ws in wss:
+        s = ws_summary(ws)
+        meta = f'{s["files"]} docs · {s["runs"]} run(s)'
+        if s["rec"]:
+            meta += f' · <span style="color:var(--acc)">{html.escape(s["rec"])}</span>'
+        items += (f'<a class="fol{" on" if ws.name == current else ""}" href="/w/{ws.name}">'
+                  f'<div class="ftab"></div><div class="fbody"><b>{ws.name}</b>'
+                  f'<div class="meta">{meta}</div></div></a>')
+    return (f'<aside class="rail"><header><span class="mono">EXERCISES</span>'
+            '<button onclick="document.getElementById(\'newws\').showModal()">+ New</button></header>'
+            f'<div class="exlist">{items}</div>'
+            f'<button class="railset" onclick="navKey()">{GEARS}<span>Settings</span></button>'
+            f'<footer>RUNWAY DESK · {len(wss)} EXERCISE{"S" if len(wss) != 1 else ""}</footer></aside>'
+            + NEWWS_DLG)
 
 
 # ---------------------------------------------------------------- home
@@ -499,7 +590,7 @@ def workspace(ws_name):
         ts = datetime.strptime(run.name, "%Y%m%d-%H%M%S").strftime("%d %b · %H:%M")
         runrows += (f'<div class="runrow"><span class="stamp">{ts}</span>'
                     f'<span class="rec" style="flex:1">{rec}</span>{chip}'
-                    f'<a class="btn" href="/w/{ws.name}/report/{run.name}">Report</a>'
+                    f'<a class="btn" href="/w/{ws.name}/results/{run.name}">Report</a>'
                     f'<form method="post" action="/w/{ws.name}/runs/{run.name}/delete" '
                     f'onsubmit="return confirm(\'Delete this run and its report?\')">'
                     f'<button class="rdel" title="Delete run">{TRASH}</button></form></div>')
@@ -588,7 +679,7 @@ def workspace(ws_name):
      ;['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{{ev.preventDefault();drop.classList.remove('drag')}}));
      drop.addEventListener('drop',ev=>{{fi.files=ev.dataTransfer.files;upf.submit()}});
     </script>"""
-    return page(f"{ws.name} — Runway", body, f"/ {ws.name}")
+    return page(f"{ws.name} — Runway", body, f"/ {ws.name}", rail=rail_html(ws.name))
 
 
 @app.post("/w/<ws_name>/files/upload")
@@ -741,7 +832,7 @@ def run_view(ws_name, token):
                 yield "<!-- hb -->"
                 idle = 0.0
         ok = bool(t["ok"])
-        actions = (f'<a class="btn primary" href="/w/{ws.name}/report/{t["run"]}">Open the report →</a>'
+        actions = (f'<a class="btn primary" href="/w/{ws.name}/results/{t["run"]}">Open the report →</a>'
                    f'<a class="btn" href="/w/{ws.name}/chat">Ask the data</a>' if ok and t["run"] else "")
         yield ('</pre><div style="display:flex;gap:10px;margin-top:12px">' + actions
                + f'<a class="btn" href="/w/{ws.name}">← workspace</a></div>'
@@ -752,6 +843,121 @@ def run_view(ws_name, token):
 
     return Response(stream_with_context(generate()), mimetype="text/html",
                     headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+SEG_JS = ('<script>(function(){var KEY="seg-__WS__";'
+          'var segs=["evidence","deck","dataset","chat"];'
+          'function show(s){segs.forEach(function(x){'
+          'document.getElementById("sb-"+x).style.display=x===s?"flex":"none";'
+          'document.getElementById("sg-"+x).classList.toggle("on",x===s);});'
+          'try{localStorage.setItem(KEY,s)}catch(e){}'
+          'var f=document.querySelector("#sb-"+s+" iframe");'
+          'if(f&&!f.getAttribute("src"))f.src=f.dataset.src;}'
+          'segs.forEach(function(x){document.getElementById("sg-"+x).onclick=function(){show(x)}});'
+          'var init="evidence";'
+          'try{var st=localStorage.getItem(KEY);if(segs.indexOf(st)>=0)init=st}catch(e){}'
+          'show(init);})();</script>')
+
+
+@app.get("/w/<ws_name>/results/<run_name>")
+def results_view(ws_name, run_name):
+    ws = ws_dir(ws_name)
+    run = ws / "runs" / Path(run_name).name
+    if not (run / "state.json").exists():
+        return redirect(f"/w/{ws.name}")
+    st = json.load(open(run / "state.json"))
+    man, con = st.get("manifest", {}), st.get("conclusion", {})
+    ranking = con.get("ranking") or []
+    res = con.get("results") or {}
+    rec = con.get("recommendation")
+    ts = datetime.strptime(run.name, "%Y%m%d-%H%M%S").strftime("%d %b %Y · %H:%M")
+
+    def eur_m(v):
+        try:
+            return f"€{v/1e6:.1f}M"
+        except Exception:  # noqa: BLE001
+            return "—"
+
+    def be(r):
+        return (f"break-even Y{r['break_even_year']}" if r and r.get("break_even_year")
+                else "no break-even in 5y")
+
+    win = res.get(rec) if rec else None
+    runner = ranking[1] if len(ranking) > 1 else None
+    rr = res.get(runner) if runner else None
+    seq = " → ".join(ranking) if ranking else "—"
+    if con.get("skipped"):
+        seq += " · not modelled: " + ", ".join(con["skipped"])
+    slides = [
+        ("S1", "Recommendation",
+         (f"enter {rec} first — {be(win)}, trough {eur_m(win['min_cash'])}" if win else "no market modelled")),
+        ("S2", "The counter-case",
+         (f"{runner}: {be(rr)}, trough {eur_m(rr['min_cash'])}, end cash {eur_m(rr['end_cash'])}"
+          if rr else "no runner-up modelled")),
+        ("S3", "The winning market",
+         (f"{rec}: end cash {eur_m(win['end_cash'])}, minimum cash {eur_m(win['min_cash'])}" if win else "—")),
+        ("S4", "Sensitivity",
+         (" · ".join(f"{m}: {'insolvent' if res[m].get('insolvent') else 'fundable'}" for m in ranking)
+          or "full grids in the evidence report")),
+        ("S5", "Sequencing", seq),
+    ]
+    ev = (f'<a class="openfull" href="/w/{ws.name}/report/{run.name}">open full{EXTS}</a>'
+          f'<iframe data-src="/w/{ws.name}/report/{run.name}" title="evidence"></iframe>')
+    deck = ""
+    if rec:
+        deck += (f'<div class="iband"><b>Engine verdict: enter {rec} first</b>'
+                 f'<span>ranking: {" → ".join(ranking)}</span></div>')
+    deck += ('<div class="steps">'
+             + "".join(f'<div><span>{s}</span><b>{t}</b><p>{html.escape(d)}</p></div>' for s, t, d in slides)
+             + '</div><p class="hint" style="margin-top:12px">The outline is fixed by the method; '
+               'every number on it comes from this run.</p>')
+    fnd = st.get("findings", [])
+    ext = man.get("extraction", {})
+    facts = [
+        ("Files", len(st.get("ingestion", []))),
+        ("Markets modelled", len(res)),
+        ("Values extracted", f'{ext.get("total", "—")} · {ext.get("deterministic", 0)} det / {ext.get("ai", 0)} AI'),
+        ("Checks", f'{sum(1 for x in fnd if x["status"] == "PASS")} / {len(fnd)} passed'),
+        ("Recommendation", rec or "—"),
+        ("Break-even", f"Y{win['break_even_year']}" if win and win.get("break_even_year") else "—"),
+        ("Cash trough", eur_m(win["min_cash"]) if win else "—"),
+        ("LLM calls", f'{man.get("llm_calls", 0)} · €{man.get("llm_cost_eur", 0):.2f}'),
+    ]
+    dls = "".join(f'<a class="btn" style="font-size:12px" href="/w/{ws.name}/runs/{run.name}/f/{n}">{n}</a>'
+                  for n in ("markets.csv", "facilities.csv", "validation_findings.csv", "state.json")
+                  if (run / n).exists())
+    dataset = ('<div class="facts">'
+               + "".join(f'<div><span>{k}</span><b>{html.escape(str(v))}</b></div>' for k, v in facts)
+               + f'</div><div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">{dls}</div>')
+    chat = (f'<a class="openfull" href="/w/{ws.name}/chat">open full{EXTS}</a>'
+            f'<iframe data-src="/w/{ws.name}/chat?embed=1" title="chat"></iframe>')
+    segbar = "".join(f'<button id="sg-{k}">{lbl}</button>' for k, lbl in
+                     (("evidence", "Evidence report"), ("deck", "Deck"),
+                      ("dataset", "Dataset"), ("chat", "Ask the data")))
+    body = (f'<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'
+            f'<div style="flex:1"><div class="eyebrow">{ws.name} · results</div>'
+            f'<h1 style="font-size:26px;margin-top:4px">Run {ts}</h1></div>'
+            f'<a class="btn" href="/w/{ws.name}">← workspace</a></div>'
+            f'<div class="stage2"><div class="seg">{segbar}</div>'
+            f'<p class="recnote">Computed by the pipeline on this desk · every number from this run’s '
+            f'state.json — nothing hand-edited.</p>'
+            f'<div class="segbody" id="sb-evidence">{ev}</div>'
+            f'<div class="segbody" id="sb-deck" style="display:none">{deck}</div>'
+            f'<div class="segbody" id="sb-dataset" style="display:none">{dataset}</div>'
+            f'<div class="segbody" id="sb-chat" style="display:none">{chat}</div></div>'
+            + SEG_JS.replace("__WS__", ws.name))
+    return page(f"Results — {ws.name}", body, f"/ {ws.name} / results", rail=rail_html(ws.name))
+
+
+@app.get("/w/<ws_name>/runs/<run_name>/f/<name>")
+def run_file(ws_name, run_name, name):
+    ws = ws_dir(ws_name)
+    allowed = {"markets.csv", "facilities.csv", "agreement_matrix.csv",
+               "validation_findings.csv", "state.json", "manifest.json"}
+    f = ws / "runs" / Path(run_name).name / name
+    if name not in allowed or not f.exists():
+        return redirect(f"/w/{ws.name}")
+    return send_file(f)
 
 
 @app.post("/w/<ws_name>/runs/<run_name>/delete")
@@ -952,7 +1158,10 @@ def chat_page(ws_name):
        if(j.ok){{btn.onclick=()=>location.href='/w/{ws.name}/report/'+j.run;btn.disabled=false}}
      }}
     </script>"""
-    return page(f"Chat — {ws.name}", body, f"/ {ws.name} / chat")
+    doc = page(f"Chat — {ws.name}", body, f"/ {ws.name} / chat")
+    if request.args.get("embed"):
+        doc = re.sub(r"<nav>.*?</nav>", "", doc, count=1, flags=re.S)
+    return doc
 
 
 @app.post("/w/<ws_name>/chat/send")
