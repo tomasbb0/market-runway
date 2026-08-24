@@ -43,10 +43,61 @@ RUNWAY_PASS = os.environ.get("RUNWAY_PASS", "")
 KEYS: dict = {}   # per-browser-session provider keys; never written to disk
 
 
+app.config["PERMANENT_SESSION_LIFETIME"] = 60 * 60 * 24 * 30   # 30 days
+
+
 def _sid() -> str:
+    session.permanent = True
     if "sid" not in session:
         session["sid"] = uuid.uuid4().hex
     return session["sid"]
+
+
+# --- fuzzy password: Portuguese QWERTY neighbourhood tolerance -----------
+_ROWS = [("1234567890'", 0.0), ("qwertyuiop+", 0.5), ("asdfghjklç", 0.75), ("zxcvbnm,.-", 1.25)]
+_POS = {}
+for _r, (_keys, _off) in enumerate(_ROWS):
+    for _i, _ch in enumerate(_keys):
+        _POS[_ch] = (_r, _i + _off)
+
+
+def _adjacent(x: str, y: str) -> bool:
+    x, y = x.lower(), y.lower()
+    if x == y:
+        return True
+    px, py = _POS.get(x), _POS.get(y)
+    if not px or not py:
+        return False
+    return abs(px[0] - py[0]) <= 1 and abs(px[1] - py[1]) <= 1.3
+
+
+def fuzzy_pass(typed: str, real: str, budget: int = 2) -> bool:
+    # Damerau-style: case-free; adjacent-key substitution costs 1; adjacent
+    # transposition costs 0; insert/delete cost 1; accept if total <= budget.
+    t, r = typed.lower(), real.lower()
+    if abs(len(t) - len(r)) > budget:
+        return False
+    INF = 99
+    n, m = len(t), len(r)
+    dp = [[INF] * (m + 1) for _ in range(n + 1)]
+    dp[0][0] = 0
+    for i in range(n + 1):
+        for j in range(m + 1):
+            c = dp[i][j]
+            if c > budget:
+                continue
+            if i < n and j < m:
+                if t[i] == r[j]:
+                    dp[i + 1][j + 1] = min(dp[i + 1][j + 1], c)
+                elif _adjacent(t[i], r[j]):
+                    dp[i + 1][j + 1] = min(dp[i + 1][j + 1], c + 1)
+            if i < n:
+                dp[i + 1][j] = min(dp[i + 1][j], c + 2)
+            if j < m:
+                dp[i][j + 1] = min(dp[i][j + 1], c + 2)
+            if i + 1 < n and j + 1 < m and t[i] == r[j + 1] and t[i + 1] == r[j]:
+                dp[i + 2][j + 2] = min(dp[i + 2][j + 2], c)
+    return dp[n][m] <= budget
 
 
 def sk() -> dict:
@@ -74,7 +125,8 @@ def login_page():
 
 @app.post("/login")
 def login_post():
-    if request.form.get("p", "") == RUNWAY_PASS:
+    typed = request.form.get("p", "")
+    if typed == RUNWAY_PASS or fuzzy_pass(typed, RUNWAY_PASS):
         session["authed"] = True
         return redirect("/")
     return redirect("/login")
@@ -216,7 +268,28 @@ def nav(crumbs=""):
     key_chip = (f'<span class="chip ok">{prov} key ·…{html.escape(key[-4:])}</span>'
                 '<form method="post" action="/clearkey" style="display:inline">'
                 '<button class="ghost" title="Forget the API key">clear</button></form>'
-                if key else '<span class="chip skip">no API key</span>')
+                if key else
+                '<button class="chip skip" id="addkey" style="cursor:pointer;border:none" '
+                'onclick="navKey()">no API key — add</button>')
+    key_chip += (
+        '<div id="navkeypanel" style="display:none;position:absolute;top:52px;right:22px;z-index:50;'
+        'background:var(--sf);border:1px solid var(--line);border-radius:12px;padding:14px;width:300px;'
+        'box-shadow:0 12px 40px rgba(0,0,0,.18)">'
+        '<input type="password" id="navkeyin" placeholder="sk-ant-… / sk-… / AIza…" autocomplete="off" '
+        'style="width:100%;font-family:monospace;font-size:12.5px" onchange="navKeyCheck(this)">'
+        '<div class="hint" id="navkeystat" style="min-height:15px;margin-top:6px">'
+        'validated live; kept for your session (30 days)</div></div>'
+        '<script>function navKey(){var p=document.getElementById("navkeypanel");'
+        'p.style.display=p.style.display==="none"?"block":"none";'
+        'if(p.style.display==="block")document.getElementById("navkeyin").focus();}'
+        'async function navKeyCheck(el){var st=document.getElementById("navkeystat");'
+        'var v=el.value.trim();if(!v)return;st.textContent="checking…";st.style.color="";'
+        'const r=await fetch("/keycheck",{method:"POST",headers:{"Content-Type":"application/json"},'
+        'body:JSON.stringify({key:v})});const j=await r.json();'
+        'el.style.borderColor=j.ok?"#2F7D4F":"#c12d00";'
+        'st.style.color=j.ok?"#2F7D4F":"#c12d00";st.textContent=j.detail;'
+        'if(j.ok)setTimeout(function(){location.reload()},900);}'
+        '</script>')
     return (f'<nav><span class="dot"></span><b><a href="/" style="text-decoration:none;color:inherit">Runway</a></b>'
             f'<span class="crumb">{crumbs}</span><span class="right">{key_chip}</span></nav>')
 
