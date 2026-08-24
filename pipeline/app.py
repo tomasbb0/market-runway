@@ -449,6 +449,10 @@ STYLE = """
    background:var(--sf);color:var(--ink);border:1px solid var(--deep);border-radius:8px;
    padding:2px 10px;min-width:0;max-width:48vw}
  .homescroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:22px}
+ body.lightbg .chatbox{flex:1;min-height:0;width:100%;max-width:860px;margin:0 auto;display:flex;flex-direction:column}
+ body.lightbg #msgs{flex:1;min-height:0;overflow-y:auto;padding-right:4px}
+ body.lightbg .chatinput{position:static;background:none;padding:6px 0 0}
+ body.lightbg pre.log{flex:1;min-height:0;overflow:auto;margin:0}
  </style>"""
 
 
@@ -929,14 +933,15 @@ def run_view(ws_name, token):
         return out
 
     def generate():
-        head = page("Run — Runway", "", f"/ {ws.name} / run")
-        head = head.split('<div class="wrap">')[0]
+        full = page("Run — Runway", "@@CUT@@", f"/ {ws.name} / run", rail=rail_html(ws.name))
+        head, tail = full.split("@@CUT@@")
         yield head + (
-            f'<div class="wrap"><div><div class="eyebrow">{ws.name} · pipeline run · {mode_label}</div>'
+            f'<div><div class="eyebrow">{ws.name} · pipeline run · {mode_label}</div>'
             '<h1 style="font-size:26px" id="rt">Running…</h1>'
             '<div class="pb" id="pb"><i></i></div></div>'
             '<script>function bar(n){document.querySelector("#pb i").style.width='
-            'Math.min(96,Math.round(n/8*100))+"%"}</script>'
+            'Math.min(96,Math.round(n/8*100))+"%";'
+            'var l=document.getElementById("lg");if(l)l.scrollTop=l.scrollHeight}</script>'
             '<pre class="log" id="lg">')
         yield "<!--" + " " * 2048 + "-->\n"
         i = 0
@@ -962,7 +967,8 @@ def run_view(ws_name, token):
                + '<script>document.getElementById("rt").textContent='
                + ('"Run complete"' if ok else '"Run failed"')
                + f';document.getElementById("pb").classList.add("{"done" if ok else "fail"}");'
-               + 'document.querySelector("#pb i").style.width="100%";</script></div></body></html>')
+               + 'document.querySelector("#pb i").style.width="100%";'
+               + 'var l=document.getElementById("lg");l.scrollTop=l.scrollHeight;</script>' + tail)
 
     return Response(stream_with_context(generate()), mimetype="text/html",
                     headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
@@ -1319,10 +1325,10 @@ def chat_page(ws_name):
        if(j.ok){{btn.onclick=()=>location.href='/w/{ws.name}/report/'+j.run;btn.disabled=false}}
      }}
     </script>"""
-    doc = page(f"Chat — {ws.name}", body, f"/ {ws.name} / chat")
     if request.args.get("embed"):
-        doc = re.sub(r"<nav>.*?</nav>", "", doc, count=1, flags=re.S)
-    return doc
+        doc = page(f"Chat — {ws.name}", body, f"/ {ws.name} / chat")
+        return re.sub(r"<nav>.*?</nav>", "", doc, count=1, flags=re.S)
+    return page(f"Chat — {ws.name}", body, f"/ {ws.name} / chat", rail=rail_html(ws.name))
 
 
 @app.post("/w/<ws_name>/chat/send")
