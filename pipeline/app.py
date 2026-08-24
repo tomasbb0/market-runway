@@ -24,8 +24,10 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+import uuid
+
 import yaml
-from flask import Flask, jsonify, redirect, request, send_file
+from flask import Flask, jsonify, redirect, request, send_file, session
 
 sys.path.insert(0, str(Path(__file__).parent))
 from src.paths import WORKSPACES, ws_dir, list_workspaces, list_runs, latest_run, slugify  # noqa: E402
@@ -34,6 +36,49 @@ from src.mapper import build_manifest  # noqa: E402
 ROOT = Path(__file__).resolve().parent
 PY = sys.executable
 app = Flask(__name__)
+app.secret_key = os.environ.get("RUNWAY_SECRET") or os.urandom(24).hex()
+app.config["MAX_CONTENT_LENGTH"] = 30 * 1024 * 1024   # 30 MB per upload batch
+RUNWAY_PASS = os.environ.get("RUNWAY_PASS", "")
+
+KEYS: dict = {}   # per-browser-session provider keys; never written to disk
+
+
+def _sid() -> str:
+    if "sid" not in session:
+        session["sid"] = uuid.uuid4().hex
+    return session["sid"]
+
+
+def sk() -> dict:
+    k = os.environ.get("ANTHROPIC_API_KEY", "")
+    return KEYS.setdefault(_sid(), {"value": k, "provider": detect_provider(k)})
+
+
+@app.before_request
+def _gate():
+    if not RUNWAY_PASS or request.path == "/login" or session.get("authed"):
+        return None
+    return redirect("/login")
+
+
+@app.get("/login")
+def login_page():
+    return (f'<!doctype html><meta charset="utf-8"><title>Runway</title>{STYLE}'
+            '<div style="min-height:100svh;display:grid;place-content:center;gap:14px;text-align:center">'
+            '<div class="eyebrow"><span class="tag"></span>RUNWAY · PRIVATE DESK</div>'
+            '<form method="post" action="/login" style="display:flex;gap:10px">'
+            '<input type="password" name="p" placeholder="access password" autofocus '
+            'style="font-family:monospace">'
+            '<button class="primary">Enter</button></form></div>')
+
+
+@app.post("/login")
+def login_post():
+    if request.form.get("p", "") == RUNWAY_PASS:
+        session["authed"] = True
+        return redirect("/")
+    return redirect("/login")
+
 
 def detect_provider(key: str) -> str | None:
     """Key-format detection: deterministic, instant, and it cannot hallucinate."""
@@ -46,9 +91,6 @@ def detect_provider(key: str) -> str | None:
         return "openai"
     return None
 
-
-_env_key = os.environ.get("ANTHROPIC_API_KEY", "")
-_session_key = {"value": _env_key, "provider": detect_provider(_env_key)}
 
 PROVIDERS = {
     "anthropic": {"label": "Anthropic", "models": {
@@ -70,7 +112,7 @@ def _chat_call(provider: str, key: str, model: str, system: str, msgs: list) -> 
     if provider == "anthropic":
         import anthropic
         client = anthropic.Anthropic(api_key=key)
-        resp = client.messages.create(model=model, max_tokens=900, temperature=0,
+        resp = client.messages.create(model=model, max_tokens=900,
                                       system=system, messages=msgs)
         return resp.content[0].text
     if provider == "openai":
@@ -169,8 +211,8 @@ STYLE = """
 
 
 def nav(crumbs=""):
-    key = _session_key["value"]
-    prov = PROVIDERS.get(_session_key.get("provider") or "", {}).get("label", "key")
+    key = sk()["value"]
+    prov = PROVIDERS.get(sk().get("provider") or "", {}).get("label", "key")
     key_chip = (f'<span class="chip ok">{prov} key ·…{html.escape(key[-4:])}</span>'
                 '<form method="post" action="/clearkey" style="display:inline">'
                 '<button class="ghost" title="Forget the API key">clear</button></form>'
@@ -304,7 +346,7 @@ def workspace(ws_name):
     if not runrows:
         runrows = '<div class="hint" style="padding:8px 4px">No runs yet.</div>'
 
-    key = _session_key["value"]
+    key = sk()["value"]
     key_field = ('' if key else
                  '<input type="password" name="api_key" placeholder="API key, optional (Anthropic / OpenAI / Gemini; auto-detected)" '
                  'autocomplete="off" style="width:100%;font-family:\'IBM Plex Mono\',monospace;font-size:12.5px">')
@@ -406,11 +448,11 @@ def run_ws(ws_name):
         ai = "auto"
     submitted = (request.form.get("api_key") or "").strip()
     if submitted:
-        _session_key["value"] = submitted
-        _session_key["provider"] = detect_provider(submitted)
+        sk()["value"] = submitted
+        sk()["provider"] = detect_provider(submitted)
     env = dict(os.environ)
-    if _session_key["value"] and _session_key.get("provider") == "anthropic":
-        env["ANTHROPIC_API_KEY"] = _session_key["value"]
+    if sk()["value"] and sk().get("provider") == "anthropic":
+        env["ANTHROPIC_API_KEY"] = sk()["value"]
     else:
         env.pop("ANTHROPIC_API_KEY", None)
     proc = subprocess.run([PY, str(ROOT / "run.py"), "--ai", ai, "--workspace", ws.name],
@@ -487,8 +529,8 @@ DATASET:
 def chat_page(ws_name):
     ws = ws_dir(ws_name)
     _, run_name = _grounding(ws)
-    provider = _session_key.get("provider")
-    if _session_key["value"] and provider:
+    provider = sk().get("provider")
+    if sk()["value"] and provider:
         models = PROVIDERS[provider]["models"]
         first = next(iter(models))
         opts = "".join(f'<option value="{m}" {"selected" if m == first else ""}>{lbl}</option>'
@@ -570,11 +612,11 @@ def chat_send(ws_name):
     ws = ws_dir(ws_name)
     data = request.get_json(force=True)
     if data.get("key"):
-        _session_key["value"] = data["key"].strip()
-        _session_key["provider"] = detect_provider(_session_key["value"])
-    if not _session_key["value"]:
+        sk()["value"] = data["key"].strip()
+        sk()["provider"] = detect_provider(sk()["value"])
+    if not sk()["value"]:
         return jsonify({"error": "No API key set. Paste an Anthropic, OpenAI or Gemini key next to the message box."})
-    provider = _session_key.get("provider")
+    provider = sk().get("provider")
     if not provider:
         return jsonify({"error": "Key format not recognised. Expected sk-ant-… (Anthropic), sk-… (OpenAI) or AIza… (Gemini)."})
     grounding, run_name = _grounding(ws)
@@ -585,7 +627,7 @@ def chat_send(ws_name):
     try:
         msgs = [{"role": m["role"], "content": m["content"]}
                 for m in data.get("messages", []) if m.get("role") in ("user", "assistant")][-20:]
-        text = _chat_call(provider, _session_key["value"], model, SYSTEM + grounding, msgs)
+        text = _chat_call(provider, sk()["value"], model, SYSTEM + grounding, msgs)
         return jsonify({"text": text})
     except Exception as e:  # noqa: BLE001
         return jsonify({"error": f"{PROVIDERS[provider]['label']} call failed ({type(e).__name__}): {e}"})
@@ -607,8 +649,8 @@ def apply_override(ws_name):
         cfg["overrides"].append(ov)
         yaml.safe_dump(cfg, open(ovp, "w"), sort_keys=False)
         env = dict(os.environ)
-        if _session_key["value"]:
-            env["ANTHROPIC_API_KEY"] = _session_key["value"]
+        if sk()["value"]:
+            env["ANTHROPIC_API_KEY"] = sk()["value"]
         proc = subprocess.run([PY, str(ROOT / "run.py"), "--workspace", ws.name],
                               capture_output=True, text=True, cwd=ROOT, timeout=900, env=env)
         if proc.returncode != 0:
@@ -624,8 +666,8 @@ def apply_override(ws_name):
 
 @app.post("/clearkey")
 def clearkey():
-    _session_key["value"] = ""
-    _session_key["provider"] = None
+    sk()["value"] = ""
+    sk()["provider"] = None
     return redirect(request.referrer or "/")
 
 

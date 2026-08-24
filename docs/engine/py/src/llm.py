@@ -58,7 +58,7 @@ def extract_field(doc_text: str, market: str, param: str, unit: str, mode: str) 
 
     client = anthropic.Anthropic()
     resp = client.messages.create(
-        model=model, max_tokens=300, temperature=0,
+        model=model, max_tokens=300,
         messages=[{"role": "user", "content": prompt}],
     )
     calls_made += 1
