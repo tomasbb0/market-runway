@@ -340,7 +340,7 @@ STYLE = """
  .tabsbar{display:flex;gap:6px;margin-left:auto}
  .tabbtn{font:600 13.5px 'Instrument Sans';border:1px solid var(--line);background:var(--sf);
    color:var(--softblue);border-radius:9px;padding:9px 20px;cursor:pointer}
- .tabbtn.on{background:var(--deep);color:#fff;border-color:var(--deep)}
+ .tabbtn.on{background:var(--acc);color:#fff;border-color:var(--acc)}
  .modes{display:flex;flex-direction:column;gap:12px}
  .mode{display:flex;flex-direction:column;gap:5px;align-items:flex-start;text-align:left;cursor:pointer;
    background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 18px;width:100%;
