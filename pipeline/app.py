@@ -27,7 +27,8 @@ from pathlib import Path
 import uuid
 
 import yaml
-from flask import Flask, jsonify, redirect, request, send_file, session
+from flask import (Flask, Response, jsonify, redirect, request, send_file,
+                   session, stream_with_context)
 
 sys.path.insert(0, str(Path(__file__).parent))
 from src.paths import WORKSPACES, ws_dir, list_workspaces, list_runs, latest_run, slugify  # noqa: E402
@@ -247,7 +248,15 @@ STYLE = """
  .hint{font-size:13px;color:var(--soft)}
  .two{display:grid;grid-template-columns:1.25fr 1fr;gap:18px;align-items:start}
  @media(max-width:860px){.two{grid-template-columns:1fr}}
- pre.log{background:#1d2939;color:#e8e2d9;border-radius:12px;padding:16px;font:12.5px 'IBM Plex Mono',monospace;overflow-x:auto;line-height:1.55}
+ pre.log{background:#1d2939;color:#e8e2d9;border-radius:12px;padding:16px;font:12.5px 'IBM Plex Mono',monospace;overflow-x:auto;line-height:1.55;white-space:pre-wrap}
+ details.pillpop{position:relative;display:inline-block}
+ details.pillpop summary{list-style:none;cursor:pointer}
+ details.pillpop summary::-webkit-details-marker{display:none}
+ details.pillpop .pop{position:absolute;right:0;top:26px;z-index:40;width:360px;background:var(--sf);
+   border:1px solid var(--line);border-radius:11px;padding:13px 15px;box-shadow:0 14px 44px rgba(0,0,0,.18);
+   font-size:12.5px;text-align:left}
+ details.pillpop .pop b{display:block;margin-top:8px} details.pillpop .pop b:first-child{margin-top:0}
+ details.pillpop .pop p{margin:2px 0 0;color:var(--soft)}
  pre.log .ok{color:#9fd0b8}pre.log .fail{color:#ff9d7a}pre.log .warn{color:#ecd9a0}
  .banner{background:var(--softblue2);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:11px;padding:13px 16px;font-size:14px}
  /* chat */
@@ -406,10 +415,26 @@ def workspace(ws_name):
             try:
                 st = json.load(open(run / "state.json"))
                 r = st["conclusion"]["recommendation"]
-                fails = sum(1 for f in st["findings"] if f["status"] == "FAIL")
+                notable = [f for f in st["findings"] if f["status"] in ("FAIL", "WARN")]
+                fails = sum(1 for f in notable if f["status"] == "FAIL")
                 rec = f"recommends {r}" if r else "no market modelled"
-                chip = (f'<span class="chip fail">{fails} check failed</span>' if fails
-                        else '<span class="chip ok">checks clean</span>')
+                if notable:
+                    label = (f'{fails} check failed' if fails else f'{len(notable)} warning(s)')
+                    cls = "fail" if fails else "warn"
+                    items = "".join(
+                        f'<b>{f["id"]} · {html.escape(f["name"])} '
+                        f'<span class="chip {"fail" if f["status"] == "FAIL" else "warn"}">{f["status"]}</span></b>'
+                        f'<p>{html.escape(f["detail"])}</p>'
+                        + (f'<p><i>{html.escape(f["note"])}</i></p>' if f.get("note") else "")
+                        for f in notable)
+                    chip = (f'<details class="pillpop"><summary class="chip {cls}">{label} ▾</summary>'
+                            f'<div class="pop">{items}</div></details>')
+                else:
+                    passes = sum(1 for f in st["findings"] if f["status"] == "PASS")
+                    infos = "".join(f'<b>{f["id"]} · {html.escape(f["name"])}</b><p>{html.escape(f["detail"])}</p>'
+                                    for f in st["findings"] if f["status"] == "INFO")
+                    chip = (f'<details class="pillpop"><summary class="chip ok">checks clean ▾</summary>'
+                            f'<div class="pop"><b>{passes} checks passed</b>{infos}</div></details>')
             except Exception:  # noqa: BLE001
                 pass
         ts = datetime.strptime(run.name, "%Y%m%d-%H%M%S").strftime("%d %b · %H:%M")
@@ -544,24 +569,45 @@ def run_ws(ws_name):
         env["RUNWAY_PROVIDER"] = sk()["provider"]
         if sk()["provider"] == "anthropic":
             env["ANTHROPIC_API_KEY"] = sk()["value"]
-    proc = subprocess.run([PY, str(ROOT / "run.py"), "--ai", ai, "--workspace", ws.name],
-                          capture_output=True, text=True, cwd=ROOT, timeout=900, env=env)
-    log = ANSI.sub("", proc.stdout + proc.stderr)
-    log = (html.escape(log).replace("PASS", '<span class="ok">PASS</span>')
-           .replace("FAIL", '<span class="fail">FAIL</span>').replace("WARN", '<span class="warn">WARN</span>'))
-    run = latest_run(ws)
-    ok = proc.returncode == 0 and run is not None
-    if ok:
-        subprocess.run([PY, "-c",
-                        f"import sys; sys.path.insert(0,'{ROOT}'); from src.report import build; build(r'{run}/state.json')"],
-                       cwd=ROOT, capture_output=True, timeout=120)
-    actions = (f'<a class="btn primary" href="/w/{ws.name}/report/{run.name}">Open the report →</a>'
-               f'<a class="btn" href="/w/{ws.name}/chat">Ask the data</a>' if ok else "")
-    body = f"""<div><div class="eyebrow">{ws.name} · pipeline run · ai={ai}</div>
-    <h1 style="font-size:26px">{'Run complete' if ok else 'Run failed'}</h1></div>
-    <pre class="log">{log}</pre>
-    <div style="display:flex;gap:10px">{actions}<a class="btn" href="/w/{ws.name}">← workspace</a></div>"""
-    return page("Run — Runway", body, f"/ {ws.name} / run")
+    mode_label = {"auto": "Glide", "max": "Afterburner", "off": "AI off"}.get(ai, ai)
+
+    def colorize(line: str) -> str:
+        e = html.escape(line)
+        return (e.replace("PASS", '<span class="ok">PASS</span>')
+                 .replace("FAIL", '<span class="fail">FAIL</span>')
+                 .replace("WARN", '<span class="warn">WARN</span>'))
+
+    def generate():
+        head = page("Run — Runway", "", f"/ {ws.name} / run")
+        head = head.split("<div class=\"wrap\">")[0]
+        yield head + (
+            f'<div class="wrap"><div><div class="eyebrow">{ws.name} · pipeline run · {mode_label}</div>'
+            '<h1 style="font-size:26px" id="rt">Running…</h1></div>'
+            '<pre class="log" id="lg">')
+        yield "<!--" + " " * 2048 + "-->\n"
+        proc = subprocess.Popen([PY, str(ROOT / "run.py"), "--ai", ai, "--workspace", ws.name],
+                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                text=True, cwd=ROOT, env=env, bufsize=1)
+        for line in proc.stdout:
+            yield colorize(ANSI.sub("", line.rstrip())) + "\n"
+        proc.wait()
+        run = latest_run(ws)
+        ok = proc.returncode == 0 and run is not None
+        if ok:
+            yield 'generating the evidence report…\n'
+            subprocess.run([PY, "-c",
+                            f"import sys; sys.path.insert(0,'{ROOT}'); from src.report import build; build(r'{run}/state.json')"],
+                           cwd=ROOT, capture_output=True, timeout=120)
+        actions = (f'<a class="btn primary" href="/w/{ws.name}/report/{run.name}">Open the report →</a>'
+                   f'<a class="btn" href="/w/{ws.name}/chat">Ask the data</a>' if ok else "")
+        yield ('</pre><div style="display:flex;gap:10px">' + actions
+               + f'<a class="btn" href="/w/{ws.name}">← workspace</a></div>'
+               + '<script>document.getElementById("rt").textContent='
+               + ('"Run complete"' if ok else '"Run failed"')
+               + ';</script></div></body></html>')
+
+    return Response(stream_with_context(generate()), mimetype="text/html",
+                    headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
 @app.get("/w/<ws_name>/report/<run_name>")

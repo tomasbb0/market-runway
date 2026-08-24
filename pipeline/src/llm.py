@@ -115,7 +115,11 @@ def extract_field(doc_text: str, market: str, param: str, unit: str, mode: str) 
     calls_made += 1
     m0, m1 = raw.find("{"), raw.rfind("}")
     raw = raw[m0:m1 + 1] if m0 >= 0 <= m1 else raw
-    ck.write_text(raw)
+    try:
+        CACHE.mkdir(parents=True, exist_ok=True)
+        ck.write_text(raw)
+    except OSError:
+        pass
     try:
         return _validate(json.loads(raw))
     except json.JSONDecodeError:
