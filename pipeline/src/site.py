@@ -625,7 +625,7 @@ def landing(st) -> str:
      else if(seg==='insights')body=insightsHTML(A)+(R&&R.audit?auditHTML(R.audit):'');
      else body=`<div class="emptyres" style="height:auto;padding:40px 0"><b>ASK THE DATA</b>
        <p>The grounded chat answers only from a computed dataset. This exercise does not have one yet —
-       run it in the local app, then chat against that run.</p>
+       run it on the <a href="http://108.132.145.140/" style="color:var(--acc)">hosted desk</a>, then chat against that run there.</p>
        <p><a class="openfull" style="float:none" href="chat/">see it working on the EU4 case</a></p></div>`;
      const note=R?'Computed by the pipeline in your browser this session; nothing left your machine.'
        :(e.realAt?'Results are not on this device. Re-run to regenerate; structural view below.'
