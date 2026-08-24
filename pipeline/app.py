@@ -243,7 +243,7 @@ STYLE = """
    --acc:#00d4ff;--accdark:#00a3d9;--softblue:#b8cdea;--softblue2:#152a4a;--bordeaux:#a34d6e;
    --tan:#9fb6d9;--cream2:#0e1930;--ok:#b8cdea;--okbg:#152a4a;--warnbg:#3d2f16;--failbg:#3d1c16}
  *{box-sizing:border-box}
- body{margin:0;color:var(--ink);font:15.5px/1.55 'Instrument Sans',system-ui,sans-serif;
+ body{margin:0;color:var(--ink);font:16px/1.6 'Instrument Sans',system-ui,sans-serif;
    background:var(--bg) fixed;
    background-image:radial-gradient(900px 600px at 12% -10%,rgba(47,74,115,.5),transparent 60%),
      radial-gradient(800px 560px at 105% 8%,rgba(0,212,255,.06),transparent 55%)}
@@ -268,10 +268,10 @@ STYLE = """
  nav b{font-size:16px;letter-spacing:-.01em} nav .crumb{color:var(--soft);font-size:14px}
  nav .right{margin-left:auto;display:flex;gap:14px;align-items:center;font-size:13.5px}
  .wrap{max-width:1060px;margin:0 auto;padding:34px 24px 80px;display:flex;flex-direction:column;gap:22px}
- h1{font-size:32px;margin:0;letter-spacing:-.02em;font-weight:650}
+ h1{font-size:32px;margin:0;letter-spacing:-.02em;font-weight:700}
  h1 em{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;color:var(--acc)}
  h2{font-size:16px;margin:0 0 12px;letter-spacing:-.01em}
- .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--tan)}
+ .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--tan)}
  .card{background:var(--sf);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
  .folder{display:block;background:var(--sf);border:1px solid var(--line);border-radius:14px;padding:18px;
@@ -393,7 +393,7 @@ STYLE = """
  .fol{display:block;text-decoration:none;color:var(--ink)}
  .fol .ftab{width:30px;height:8px;background:var(--deep);border-radius:4px 4px 0 0;margin-bottom:-1px}
  .fol .fbody{background:var(--cream2);border:1px solid var(--line);border-radius:0 8px 8px 8px;padding:9px 11px}
- .fol b{font-size:13px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .fol b{font-size:13.5px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  .fol .meta{font-size:11px;color:var(--soft);margin-top:2px;line-height:1.5}
  .fol:hover .fbody,.fol.on .fbody{border-color:var(--acc)} .fol.on .ftab{background:var(--acc)}
  .railset{display:flex;align-items:center;gap:9px;padding:12px 14px;border:none;border-top:1px solid var(--line);
@@ -451,9 +451,9 @@ STYLE = """
    font-size:26px;font-weight:600;line-height:1;background:transparent;clip-path:none}
  .ftile.addtile::after{display:none}
  .ftile.addtile:hover{color:var(--acc);border-color:var(--acc)}
- .xtitle{text-transform:uppercase;letter-spacing:-.02em}
+ .xtitle{text-transform:uppercase;letter-spacing:-.02em;font-size:clamp(24px,3vw,34px);font-weight:700}
  .xtitle em{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;
-   text-transform:lowercase;color:var(--softblue)}
+   text-transform:lowercase;color:var(--acc)}
  .wrap.fluid{max-width:none;padding:22px 22px 60px}
  .deskpanel{position:relative;background:rgba(24,39,64,.96);border:1px solid var(--line);border-radius:16px;
    padding:16px 18px 18px;display:flex;flex-direction:column;gap:14px;
@@ -461,7 +461,7 @@ STYLE = """
  nav.innav{position:relative;background:none;border-bottom:none;padding:2px 4px 8px;margin:0}
  .xtitle{cursor:text;border-bottom:1.5px dashed transparent}
  .xtitle:hover{border-bottom-color:var(--deep)}
- input.titled{font:700 26px 'Instrument Sans';text-transform:uppercase;letter-spacing:-.02em;
+ input.titled{font:700 28px 'Instrument Sans';text-transform:uppercase;letter-spacing:-.02em;
    background:var(--sf);color:var(--ink);border:1px solid var(--deep);border-radius:8px;
    padding:2px 10px;min-width:0;max-width:48vw}
  .homescroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:22px}
@@ -842,7 +842,7 @@ def workspace(ws_name):
 
     body = f"""
     <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-      <h1 class="xtitle" style="font-size:26px">{fancy_title(ws.name)}</h1>
+      <h1 class="xtitle">{fancy_title(ws.name)}</h1>
       <a href="/w/{ws.name}/chat" class="btn">Ask the data{ROBOT}</a>
       <div class="tabsbar">
         <button class="tabbtn" id="tb-files" onclick="setTab('files')">Files</button>
@@ -1052,7 +1052,7 @@ def run_view(ws_name, token):
         head, tail = full.split("@@CUT@@")
         yield head + (
             f'<div><div class="eyebrow">{ws.name} · pipeline run · {mode_label}</div>'
-            '<h1 style="font-size:26px" id="rt">Running…</h1>'
+            '<h1 class="xtitle" id="rt" style="font-size:clamp(20px,2.2vw,26px)">Running…</h1>'
             '<div class="pb" id="pb"><i></i></div></div>'
             '<script>function bar(n){document.querySelector("#pb i").style.width='
             'Math.min(96,Math.round(n/8*100))+"%";'
@@ -1178,7 +1178,7 @@ def results_view(ws_name, run_name):
                       ("dataset", "Dataset"), ("chat", "Ask the data")))
     body = (f'<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'
             f'<div style="flex:1"><div class="eyebrow">{ws.name} · results</div>'
-            f'<h1 style="font-size:26px;margin-top:4px">Run {ts}</h1></div>'
+            f'<h1 class="xtitle" style="margin-top:4px;font-size:clamp(20px,2.2vw,26px)">Run {ts}</h1></div>'
             f'<a class="btn" href="/w/{ws.name}">← workspace</a></div>'
             f'<div class="stage2"><div class="seg">{segbar}</div>'
             f'<p class="recnote">Computed by the pipeline on this desk · every number from this run’s '
