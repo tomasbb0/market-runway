@@ -565,6 +565,24 @@ STYLE = """
  .pdfdl{display:grid;place-items:center;width:30px;height:30px;border:1px solid var(--line);
    border-radius:8px;color:var(--soft)}
  .pdfdl:hover{color:var(--acc);border-color:var(--acc)}
+ /* glass edges: a light-refracting gradient rim instead of a flat gray border */
+ .card,.rail,.railchat,.stage2{position:relative;border-color:rgba(255,255,255,.38);
+   box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 -1px 0 rgba(255,255,255,.08),
+   0 14px 34px -18px rgba(16,28,49,.45)}
+ .card::after,.rail::after,.railchat::after,.stage2::after{content:"";position:absolute;inset:-1px;
+   border-radius:inherit;padding:1px;pointer-events:none;
+   background:linear-gradient(160deg,rgba(255,255,255,.85),rgba(255,255,255,.16) 34%,
+     rgba(255,255,255,.05) 60%,rgba(255,255,255,.42));
+   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+   -webkit-mask-composite:xor;
+   mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
+ .deskpanel{border-color:rgba(255,255,255,.14)}
+ .deskpanel::after{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;
+   pointer-events:none;background:linear-gradient(165deg,rgba(255,255,255,.5),
+     rgba(255,255,255,.08) 30%,rgba(0,212,255,.10) 70%,rgba(255,255,255,.22));
+   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+   -webkit-mask-composite:xor;
+   mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
  </style>"""
 
 
