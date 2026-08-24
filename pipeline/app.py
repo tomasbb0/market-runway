@@ -236,7 +236,14 @@ STYLE = """
  body.lightbg .deskpanel{flex:1;min-height:0}
  body.lightbg .desk{flex:1;min-height:0;align-items:stretch}
  body.lightbg .rail{position:static;max-height:none;min-height:0}
- body.lightbg .pane2{min-height:0;overflow-y:auto;padding-right:2px}
+ body.lightbg .pane2{min-height:0;overflow:hidden}
+ body.lightbg #pane-files{flex:1;min-height:0;display:flex;flex-direction:column}
+ body.lightbg #fl-list{flex:1;min-height:0;overflow-y:auto}
+ body.lightbg #fl-grid{flex:1;min-height:0;overflow-y:auto;align-content:start}
+ body.lightbg #pane-runs{flex:1;min-height:0}
+ body.lightbg #pane-runs .card{min-height:0;display:flex;flex-direction:column;overflow:hidden}
+ body.lightbg .runscroll{flex:1;min-height:0;overflow-y:auto}
+ body.lightbg .stage2{height:auto;flex:1;min-height:0}
  @media(max-width:900px){body.lightbg{height:auto;overflow:auto}
    body.lightbg .pane2{overflow:visible}}
  a{color:var(--deep)} .serif{font-family:'Noto Serif',serif} .mono{font-family:'IBM Plex Mono',monospace}
@@ -749,7 +756,7 @@ def workspace(ws_name):
         <span class="hint">read → extract → unify → dedupe → compare → check → conclude
          · <button class="ghost" name="ai" value="off" style="font-size:11px;padding:0">run with AI fully off</button></span>
       </form>
-      <div class="card"><h2>Runs</h2>{runrows}</div>
+      <div class="card"><h2>Runs</h2><div class="runscroll">{runrows}</div></div>
     </section>
     <script>
      const WS={json.dumps(ws.name)};
