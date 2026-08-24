@@ -371,7 +371,7 @@ STYLE = """
  .rail footer{padding:10px 14px;border-top:1px solid var(--line);font-family:'IBM Plex Mono',monospace;
    font-size:10px;letter-spacing:.1em;color:var(--soft)}
  .stage2{background:var(--sf);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;
-   flex-direction:column;min-height:420px;height:calc(100vh - 215px)}
+   flex-direction:column;min-height:420px;height:calc(100vh - 295px)}
  .seg{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
  .seg button{font-weight:600;font-size:12px;border:1px solid var(--line);background:transparent;
    color:var(--softblue);border-radius:99px;padding:7px 14px;cursor:pointer}
@@ -423,6 +423,11 @@ STYLE = """
  .xtitle{text-transform:uppercase;letter-spacing:-.02em}
  .xtitle em{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;
    text-transform:lowercase;color:var(--softblue)}
+ .wrap.fluid{max-width:none;padding:22px 22px 60px}
+ .deskpanel{position:relative;background:rgba(29,41,57,.42);border:1px solid var(--line);border-radius:16px;
+   padding:16px 18px 18px;display:flex;flex-direction:column;gap:14px;
+   box-shadow:0 24px 60px -35px rgba(0,0,0,.8);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+ nav.innav{position:relative;background:none;border-bottom:1px solid var(--line);padding:2px 4px 12px;margin:0}
  </style>"""
 
 
@@ -460,7 +465,11 @@ def nav(crumbs=""):
 
 def page(title, body, crumbs="", rail=None):
     if rail:
-        body = f'<div class="desk">{rail}<div class="pane2">{body}</div></div>'
+        innav = nav(crumbs).replace("<nav>", '<nav class="innav">', 1)
+        body = (f'<div class="desk">{rail}<div class="pane2">'
+                f'<section class="deskpanel">{innav}{body}</section></div></div>')
+        return (f'<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex">'
+                f'<title>{html.escape(title)}</title>{STYLE}<div class="wrap fluid">{body}</div>')
     return (f'<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex">'
             f'<title>{html.escape(title)}</title>{STYLE}{nav(crumbs)}<div class="wrap">{body}</div>')
 
