@@ -55,6 +55,10 @@ EXTS = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
         'stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;'
         'vertical-align:-1px;margin-left:5px">'
         '<path d="M14 5h5v5M19 5l-8 8M19 14v4a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h4"/></svg>')
+EYE = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" '
+       'stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px">'
+       '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/>'
+       '<circle cx="12" cy="12" r="2.6"/></svg>')
 DLI = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" '
        'stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">'
        '<path d="M12 4v11M7 10l5 5 5-5M5 19h14"/></svg>')
@@ -592,6 +596,10 @@ STYLE = """
  .deskpanel::before,.deskpanel::after{display:none}
  .card,.rail,.railchat,.stage2{border-color:rgba(23,38,63,.10)}
  .segbody iframe[data-autoh]{min-height:0;border:none;background:transparent;border-radius:0}
+ .eyebtn{margin-left:auto;display:grid;place-items:center;width:24px;height:24px;
+   color:var(--soft);border-radius:6px}
+ .eyebtn:hover{color:var(--ink)}
+ .rail header button{margin-left:8px}
  </style>"""
 
 
@@ -841,6 +849,7 @@ def rail_html(current: str, run: str = None, view: str = "") -> str:
                 filter_rows += f'<a class="rcfrow" href="/w/{w2.name}/results/{r2.name}">Run {ts2}</a>'
     return ('<div class="railcol">'
             f'<aside class="rail"><header><span class="mono">EXERCISES</span>'
+            f'<a class="eyebtn" href="/" title="Overview — all exercises">{EYE}</a>'
             '<button onclick="document.getElementById(\'newws\').showModal()">+ New</button></header>'
             f'<div class="exlist">{items}</div></aside>'
             f'<div class="railchat"><div class="rcgrip" title="Drag to resize"></div>'
@@ -875,12 +884,14 @@ def home():
               '<div class="tab" style="background:var(--line)"></div><div class="body" style="display:grid;place-content:center">'
               '<b>+ New search</b><div class="meta">start a market assessment</div></div></a>')
     body = f"""
+    <section class="card" style="display:flex;flex-direction:column;gap:22px">
     <div><div class="eyebrow">Market Runway · the market-entry desk</div>
     <h1>Every market, <em>one folder away.</em></h1>
     <p class="hint" style="max-width:60ch">Drop a market pack into a workspace, run the seven-stage pipeline,
     and get a validated dataset, a ranked recommendation and a full evidence report. Deterministic first;
     AI only where it earns its place.</p></div>
     <div class="grid">{cards}</div>
+    </section>
     <dialog id="newws" style="border:1px solid var(--line);border-radius:14px;padding:22px;max-width:380px">
       <form method="post" action="/new" style="display:flex;flex-direction:column;gap:12px">
         <h2 style="margin:0">New workspace</h2>
