@@ -29,6 +29,7 @@ MODEL_CASCADE = ["claude-haiku-4-5-20251001", "claude-fable-5"]  # cheap first, 
 
 calls_made = 0
 tokens_used = 0
+call_log: list = []   # one entry per live model call this run
 
 
 def _cache_key(model: str, prompt: str) -> Path:
@@ -82,7 +83,8 @@ def _ask(provider, key, model, prompt):
     raise ValueError("unknown provider")
 
 
-def extract_field(doc_text: str, market: str, param: str, unit: str, mode: str) -> dict | None:
+def extract_field(doc_text: str, market: str, param: str, unit: str, mode: str,
+                  purpose: str = "fallback") -> dict | None:
     """Ask the model to extract one field, quoting its evidence sentence.
 
     Provider-agnostic: uses RUNWAY_PROVIDER/RUNWAY_KEY (any of anthropic,
@@ -108,11 +110,18 @@ def extract_field(doc_text: str, market: str, param: str, unit: str, mode: str) 
             return _validate(json.loads(ck.read_text()))
         except json.JSONDecodeError:
             return None
+    t0 = tokens_used
     try:
         raw = _ask(provider, key, model, prompt)
-    except Exception:  # noqa: BLE001 - an audit call failure must never kill the run
+    except Exception as exc:  # noqa: BLE001 - an audit call failure must never kill the run
+        call_log.append({"n": calls_made + 1, "purpose": purpose, "field": f"{market}.{param}",
+                         "provider": provider, "model": model, "tokens": 0,
+                         "outcome": f"error: {type(exc).__name__}"})
         return None
     calls_made += 1
+    call_log.append({"n": calls_made, "purpose": purpose, "field": f"{market}.{param}",
+                     "provider": provider, "model": model, "tokens": tokens_used - t0,
+                     "outcome": "answered"})
     m0, m1 = raw.find("{"), raw.rfind("}")
     raw = raw[m0:m1 + 1] if m0 >= 0 <= m1 else raw
     try:

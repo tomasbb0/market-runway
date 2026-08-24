@@ -127,7 +127,7 @@ def extract_all(docs: dict, schema: dict, mode: str) -> tuple[list[Extraction], 
             if _ai_i % 10 == 0:
                 print(f"  audit progress: {_ai_i}/{len(det_all)} values re-checked", flush=True)
             ans = llm.extract_field(docs[e.source].text, e.scope, e.param,
-                                    e.unit, mode)
+                                    e.unit, mode, purpose="audit")
             if ans is None:
                 audit.append({"scope": e.scope, "param": e.param, "det": e.value,
                               "llm": None, "verdict": "SKIPPED (no API key / no cache)"})

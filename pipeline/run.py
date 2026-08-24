@@ -196,7 +196,8 @@ def main():
              "gaps": gaps, "manifest": manifest,
              "ingestion": [{"key": d.key, "file": d.file, "format": d.format, "status": d.status,
                             "detail": d.detail, "ms": d.ms, "sha": d.sha} for d in docs.values()],
-             "overrides": overrides, "unresolved": unresolved, "audit": audit}
+             "overrides": overrides, "unresolved": unresolved, "audit": audit,
+             "llm_log": llm.call_log}
     with open(OUT / "state.json", "w") as f:
         json.dump(state, f, indent=2, default=str)
 

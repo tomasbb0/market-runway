@@ -19,6 +19,7 @@ import html
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import threading
@@ -38,6 +39,18 @@ from src.mapper import build_manifest  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent
 PY = sys.executable
+ROBOT = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" '
+         'stroke-linecap="round" stroke-linejoin="round" '
+         'style="width:15px;height:15px;vertical-align:-2px;margin-right:7px">'
+         '<rect x="5" y="8" width="14" height="11" rx="3"/>'
+         '<path d="M12 8V4.5"/><circle cx="12" cy="3.4" r="1" fill="currentColor" stroke="none"/>'
+         '<circle cx="9.3" cy="12.5" r="1.15" fill="currentColor" stroke="none"/>'
+         '<circle cx="14.7" cy="12.5" r="1.15" fill="currentColor" stroke="none"/>'
+         '<path d="M9.5 16h5"/></svg>')
+TRASH = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" '
+         'stroke-linecap="round" stroke-linejoin="round">'
+         '<path d="M4 7h16M10 7V5h4v2M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>')
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("RUNWAY_SECRET") or os.urandom(24).hex()
 app.config["MAX_CONTENT_LENGTH"] = 30 * 1024 * 1024   # 30 MB per upload batch
@@ -199,11 +212,14 @@ STYLE = """
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Noto+Serif:ital,wght@0,400;0,600;1,400;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
- :root{--bg:#f9f7f5;--sf:#ffffff;--ink:#1d2939;--deep:#374b60;--soft:#667085;--line:#e6e1da;
-   --acc:#ff4200;--accdark:#c12d00;--softblue:#bdd2e0;--softblue2:#e6eef3;--bordeaux:#661439;
-   --tan:#ad836c;--cream2:#f4f1ec;--ok:#374b60;--okbg:#e6eef3;--warnbg:#f6ead9;--failbg:#f8e3dc}
+ :root{--bg:#101828;--sf:#1d2939;--ink:#f9f7f5;--deep:#374b60;--soft:#8fa3b8;--line:#243447;
+   --acc:#ff4200;--accdark:#c12d00;--softblue:#bdd2e0;--softblue2:#14263a;--bordeaux:#a34d6e;
+   --tan:#c9a689;--cream2:#0c1522;--ok:#bdd2e0;--okbg:#14263a;--warnbg:#3d2f16;--failbg:#3d1c16}
  *{box-sizing:border-box}
- body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.55 'Instrument Sans',system-ui,sans-serif}
+ body{margin:0;color:var(--ink);font:15.5px/1.55 'Instrument Sans',system-ui,sans-serif;
+   background:var(--bg) fixed;
+   background-image:radial-gradient(900px 600px at 12% -10%,rgba(55,75,96,.55),transparent 60%),
+     radial-gradient(800px 560px at 105% 8%,rgba(255,66,0,.07),transparent 55%)}
  a{color:var(--deep)} .serif{font-family:'Noto Serif',serif} .mono{font-family:'IBM Plex Mono',monospace}
  nav{display:flex;align-items:center;gap:10px;padding:16px 26px;border-bottom:1px solid var(--line);background:var(--sf)}
  nav .dot{width:11px;height:11px;border-radius:50%;background:var(--acc)}
@@ -219,7 +235,7 @@ STYLE = """
  .folder{display:block;background:var(--sf);border:1px solid var(--line);border-radius:14px;padding:18px;
    text-decoration:none;color:var(--ink);transition:border-color .15s, transform .15s}
  .folder:hover{border-color:var(--acc);transform:translateY(-2px)}
- .folder .tab{width:44px;height:10px;background:var(--softblue);border-radius:4px 4px 0 0;margin-bottom:-1px}
+ .folder .tab{width:44px;height:10px;background:var(--deep);border-radius:4px 4px 0 0;margin-bottom:-1px}
  .folder .body{background:var(--cream2);border-radius:0 8px 8px 8px;padding:12px 12px 10px;min-height:74px}
  .folder b{font-size:15.5px} .folder .meta{font-size:12.5px;color:var(--soft);margin-top:4px;line-height:1.5}
  .folder.new{border-style:dashed;color:var(--soft)} .folder.new:hover{color:var(--acc)}
@@ -232,18 +248,18 @@ STYLE = """
  input[type=text],input[type=password],select{font:14px 'Instrument Sans';border:1px solid var(--line);
    border-radius:9px;padding:9px 12px;background:var(--sf);color:var(--ink)}
  .chip{font-family:'IBM Plex Mono',monospace;font-size:10.5px;border-radius:99px;padding:2px 9px;white-space:nowrap}
- .chip.role{background:var(--softblue2);color:var(--deep)}
- .chip.warn{background:var(--warnbg);color:#8a5a10}
+ .chip.role{background:var(--softblue2);color:var(--softblue)}
+ .chip.warn{background:var(--warnbg);color:#f2d9a7}
  .chip.skip{background:var(--cream2);color:var(--soft)}
- .chip.fail{background:var(--failbg);color:var(--accdark)}
- .chip.ok{background:var(--okbg);color:var(--deep)}
+ .chip.fail{background:var(--failbg);color:#f2b3a7}
+ .chip.ok{background:var(--okbg);color:var(--softblue)}
  .filerow{display:flex;align-items:center;gap:10px;padding:7px 4px;border-bottom:1px solid var(--cream2);font-size:13.5px}
  .filerow:last-child{border-bottom:none}
  .filerow .name{font-family:'IBM Plex Mono',monospace;font-size:12.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  .filerow .sz{color:var(--soft);font-size:12px}
- .drop{display:block;border:1.5px dashed var(--softblue);border-radius:11px;background:var(--softblue2);
-   padding:20px;text-align:center;cursor:pointer;color:var(--deep);font-weight:600}
- .drop.drag{background:var(--softblue)} .drop input{display:none} .drop small{display:block;font-weight:400;color:var(--soft);margin-top:3px}
+ .drop{display:block;border:1.5px dashed var(--deep);border-radius:11px;background:var(--softblue2);
+   padding:20px;text-align:center;cursor:pointer;color:var(--softblue);font-weight:600}
+ .drop.drag{background:#1d3450} .drop input{display:none} .drop small{display:block;font-weight:400;color:var(--soft);margin-top:3px}
  .runrow{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--cream2)}
  .runrow:last-child{border-bottom:none}
  .runrow .stamp{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--soft)}
@@ -251,7 +267,7 @@ STYLE = """
  .hint{font-size:13px;color:var(--soft)}
  .two{display:grid;grid-template-columns:1.25fr 1fr;gap:18px;align-items:start}
  @media(max-width:860px){.two{grid-template-columns:1fr}}
- pre.log{background:#1d2939;color:#e8e2d9;border-radius:12px;padding:16px;font:12.5px 'IBM Plex Mono',monospace;overflow-x:auto;line-height:1.55;white-space:pre-wrap}
+ pre.log{background:#0c1522;border:1px solid var(--line);color:#e8e2d9;border-radius:12px;padding:16px;font:12.5px 'IBM Plex Mono',monospace;overflow-x:auto;line-height:1.55;white-space:pre-wrap}
  .pb{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin:12px 0 4px}
  .pb i{display:block;height:100%;width:4%;background:linear-gradient(90deg,var(--acc),#ff7a4d);
    border-radius:99px;transition:width .5s ease;position:relative;overflow:hidden}
@@ -272,6 +288,32 @@ STYLE = """
  details.pillpop .pop p{margin:2px 0 0;color:var(--soft)}
  pre.log .ok{color:#9fd0b8}pre.log .fail{color:#ff9d7a}pre.log .warn{color:#ecd9a0}
  .banner{background:var(--softblue2);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:11px;padding:13px 16px;font-size:14px}
+ .tabsbar{display:flex;gap:6px;margin-left:auto}
+ .tabbtn{font:600 13.5px 'Instrument Sans';border:1px solid var(--line);background:var(--sf);
+   color:var(--softblue);border-radius:9px;padding:9px 20px;cursor:pointer}
+ .tabbtn.on{background:var(--deep);color:#fff;border-color:var(--deep)}
+ .modes{display:flex;flex-direction:column;gap:12px}
+ .mode{display:flex;flex-direction:column;gap:5px;align-items:flex-start;text-align:left;cursor:pointer;
+   background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 18px;width:100%;
+   color:var(--ink);transition:border-color .15s,transform .15s}
+ .mode:hover{border-color:var(--acc);transform:translateY(-1px)}
+ .mode b{font:700 15.5px 'Instrument Sans'} .mode span{font-size:12px;color:var(--soft);line-height:1.5}
+ .mode.after{border-color:var(--deep)} .mode.after b{color:var(--acc)}
+ .viewtog{display:flex;gap:6px}
+ .viewtog button{font:600 12px 'IBM Plex Mono',monospace;border:1px solid var(--line);background:transparent;
+   color:var(--soft);border-radius:7px;width:30px;height:26px;cursor:pointer}
+ .viewtog button.on{background:var(--softblue2);color:var(--ink);border-color:var(--deep)}
+ .fgridV{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+ .ftile{aspect-ratio:1;border:1px solid var(--line);border-radius:11px;position:relative;padding:12px 10px;
+   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;text-align:center}
+ .ftile .fmt{font:600 11px 'IBM Plex Mono',monospace;background:var(--softblue2);color:var(--softblue);
+   border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+ .ftile .nm{font:10.5px 'IBM Plex Mono',monospace;max-width:100%;overflow:hidden;display:-webkit-box;
+   -webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-all}
+ .ftile form{position:absolute;top:6px;right:6px}
+ .ftile .ghost{opacity:0} .ftile:hover .ghost{opacity:1}
+ .rdel{opacity:0;border:none;background:none;color:var(--soft);cursor:pointer;padding:2px}
+ .runrow:hover .rdel{opacity:1} .rdel:hover{color:var(--acc)} .rdel svg{width:14px;height:14px}
  /* chat */
  .chatbox{display:flex;flex-direction:column;gap:12px;max-width:820px;margin:0 auto}
  .msg{border-radius:14px;padding:12px 16px;max-width:88%;font-size:14.5px;white-space:pre-wrap}
@@ -402,24 +444,28 @@ def workspace(ws_name):
     if not ws.exists():
         return redirect("/")
     roles = _manifest_roles(ws)
-    rows = ""
+    rows, tiles = "", ""
     for p in sorted((ws / "raw").glob("*")):
         if not p.is_file() or p.name.startswith("."):
             continue
         label, cls = roles.get(p.name, ("unassigned", "warn"))
+        delform = (f'<form method="post" action="/w/{ws.name}/files/delete" '
+                   f'onsubmit="return confirm(\'Delete {html.escape(p.name)}?\')">'
+                   f'<input type="hidden" name="f" value="{html.escape(p.name)}">'
+                   f'<button class="ghost" title="Delete">✕</button></form>')
         rows += (f'<div class="filerow"><span class="name" title="{html.escape(p.name)}">{html.escape(p.name)}</span>'
                  f'<span class="chip {cls}">{html.escape(label)}</span>'
-                 f'<span class="sz">{p.stat().st_size//1024} KB</span>'
-                 f'<form method="post" action="/w/{ws.name}/files/delete" onsubmit="return confirm(\'Delete {html.escape(p.name)}?\')">'
-                 f'<input type="hidden" name="f" value="{html.escape(p.name)}">'
-                 f'<button class="ghost" title="Delete">✕</button></form></div>')
+                 f'<span class="sz">{p.stat().st_size//1024} KB</span>{delform}</div>')
+        tiles += (f'<div class="ftile">{delform}'
+                  f'<span class="fmt">{html.escape(p.suffix.lstrip(".").upper() or "?")}</span>'
+                  f'<span class="nm" title="{html.escape(p.name)}">{html.escape(p.name)}</span>'
+                  f'<span class="chip {cls}">{html.escape(label)}</span></div>')
     if not rows:
-        rows = '<div class="hint" style="padding:8px 4px">No documents yet — drop the pack above.</div>'
+        rows = tiles = '<div class="hint" style="padding:8px 4px">No documents yet — drop the pack above.</div>'
     unassigned = [f for f, (_, c) in roles.items() if c == "warn"]
     warn_banner = (f'<div class="banner">⚠ {len(unassigned)} file(s) are <b>not being analysed</b> '
-                   f'(no role matched): {", ".join(html.escape(u) for u in unassigned)}. Rename them to include '
-                   f'their market and kind (e.g. <span class="mono">Screening_Report_Spain.pdf</span>), or delete them.</div>'
-                   if unassigned else "")
+                   f'(no role matched): {", ".join(html.escape(u) for u in unassigned)}. Rename to include '
+                   f'their market and kind, or delete them.</div>' if unassigned else "")
 
     runrows = ""
     for run in list_runs(ws):
@@ -453,7 +499,10 @@ def workspace(ws_name):
         ts = datetime.strptime(run.name, "%Y%m%d-%H%M%S").strftime("%d %b · %H:%M")
         runrows += (f'<div class="runrow"><span class="stamp">{ts}</span>'
                     f'<span class="rec" style="flex:1">{rec}</span>{chip}'
-                    f'<a class="btn" href="/w/{ws.name}/report/{run.name}">Report</a></div>')
+                    f'<a class="btn" href="/w/{ws.name}/report/{run.name}">Report</a>'
+                    f'<form method="post" action="/w/{ws.name}/runs/{run.name}/delete" '
+                    f'onsubmit="return confirm(\'Delete this run and its report?\')">'
+                    f'<button class="rdel" title="Delete run">{TRASH}</button></form></div>')
     if not runrows:
         runrows = '<div class="hint" style="padding:8px 4px">No runs yet.</div>'
 
@@ -472,49 +521,72 @@ def workspace(ws_name):
         'const r=await fetch("/keycheck",{method:"POST",headers:{"Content-Type":"application/json"},'
         'body:JSON.stringify({key:v})});const j=await r.json();'
         'el.style.borderColor=j.ok?"#2F7D4F":"#c12d00";'
-        'st.style.color=j.ok?"#2F7D4F":"#c12d00";st.textContent=j.detail;}'
+        'st.style.color=j.ok?"#7bd8b8":"#f2b3a7";st.textContent=j.detail;}'
         '</script>')
+
     body = f"""
-    <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
       <h1 style="font-size:26px">{ws.name}</h1>
-      <a href="/w/{ws.name}/chat" class="btn">Ask the data<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;vertical-align:-2px;margin-left:5px"><path d="M7 17L17 7M9 7h8v8"/></svg></a>
-      <form method="post" action="/w/{ws.name}/files/clean" style="margin-left:auto"
-        onsubmit="return confirm('Remove ALL documents from this workspace?')">
-        <button class="ghost">Clean raw files</button></form>
+      <a href="/w/{ws.name}/chat" class="btn">{ROBOT}Ask the data</a>
+      <div class="tabsbar">
+        <button class="tabbtn" id="tb-files" onclick="setTab('files')">Files</button>
+        <button class="tabbtn" id="tb-runs" onclick="setTab('runs')">Runs</button>
+      </div>
     </div>
     {warn_banner}
-    <div class="two">
-      <div class="card">
-        <h2>Documents</h2>
-        <form method="post" action="/w/{ws.name}/files/upload" enctype="multipart/form-data" id="upf">
-          <label class="drop" id="drop">Drop the pack here — or click to choose
-            <small>PDF · XLSX · HTML · CSV — roles are auto-detected, and anything unrecognised is flagged, never silently ignored</small>
-            <input type="file" name="docs" multiple id="fi"></label>
-        </form>
-        <div style="margin-top:10px">{rows}</div>
+    <section id="pane-files" class="card">
+      <div style="display:flex;align-items:center;gap:12px">
+        <h2 style="margin:0;flex:1">Documents</h2>
+        <div class="viewtog">
+          <button id="vt-grid" onclick="setView('grid')" title="Icon view">⊞</button>
+          <button id="vt-list" onclick="setView('list')" title="List view">≡</button>
+        </div>
+        <form method="post" action="/w/{ws.name}/files/clean"
+          onsubmit="return confirm('Remove ALL documents from this workspace?')">
+          <button class="ghost">Clean all</button></form>
       </div>
-      <div style="display:flex;flex-direction:column;gap:18px">
-        <form class="card" method="post" action="/w/{ws.name}/run" style="display:flex;flex-direction:column;gap:10px">
-          <h2 style="margin:0">Run the pipeline</h2>
-          {key_field}
-          <button class="primary" name="ai" value="auto" style="text-align:left">
-            <span style="font-size:15px">Glide run</span><br>
-            <span style="font-weight:400;font-size:11.5px;opacity:.85">deterministic core; AI only where patterns fail · seconds, ~€0</span></button>
-          <button name="ai" value="max" style="text-align:left;border-color:var(--deep)">
-            <span style="font-size:15px;color:var(--acc)">Afterburner run</span><br>
-            <span style="font-weight:400;font-size:11.5px;color:var(--soft)">Glide + a frontier model audits every extracted value (needs a key)</span></button>
-          <span class="hint">read native → extract → one schema → dedupe → compare → checks → conclusion
-           · <button class="ghost" name="ai" value="off" style="font-size:11px;padding:0">or run with AI fully off</button></span>
-        </form>
-        <div class="card"><h2>Runs</h2>{runrows}</div>
-      </div>
-    </div>
+      <form method="post" action="/w/{ws.name}/files/upload" enctype="multipart/form-data" id="upf" style="margin-top:12px">
+        <label class="drop" id="drop">Drop documents here — or click to choose
+          <small>PDF · XLSX · HTML · CSV — roles auto-detected; anything unrecognised is flagged, never ignored</small>
+          <input type="file" name="docs" multiple id="fi"></label>
+      </form>
+      <div id="fl-list" style="margin-top:12px">{rows}</div>
+      <div id="fl-grid" class="fgridV" style="margin-top:12px;display:none">{tiles}</div>
+    </section>
+    <section id="pane-runs" class="two" style="display:none">
+      <form class="card" method="post" action="/w/{ws.name}/run" style="display:flex;flex-direction:column;gap:12px">
+        <h2 style="margin:0">New run</h2>
+        <div class="modes">
+          <button class="mode" name="ai" value="auto"><b>Glide</b>
+            <span>deterministic core; AI only where patterns fail · seconds, ~€0</span></button>
+          <button class="mode after" name="ai" value="max"><b>Afterburner</b>
+            <span>Glide, then the model re-checks every extracted value · needs a key</span></button>
+        </div>
+        {key_field}
+        <span class="hint">read → extract → unify → dedupe → compare → check → conclude
+         · <button class="ghost" name="ai" value="off" style="font-size:11px;padding:0">run with AI fully off</button></span>
+      </form>
+      <div class="card"><h2>Runs</h2>{runrows}</div>
+    </section>
     <script>
-     const drop=document.getElementById('drop'),fi=document.getElementById('fi'),f=document.getElementById('upf');
-     fi.addEventListener('change',()=>f.submit());
+     const WS={json.dumps(ws.name)};
+     function setTab(t){{localStorage.setItem('tab-'+WS,t);
+       document.getElementById('pane-files').style.display=t==='files'?'':'none';
+       document.getElementById('pane-runs').style.display=t==='runs'?'':'none';
+       document.getElementById('tb-files').classList.toggle('on',t==='files');
+       document.getElementById('tb-runs').classList.toggle('on',t==='runs');}}
+     function setView(v){{localStorage.setItem('view-'+WS,v);
+       document.getElementById('fl-list').style.display=v==='list'?'':'none';
+       document.getElementById('fl-grid').style.display=v==='grid'?'grid':'none';
+       document.getElementById('vt-grid').classList.toggle('on',v==='grid');
+       document.getElementById('vt-list').classList.toggle('on',v==='list');}}
+     setTab(localStorage.getItem('tab-'+WS)||'files');
+     setView(localStorage.getItem('view-'+WS)||'list');
+     const drop=document.getElementById('drop'),fi=document.getElementById('fi'),upf=document.getElementById('upf');
+     fi.addEventListener('change',()=>upf.submit());
      ;['dragover','dragenter'].forEach(e=>drop.addEventListener(e,ev=>{{ev.preventDefault();drop.classList.add('drag')}}));
      ;['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{{ev.preventDefault();drop.classList.remove('drag')}}));
-     drop.addEventListener('drop',ev=>{{fi.files=ev.dataTransfer.files;f.submit()}});
+     drop.addEventListener('drop',ev=>{{fi.files=ev.dataTransfer.files;upf.submit()}});
     </script>"""
     return page(f"{ws.name} — Runway", body, f"/ {ws.name}")
 
@@ -682,6 +754,53 @@ def run_view(ws_name, token):
                     headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
+@app.post("/w/<ws_name>/runs/<run_name>/delete")
+def delete_run(ws_name, run_name):
+    ws = ws_dir(ws_name)
+    if re.fullmatch(r"[0-9]{8}-[0-9]{6}", run_name):
+        target = ws / "runs" / run_name
+        if target.is_dir():
+            shutil.rmtree(target)
+        latest = ws / "runs" / "latest"
+        if latest.is_symlink() or latest.exists():
+            latest.unlink()
+        rem = sorted(p for p in (ws / "runs").iterdir() if p.is_dir())
+        if rem:
+            latest.symlink_to(rem[-1].name)
+    return redirect(f"/w/{ws.name}")
+
+
+@app.post("/w/<ws_name>/research/<run_name>/<gap_id>")
+def research(ws_name, run_name, gap_id):
+    ws = ws_dir(ws_name)
+    key, prov = sk()["value"], sk().get("provider")
+    if not key or not prov:
+        return jsonify({"ok": False, "error": "No API key — add one via the chip top-right, then retry."})
+    run = ws / "runs" / Path(run_name).name
+    try:
+        state = json.load(open(run / "state.json"))
+        gap = next(g for g in state["gaps"] if g["id"] == gap_id)
+    except Exception:  # noqa: BLE001
+        return jsonify({"ok": False, "error": "gap not found for this run"})
+    plan = "; ".join(gap.get("plan", []))
+    prompt = (
+        f"You are the sourcing workflow of a market-entry pipeline. Execute this research plan from your "
+        f"own knowledge, as a DRAFT for human review.\n"
+        f"Gap {gap['id']}: {gap['field']} (scope: {gap['market']}).\nWhy it matters: {gap['why']}\n"
+        f"Plan: {plan}\n"
+        f"Give: (1) a best estimate or range with units and reasoning, (2) three named sources or report "
+        f"types to verify it (organisations/publications, no URLs needed), (3) a confidence level. "
+        f"Under 180 words. End with exactly: DRAFT — quarantined; not merged into the dataset.")
+    model = next(iter(PROVIDERS[prov]["models"]))
+    try:
+        text = _chat_call(prov, key, model, "You answer concisely and factually.", 
+                          [{"role": "user", "content": prompt}])
+        return jsonify({"ok": True, "text": text,
+                        "meta": f"{PROVIDERS[prov]['label']} · {PROVIDERS[prov]['models'][model]}"})
+    except Exception as e:  # noqa: BLE001
+        return jsonify({"ok": False, "error": f"{PROVIDERS[prov]['label']} call failed: {e}"})
+
+
 @app.get("/w/<ws_name>/report/<run_name>")
 def report(ws_name, run_name):
     run = ws_dir(ws_name) / "runs" / Path(run_name).name
@@ -692,7 +811,21 @@ def report(ws_name, run_name):
                        cwd=ROOT, capture_output=True, timeout=120)
     if not f.exists():
         return redirect(f"/w/{ws_name}")
-    return send_file(f)
+    doc = f.read_text()
+    if 'class="research"' in doc:
+        doc = doc.replace('class="research" disabled', 'class="research"')
+        hook = (
+            "<script>const WSN=" + json.dumps(ws_name) + ",RUNN=" + json.dumps(run.name) + ";"
+            "document.querySelectorAll('.research').forEach(b=>b.onclick=async()=>{"
+            "b.disabled=true;b.textContent='Researching…';"
+            "const r=await fetch(`/w/${WSN}/research/${RUNN}/${b.dataset.gap}`,{method:'POST'});"
+            "const j=await r.json();const d=document.createElement('div');d.className='rsx';"
+            "d.textContent=j.ok?(j.text+'\\n\\n['+j.meta+']'):('⚠ '+j.error);"
+            "b.closest('.gap').appendChild(d);"
+            "b.textContent=j.ok?'Researched — draft below':'Research this';if(!j.ok)b.disabled=false;});"
+            "</script></body>")
+        doc = doc.replace("</body>", hook, 1)
+    return Response(doc, mimetype="text/html")
 
 
 # ---------------------------------------------------------------- chat

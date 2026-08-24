@@ -152,7 +152,7 @@ def build(state_path=None) -> str:
     for g in state["gaps"]:
         plan = "".join(f"<li>{html.escape(p)}</li>" for p in g["plan"])
         gap_cards += f'''<div class="gap"><div class="gaphead"><b>{g["id"]}</b> · {g["market"]} · {html.escape(g["field"])}
-          <button class="research" disabled title="Disabled: this assessment treats the pack as a closed world. In production this launches the sourcing workflow, and found documents land in quarantine until a human approves them.">Research this ⏸</button></div>
+          <button class="research" disabled data-gap="{g["id"]}" title="On the hosted desk this asks the model to execute the research plan (draft, quarantined). Static copies keep it off: closed world.">Research this</button></div>
           <div class="gapwhy">{html.escape(g["why"])} <i>{html.escape(g["impact"])}</i></div>
           <details><summary>Research plan (what the sourcing workflow would run)</summary><ul>{plan}</ul></details></div>'''
 
@@ -174,6 +174,18 @@ def build(state_path=None) -> str:
 
     ts = datetime.fromisoformat(man["run_at"]).strftime("%d %b %Y %H:%M UTC")
     ex = man["extraction"]
+    llm_log = state.get("llm_log") or []
+    if llm_log:
+        rows_l = "".join(
+            f"<b>#{c['n']} · {html.escape(c['purpose'])} · {html.escape(c['field'])}</b>"
+            f"<p>{html.escape(c['provider'])} · {html.escape(c['model'])} · "
+            f"{c['tokens']} tokens · {html.escape(str(c['outcome']))}</p>"
+            for c in llm_log)
+        llm_chip = (f'<details class="llmpop"><summary>llm calls: {man["llm_calls"]} · '
+                    f'€{man["llm_cost_eur"]:.2f} ▾</summary><div class="pop">{rows_l}</div></details>')
+    else:
+        llm_chip = f'<span>llm calls: {man["llm_calls"]} · cost €{man["llm_cost_eur"]:.2f}</span>'
+
 
     page = f'''<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -226,6 +238,17 @@ def build(state_path=None) -> str:
  .gaphead{{display:flex;align-items:center;gap:8px;flex-wrap:wrap}}
  .research{{margin-left:auto;border:1px solid var(--line);background:var(--bg);color:var(--soft);
    border-radius:99px;padding:3px 12px;font:12px 'IBM Plex Mono',monospace}}
+ .research:not([disabled]){{cursor:pointer;color:var(--accent);border-color:var(--accent)}}
+ .research:not([disabled]):hover{{background:var(--accsoft)}}
+ .rsx{{margin-top:10px;background:var(--accsoft);border:1px solid var(--line);border-radius:9px;
+   padding:11px 14px;font-size:13px;white-space:pre-wrap}}
+ .llmpop{{position:relative}} .llmpop summary{{cursor:pointer;list-style:none}}
+ .llmpop summary::-webkit-details-marker{{display:none}}
+ .llmpop .pop{{position:absolute;left:0;top:24px;z-index:40;width:420px;max-height:300px;overflow:auto;
+   background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;
+   box-shadow:0 14px 44px rgba(0,0,0,.15);font-family:'Instrument Sans',sans-serif}}
+ .llmpop .pop b{{display:block;margin-top:8px;font-size:12px}} .llmpop .pop b:first-child{{margin-top:0}}
+ .llmpop .pop p{{margin:1px 0 0;color:var(--soft);font-size:11.5px}}
  .gapwhy{{font-size:13.5px;margin-top:5px}} .gap i{{color:var(--soft)}}
  details{{margin-top:6px;font-size:13px}} summary{{cursor:pointer;color:var(--acc2)}}
  tr.winner td{{background:var(--accsoft)}}
@@ -244,7 +267,7 @@ def build(state_path=None) -> str:
 </header>
 
 <div class="runbar"><span>run {ts}</span><span>ai mode: {man["ai_mode"]}</span>
-  <span>llm calls: {man["llm_calls"]} · cost €{man["llm_cost_eur"]:.2f}</span>
+  {llm_chip}
   <span>runtime {man["total_s"]}s</span><span>eval {hits}/{len(golden)}</span>
   <span>extraction: {ex["deterministic"]} det / {ex["ai"]} ai / {ex["manual_overrides"]} manual / {ex["unresolved"]} unresolved</span></div>
 
