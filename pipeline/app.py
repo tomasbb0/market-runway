@@ -67,7 +67,23 @@ app.secret_key = os.environ.get("RUNWAY_SECRET") or os.urandom(24).hex()
 app.config["MAX_CONTENT_LENGTH"] = 30 * 1024 * 1024   # 30 MB per upload batch
 RUNWAY_PASS = os.environ.get("RUNWAY_PASS", "")
 
-KEYS: dict = {}   # per-browser-session provider keys; never written to disk
+KEYS: dict = {}   # per-browser-session provider keys; mirrored to a gitignored file
+KEYSTORE = Path(__file__).resolve().parent / "workspaces" / ".keys.json"
+
+
+def _keys_save():
+    try:
+        KEYSTORE.parent.mkdir(parents=True, exist_ok=True)
+        KEYSTORE.write_text(json.dumps(KEYS))
+        os.chmod(KEYSTORE, 0o600)
+    except OSError:
+        pass
+
+
+try:
+    KEYS.update(json.loads(KEYSTORE.read_text()))
+except (OSError, ValueError):
+    pass
 RUNTASKS: dict = {}   # run token -> {lines, done, ok, ws, run}
 
 
@@ -142,9 +158,9 @@ def _gate():
 
 @app.get("/login")
 def login_page():
-    return (f'<!doctype html><meta charset="utf-8"><title>Runway</title>{STYLE}'
+    return (f'<!doctype html><meta charset="utf-8"><title>Market Runway</title>{STYLE}'
             '<div style="min-height:100svh;display:grid;place-content:center;gap:14px;text-align:center">'
-            '<div class="eyebrow"><span class="tag"></span>RUNWAY · PRIVATE DESK</div>'
+            '<div class="eyebrow"><span class="tag"></span>MARKET RUNWAY · PRIVATE DESK</div>'
             '<form method="post" action="/login" style="display:flex;gap:10px">'
             '<input type="password" name="p" placeholder="access password" autofocus '
             'style="font-family:monospace">'
@@ -493,7 +509,7 @@ def nav(crumbs=""):
         'st.style.color=j.ok?"#2F7D4F":"#c12d00";st.textContent=j.detail;'
         'if(j.ok)setTimeout(function(){location.reload()},900);}'
         '</script>')
-    return (f'<nav><span class="dot"></span><b><a href="/" style="text-decoration:none;color:inherit">Runway</a></b>'
+    return (f'<nav><span class="dot"></span><b><a href="/" style="text-decoration:none;color:inherit">Market Runway</a></b>'
             f'<span class="crumb">{crumbs}</span><span class="right">{key_chip}</span></nav>')
 
 
@@ -582,7 +598,7 @@ def rail_html(current: str) -> str:
             '<button onclick="document.getElementById(\'newws\').showModal()">+ New</button></header>'
             f'<div class="exlist">{items}</div>'
             f'<button class="railset" onclick="navKey()">{GEARS}<span>Settings</span></button>'
-            f'<footer>RUNWAY DESK · {len(wss)} EXERCISE{"S" if len(wss) != 1 else ""}</footer></aside>'
+            f'<footer>MARKET RUNWAY · {len(wss)} EXERCISE{"S" if len(wss) != 1 else ""}</footer></aside>'
             + NEWWS_DLG + RAIL_JS)
 
 
@@ -600,7 +616,7 @@ def home():
               '<div class="tab" style="background:var(--line)"></div><div class="body" style="display:grid;place-content:center">'
               '<b>+ New search</b><div class="meta">start a market assessment</div></div></a>')
     body = f"""
-    <div><div class="eyebrow">Runway · the market-entry desk</div>
+    <div><div class="eyebrow">Market Runway · the market-entry desk</div>
     <h1>Every market, <em>one folder away.</em></h1>
     <p class="hint" style="max-width:60ch">Drop a market pack into a workspace, run the seven-stage pipeline,
     and get a validated dataset, a ranked recommendation and a full evidence report. Deterministic first;
@@ -614,7 +630,7 @@ def home():
           <button type="button" onclick="this.closest('dialog').close()">Cancel</button>
           <button class="primary">Create</button></div>
       </form></dialog>"""
-    return page("Runway — workspaces", body, shell=True)
+    return page("Market Runway — workspaces", body, shell=True)
 
 
 @app.post("/new")
@@ -815,7 +831,7 @@ def workspace(ws_name):
         if(e.key==='Escape')done(false)}});
        inp.addEventListener('blur',()=>done(true));}});}}
     </script>"""
-    return page(f"{ws.name} — Runway", body, f"/ {ws.name}", rail=rail_html(ws.name))
+    return page(f"{ws.name} — Market Runway", body, f"/ {ws.name}", rail=rail_html(ws.name))
 
 
 @app.post("/w/<ws_name>/files/upload")
@@ -873,6 +889,7 @@ def run_ws(ws_name):
     if submitted:
         sk()["value"] = submitted
         sk()["provider"] = detect_provider(submitted)
+        _keys_save()
     env = dict(os.environ)
     env.pop("ANTHROPIC_API_KEY", None)
     env.pop("RUNWAY_KEY", None); env.pop("RUNWAY_PROVIDER", None)
@@ -942,7 +959,7 @@ def run_view(ws_name, token):
         return out
 
     def generate():
-        full = page("Run — Runway", "@@CUT@@", f"/ {ws.name} / run", rail=rail_html(ws.name))
+        full = page("Run — Market Runway", "@@CUT@@", f"/ {ws.name} / run", rail=rail_html(ws.name))
         head, tail = full.split("@@CUT@@")
         yield head + (
             f'<div><div class="eyebrow">{ws.name} · pipeline run · {mode_label}</div>'
@@ -1039,8 +1056,7 @@ def results_view(ws_name, run_name):
           or "full grids in the evidence report")),
         ("S5", "Sequencing", seq),
     ]
-    ev = (f'<a class="openfull" href="/w/{ws.name}/report/{run.name}">open full{EXTS}</a>'
-          f'<iframe data-src="/w/{ws.name}/report/{run.name}" title="evidence"></iframe>')
+    ev = f'<iframe data-src="/w/{ws.name}/report/{run.name}" title="evidence"></iframe>' 
     deck = ""
     if rec:
         deck += (f'<div class="iband"><b>Engine verdict: enter {rec} first</b>'
@@ -1067,8 +1083,7 @@ def results_view(ws_name, run_name):
     dataset = ('<div class="facts">'
                + "".join(f'<div><span>{k}</span><b>{html.escape(str(v))}</b></div>' for k, v in facts)
                + f'</div><div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">{dls}</div>')
-    chat = (f'<a class="openfull" href="/w/{ws.name}/chat">open full{EXTS}</a>'
-            f'<iframe data-src="/w/{ws.name}/chat?embed=1" title="chat"></iframe>')
+    chat = f'<iframe data-src="/w/{ws.name}/chat?embed=1" title="chat"></iframe>' 
     segbar = "".join(f'<button id="sg-{k}">{lbl}</button>' for k, lbl in
                      (("evidence", "Evidence report"), ("deck", "Deck"),
                       ("dataset", "Dataset"), ("chat", "Ask the data")))
@@ -1369,6 +1384,7 @@ def chat_send(ws_name):
     if data.get("key"):
         sk()["value"] = data["key"].strip()
         sk()["provider"] = detect_provider(sk()["value"])
+        _keys_save()
     if not sk()["value"]:
         return jsonify({"error": "No API key set. Paste an Anthropic, OpenAI or Gemini key next to the message box."})
     provider = sk().get("provider")
@@ -1441,6 +1457,7 @@ def keycheck():
         n = len(out.get("data", out.get("models", [])))
         sk()["value"] = key
         sk()["provider"] = p
+        _keys_save()
         return jsonify({"ok": True, "provider": p, "label": PROVIDERS[p]["label"],
                         "detail": f"{PROVIDERS[p]['label']} · key valid · {n} models visible"})
     except urllib.error.HTTPError as e2:
@@ -1454,6 +1471,7 @@ def keycheck():
 def clearkey():
     sk()["value"] = ""
     sk()["provider"] = None
+    _keys_save()
     return redirect(request.referrer or "/")
 
 
