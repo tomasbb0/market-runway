@@ -316,13 +316,18 @@ STYLE = """
    display:grid;place-items:center;line-height:1;padding:0}
  .viewtog button.on{background:var(--softblue2);color:var(--ink);border-color:var(--deep)}
  .fgridV{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
- .ftile{aspect-ratio:1;border:1px solid var(--line);border-radius:11px;position:relative;padding:12px 10px;
-   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;text-align:center}
+ .ftile{aspect-ratio:1;border:none;background:var(--cream2);border-radius:11px;position:relative;
+   padding:12px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+   text-align:center;clip-path:polygon(0 0,calc(100% - 24px) 0,100% 24px,100% 100%,0 100%)}
+ .ftile::after{content:"";position:absolute;top:0;right:0;width:24px;height:24px;
+   background:var(--softblue2);clip-path:polygon(0 0,0 100%,100% 100%)}
+ .ftile:hover::after{background:var(--deep)}
+ .ftile .chip{white-space:normal;max-width:100%;line-height:1.6;border-radius:10px}
  .ftile .fmt{font:600 11px 'IBM Plex Mono',monospace;background:var(--softblue2);color:var(--softblue);
    border:1px solid var(--line);border-radius:8px;padding:8px 10px}
  .ftile .nm{font:10.5px 'IBM Plex Mono',monospace;max-width:100%;overflow:hidden;display:-webkit-box;
    -webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-all}
- .ftile form{position:absolute;top:6px;right:6px}
+ .ftile form{position:absolute;top:5px;left:5px}
  .ftile .ghost{opacity:0} .ftile:hover .ghost{opacity:1}
  .rdel{opacity:0;border:none;background:none;color:var(--soft);cursor:pointer;padding:2px}
  .runrow:hover .rdel{opacity:1} .rdel:hover{color:var(--acc)} .rdel svg{width:14px;height:14px}
@@ -412,7 +417,8 @@ STYLE = """
    font-size:17px;font-weight:600;line-height:1}
  .addrow:hover{color:var(--acc);border-color:var(--acc)}
  .ftile.addtile{border:1.5px dashed var(--line);color:var(--soft);cursor:pointer;
-   font-size:26px;font-weight:600;line-height:1}
+   font-size:26px;font-weight:600;line-height:1;background:transparent;clip-path:none}
+ .ftile.addtile::after{display:none}
  .ftile.addtile:hover{color:var(--acc);border-color:var(--acc)}
  </style>"""
 
@@ -598,7 +604,7 @@ def workspace(ws_name):
         tiles += (f'<div class="ftile">{delform}'
                   f'<span class="fmt">{html.escape(p.suffix.lstrip(".").upper() or "?")}</span>'
                   f'<span class="nm" title="{html.escape(p.name)}">{html.escape(p.name)}</span>'
-                  f'<span class="chip {cls}">{html.escape(label)}</span></div>')
+                  f'<span class="chip {cls}">{html.escape(label).replace(" · ", "<br>")}</span></div>')
     if not rows:
         rows = tiles = '<div class="hint" style="padding:8px 4px">No documents yet — drop the pack above.</div>'
     addcard = 'onclick="document.getElementById(\'fi\').click()" title="Add documents"'
