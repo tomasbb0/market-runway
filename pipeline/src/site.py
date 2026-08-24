@@ -245,7 +245,7 @@ def landing(st) -> str:
 <div class="bar"><span class="tag"></span><b>RUNWAY</b><span class="mono">THE MARKET-ENTRY DESK</span>
  <nav><a href="http://108.132.145.140/" style="color:var(--acc)">Hosted desk</a><a href="model/">Blank model</a>
  <a href="https://github.com/tomasbb0/market-runway">Repo</a>
- <a href="https://burnaylabs.pt/v1-market-runway/">v1 site ↗</a></nav></div>
+ <a href="https://burnaylabs.pt/v1-market-runway/">v1 site<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;vertical-align:-2px;margin-left:5px"><path d="M7 17L17 7M9 7h8v8"/></svg></a></nav></div>
 
 <div class="desk">
  <aside class="rail">
@@ -647,7 +647,7 @@ def landing(st) -> str:
      body='<div class="facts">'+e.facts.map(f=>`<div><span>${{f[0]}}</span><b>${{f[1]}}</b></div>`).join('')+'</div>';
    }} else {{
      const src={{evidence:'report/',deck:'deck/',chat:'chat/'}}[seg];
-     body=`<a class="openfull" href="${{src}}">open full ↗</a><iframe src="${{src}}" title="${{seg}}"></iframe>`;
+     body=`<a class="openfull" href="${{src}}">open full<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;vertical-align:-2px;margin-left:5px"><path d="M7 17L17 7M9 7h8v8"/></svg></a><iframe src="${{src}}" title="${{seg}}"></iframe>`;
    }}
    const recnote=(seg!=='insights')?
      '<p class="recnote">Recorded from the real pipeline run. File edits in this mock never regenerate these '

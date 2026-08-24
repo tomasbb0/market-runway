@@ -464,7 +464,7 @@ def workspace(ws_name):
     body = f"""
     <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
       <h1 style="font-size:26px">{ws.name}</h1>
-      <a href="/w/{ws.name}/chat" class="btn">Ask the data ↗</a>
+      <a href="/w/{ws.name}/chat" class="btn">Ask the data<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;vertical-align:-2px;margin-left:5px"><path d="M7 17L17 7M9 7h8v8"/></svg></a>
       <form method="post" action="/w/{ws.name}/files/clean" style="margin-left:auto"
         onsubmit="return confirm('Remove ALL documents from this workspace?')">
         <button class="ghost">Clean raw files</button></form>
