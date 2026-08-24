@@ -221,7 +221,7 @@ def _chat_call(provider: str, key: str, model: str, system: str, msgs: list) -> 
 # ---------------------------------------------------------------- iLoF skin
 STYLE = """
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Noto+Serif:ital,wght@0,400;0,600;1,400;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Noto+Serif:ital,wght@0,400;0,600;1,300;1,400;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
  :root{--bg:#101828;--sf:#1d2939;--ink:#f9f7f5;--deep:#374b60;--soft:#8fa3b8;--line:#243447;
    --acc:#00d4ff;--accdark:#00a3d9;--softblue:#bdd2e0;--softblue2:#14263a;--bordeaux:#a34d6e;
