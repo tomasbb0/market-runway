@@ -243,7 +243,7 @@ STYLE = """
    --acc:#00d4ff;--accdark:#00a3d9;--softblue:#b8cdea;--softblue2:#152a4a;--bordeaux:#a34d6e;
    --tan:#9fb6d9;--cream2:#0e1930;--ok:#b8cdea;--okbg:#152a4a;--warnbg:#3d2f16;--failbg:#3d1c16}
  *{box-sizing:border-box}
- body{margin:0;color:var(--ink);font:16px/1.6 'Instrument Sans',system-ui,sans-serif;
+ body{margin:0;color:var(--ink);font:15px/1.6 'Instrument Sans',system-ui,sans-serif;
    background:var(--bg) fixed;
    background-image:radial-gradient(900px 600px at 12% -10%,rgba(47,74,115,.5),transparent 60%),
      radial-gradient(800px 560px at 105% 8%,rgba(0,212,255,.06),transparent 55%)}
@@ -270,7 +270,7 @@ STYLE = """
  .wrap{max-width:1060px;margin:0 auto;padding:34px 24px 80px;display:flex;flex-direction:column;gap:22px}
  h1{font-size:32px;margin:0;letter-spacing:-.02em;font-weight:700}
  h1 em{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;color:var(--acc)}
- h2{font-size:16px;margin:0 0 12px;letter-spacing:-.01em}
+ h2{font-size:15px;font-weight:700;margin:0 0 12px;letter-spacing:-.01em}
  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--tan)}
  .card{background:var(--sf);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
@@ -281,7 +281,7 @@ STYLE = """
  .folder .body{background:var(--cream2);border-radius:0 8px 8px 8px;padding:12px 12px 10px;min-height:74px}
  .folder b{font-size:15.5px} .folder .meta{font-size:12.5px;color:var(--soft);margin-top:4px;line-height:1.5}
  .folder.new{border-style:dashed;color:var(--soft)} .folder.new:hover{color:var(--acc)}
- button,.btn{font:600 14px 'Instrument Sans';border-radius:9px;border:1px solid var(--line);
+ button,.btn{font:600 13.5px 'Instrument Sans';border-radius:9px;border:1px solid var(--line);
    padding:9px 16px;background:var(--sf);color:var(--ink);cursor:pointer;text-decoration:none;display:inline-block}
  button.primary,.btn.primary{background:var(--acc);border-color:var(--acc);color:#06202e}
  button.primary:hover,.btn.primary:hover{background:var(--accdark)}
@@ -302,7 +302,7 @@ STYLE = """
  .drop{display:block;border:1.5px dashed var(--deep);border-radius:11px;background:var(--softblue2);
    padding:20px;text-align:center;cursor:pointer;color:var(--softblue);font-weight:600}
  .drop.drag{background:#1d3450} .drop input{display:none} .drop small{display:block;font-weight:400;color:var(--soft);margin-top:3px}
- .runrow{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--cream2)}
+ .runrow{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--cream2);font-size:13.5px}
  .runrow:last-child{border-bottom:none}
  .runrow .stamp{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--soft)}
  .runrow .rec{font-weight:600}
@@ -329,7 +329,7 @@ STYLE = """
  details.pillpop .pop b{display:block;margin-top:8px} details.pillpop .pop b:first-child{margin-top:0}
  details.pillpop .pop p{margin:2px 0 0;color:var(--soft)}
  pre.log .ok{color:#9fd0b8}pre.log .fail{color:#ff9d7a}pre.log .warn{color:#ecd9a0}
- .banner{background:var(--softblue2);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:11px;padding:13px 16px;font-size:14px}
+ .banner{background:var(--softblue2);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:11px;padding:13px 16px;font-size:13.5px}
  .tabsbar{display:flex;gap:6px;margin-left:auto}
  .tabbtn{font:600 13.5px 'Instrument Sans';border:1px solid var(--line);background:var(--sf);
    color:var(--softblue);border-radius:9px;padding:9px 20px;cursor:pointer}
@@ -339,7 +339,7 @@ STYLE = """
    background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 18px;width:100%;
    color:var(--ink);transition:border-color .15s,transform .15s}
  .mode:hover{border-color:var(--acc);transform:translateY(-1px)}
- .mode b{font:700 15.5px 'Instrument Sans'} .mode span{font-size:12px;color:var(--soft);line-height:1.5}
+ .mode b{font:700 14.5px 'Instrument Sans'} .mode span{font-size:12px;color:var(--soft);line-height:1.5}
  .mode.after{border-color:var(--deep)} .mode.after b{color:var(--acc)}
  .viewtog{display:flex;gap:6px}
  .viewtog button{font:600 12px 'IBM Plex Mono',monospace;border:1px solid var(--line);background:transparent;
@@ -596,14 +596,28 @@ RAIL_JS = ('<script>document.querySelectorAll(".fmenu").forEach(function(b){'
 RAILCHAT_JS = ('<script>(function(){'
     "var q=document.getElementById('rcq'),ms=document.getElementById('rcmsgs');"
     'if(!q)return;var hist=[];'
+    "try{hist=JSON.parse(localStorage.getItem('rchist-__WS__'))||[]}catch(e){hist=[]}"
+    "function saveH(){try{localStorage.setItem('rchist-__WS__',"
+    "JSON.stringify(hist.slice(-40)))}catch(e){}}"
     "function fmt(s){var d=document.createElement('div');d.textContent=s;var h=d.innerHTML;"
     "return h.replace(/\\*\\*([^*]+)\\*\\*/g,'<strong>$1</strong>')"
     ".replace(/`([^`\\n]+)`/g,'<code>$1</code>')}"
     "function add(cls,htm){var d=document.createElement('div');d.className=cls;d.innerHTML=htm;"
     'ms.appendChild(d);ms.scrollTop=ms.scrollHeight;return d}'
+    "hist.forEach(function(m){add(m.role==='user'?'u':'a',fmt(m.content))});"
     'window.rcSend=async function(){'
     "var t=q.value.trim();if(!t)return;q.value='';"
-    "add('u',fmt(t));hist.push({role:'user',content:t});"
+    "var kk=t.replace(/\\s+/g,'');"
+    "if(/^(sk-|AIza)[A-Za-z0-9_-]{15,}$/.test(kk)){"
+    "add('u','key ····'+kk.slice(-4));"
+    "var kth=document.createElement('div');kth.className='thinking';kth.textContent='Checking key';"
+    "ms.appendChild(kth);ms.scrollTop=ms.scrollHeight;"
+    "fetch('/keycheck',{method:'POST',headers:{'Content-Type':'application/json'},"
+    "body:JSON.stringify({key:kk})}).then(function(r){return r.json()}).then(function(j){"
+    "kth.remove();var msg=(j.ok?'Key saved — ':'⚠ ')+j.detail;add('a',fmt(msg));"
+    "if(j.ok){hist.push({role:'assistant',content:msg});saveH();"
+    "setTimeout(function(){location.reload()},900)}});return}"
+    "add('u',fmt(t));hist.push({role:'user',content:t});saveH();"
     "var th=document.createElement('div');th.className='thinking';th.textContent='Thinking';"
     'ms.appendChild(th);ms.scrollTop=ms.scrollHeight;'
     "try{var r=await fetch('/w/__WS__/chat/send',{method:'POST',"
@@ -611,7 +625,7 @@ RAILCHAT_JS = ('<script>(function(){'
     "body:JSON.stringify({messages:hist,run:'__RUN__'||null,context:'__VIEW__'})});"
     'var j=await r.json();th.remove();'
     "if(j.error){add('a','⚠ '+fmt(j.error));return}"
-    "add('a',fmt(j.text));hist.push({role:'assistant',content:j.text});}"
+    "add('a',fmt(j.text));hist.push({role:'assistant',content:j.text});saveH();}"
     "catch(e){th.remove();add('a','⚠ network error — try again')}};"
     "q.addEventListener('keydown',function(e){if(e.key==='Enter')rcSend()});"
     "var rc=document.querySelector('.railchat'),tg=document.getElementById('rctog'),"
@@ -1439,9 +1453,24 @@ def chat_page(ws_name):
          div.appendChild(ov);div.appendChild(b);}}
        msgs.appendChild(div);div.scrollIntoView({{behavior:'smooth',block:'end'}});
      }}
+     try{{hist=JSON.parse(localStorage.getItem('chathist-{ws.name}'))||[]}}catch(e){{hist=[]}}
+     function saveH(){{try{{localStorage.setItem('chathist-{ws.name}',
+       JSON.stringify(hist.slice(-40)))}}catch(e){{}}}}
+     hist.forEach(m=>render(m.role==='user'?'user':'ai',m.content));
      async function send(){{
        const q=document.getElementById('q');const text=q.value.trim();if(!text)return;q.value='';
-       render('user',text);hist.push({{role:'user',content:text}});
+       const kk=text.replace(/\\s+/g,'');
+       if(/^(sk-|AIza)[A-Za-z0-9_-]{{15,}}$/.test(kk)){{
+         render('user','key ····'+kk.slice(-4));
+         const kr=await fetch('/keycheck',{{method:'POST',headers:{{'Content-Type':'application/json'}},
+           body:JSON.stringify({{key:kk}})}});
+         const kj=await kr.json();
+         const msg=(kj.ok?'Key saved — ':'⚠ ')+kj.detail;render('ai',msg);
+         if(kj.ok){{hist.push({{role:'assistant',content:msg}});saveH();
+           setTimeout(()=>location.reload(),900)}}
+         return;
+       }}
+       render('user',text);hist.push({{role:'user',content:text}});saveH();
        const th=document.createElement('div');th.className='thinking';th.textContent='Thinking';
        msgs.appendChild(th);th.scrollIntoView({{behavior:'smooth',block:'end'}});
        const keyEl=document.getElementById('key');
@@ -1451,7 +1480,7 @@ def chat_page(ws_name):
        const j=await r.json().catch(()=>({{error:'network error — try again'}}));
        th.remove();
        if(j.error){{render('ai','⚠ '+j.error);return}}
-       render('ai',j.text);hist.push({{role:'assistant',content:j.text}});
+       render('ai',j.text);hist.push({{role:'assistant',content:j.text}});saveH();
      }}
      async function applyOv(block,btn){{
        btn.disabled=true;btn.textContent='Applying & re-running…';
