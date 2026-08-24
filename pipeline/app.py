@@ -290,7 +290,7 @@ STYLE = """
  .folder.new{border-style:dashed;color:var(--soft)} .folder.new:hover{color:var(--acc)}
  button,.btn{font:600 13.5px 'Instrument Sans';border-radius:9px;border:1px solid var(--line);
    padding:9px 16px;background:var(--sf);color:var(--ink);cursor:pointer;text-decoration:none;display:inline-block}
- button.primary,.btn.primary{background:var(--acc);border-color:var(--acc);color:#06202e}
+ button.primary,.btn.primary{background:var(--acc);border-color:var(--acc);color:#fff}
  button.primary:hover,.btn.primary:hover{background:var(--accdark)}
  button.ghost{border:none;background:none;color:var(--soft);padding:4px 6px}
  button.ghost:hover{color:var(--accdark)}
@@ -393,7 +393,7 @@ STYLE = """
    box-shadow:0 18px 50px -30px rgba(0,0,0,.8);position:sticky;top:14px;max-height:calc(100vh - 90px)}
  .rail header{display:flex;align-items:center;gap:8px;padding:13px 14px;border-bottom:1px solid var(--line)}
  .rail header .mono{font-size:10px;letter-spacing:.18em;color:var(--tan)}
- .rail header button{margin-left:auto;font-weight:600;font-size:12px;background:var(--acc);color:#06202e;
+ .rail header button{margin-left:auto;font-weight:600;font-size:12px;background:var(--acc);color:#fff;
    border:none;border-radius:7px;padding:6px 10px;cursor:pointer}
  .rail header button:hover{background:var(--accdark)}
  .exlist{flex:1;overflow-y:auto;min-height:0;padding:10px;display:flex;flex-direction:column;gap:9px}
@@ -600,15 +600,6 @@ STYLE = """
    color:var(--soft);border-radius:6px}
  .eyebtn:hover{color:var(--ink)}
  .rail header button{margin-left:8px}
- /* standard buttons inside light windows: solid blue with white type */
- .card .btn:not(.primary),.stage2 .btn:not(.primary),.rail .btn:not(.primary),
- .railchat .btn:not(.primary),dialog button:not(.primary){
-   background:var(--softblue);border-color:var(--softblue);color:#fff}
- .card .btn:not(.primary):hover,.stage2 .btn:not(.primary):hover,.rail .btn:not(.primary):hover,
- .railchat .btn:not(.primary):hover,dialog button:not(.primary):hover{
-   background:var(--deep);border-color:var(--deep);color:#fff}
- .card .pdfdl{background:var(--softblue);border-color:var(--softblue);color:#fff}
- .card .pdfdl:hover{background:var(--deep);border-color:var(--deep);color:#fff}
  </style>"""
 
 
