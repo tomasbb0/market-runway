@@ -223,14 +223,15 @@ STYLE = """
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Noto+Serif:ital,wght@0,400;0,600;1,300;1,400;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
- :root{--bg:#101828;--sf:#1d2939;--ink:#f9f7f5;--deep:#374b60;--soft:#8fa3b8;--line:#243447;
+ :root{--bg:#101828;--sf:#243449;--ink:#f9f7f5;--deep:#374b60;--soft:#8fa3b8;--line:#2e4157;
    --acc:#00d4ff;--accdark:#00a3d9;--softblue:#bdd2e0;--softblue2:#14263a;--bordeaux:#a34d6e;
    --tan:#c9a689;--cream2:#0c1522;--ok:#bdd2e0;--okbg:#14263a;--warnbg:#3d2f16;--failbg:#3d1c16}
  *{box-sizing:border-box}
  body{margin:0;color:var(--ink);font:15.5px/1.55 'Instrument Sans',system-ui,sans-serif;
    background:var(--bg) fixed;
    background-image:radial-gradient(900px 600px at 12% -10%,rgba(55,75,96,.55),transparent 60%),
-     radial-gradient(800px 560px at 105% 8%,rgba(255,66,0,.07),transparent 55%)}
+     radial-gradient(800px 560px at 105% 8%,rgba(0,212,255,.06),transparent 55%)}
+ body.lightbg{background:#ffffff;background-image:none}
  a{color:var(--deep)} .serif{font-family:'Noto Serif',serif} .mono{font-family:'IBM Plex Mono',monospace}
  nav{display:flex;align-items:center;gap:10px;padding:16px 26px;border-bottom:1px solid var(--line);background:var(--sf)}
  nav .dot{width:11px;height:11px;border-radius:50%;background:var(--acc)}
@@ -424,10 +425,10 @@ STYLE = """
  .xtitle em{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;
    text-transform:lowercase;color:var(--softblue)}
  .wrap.fluid{max-width:none;padding:22px 22px 60px}
- .deskpanel{position:relative;background:rgba(29,41,57,.42);border:1px solid var(--line);border-radius:16px;
+ .deskpanel{position:relative;background:rgba(40,57,80,.95);border:1px solid var(--line);border-radius:16px;
    padding:16px 18px 18px;display:flex;flex-direction:column;gap:14px;
    box-shadow:0 24px 60px -35px rgba(0,0,0,.8);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
- nav.innav{position:relative;background:none;border-bottom:1px solid var(--line);padding:2px 4px 12px;margin:0}
+ nav.innav{position:relative;background:none;border-bottom:none;padding:2px 4px 8px;margin:0}
  </style>"""
 
 
@@ -469,7 +470,8 @@ def page(title, body, crumbs="", rail=None):
         body = (f'<section class="deskpanel">{innav}'
                 f'<div class="desk">{rail}<div class="pane2">{body}</div></div></section>')
         return (f'<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex">'
-                f'<title>{html.escape(title)}</title>{STYLE}<div class="wrap fluid">{body}</div>')
+                f'<title>{html.escape(title)}</title>{STYLE}<body class="lightbg">'
+                f'<div class="wrap fluid">{body}</div></body>')
     return (f'<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex">'
             f'<title>{html.escape(title)}</title>{STYLE}{nav(crumbs)}<div class="wrap">{body}</div>')
 
