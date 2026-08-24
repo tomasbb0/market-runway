@@ -41,7 +41,7 @@ ROOT = Path(__file__).resolve().parent
 PY = sys.executable
 ROBOT = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" '
          'stroke-linecap="round" stroke-linejoin="round" '
-         'style="width:15px;height:15px;vertical-align:-2px;margin-right:7px">'
+         'style="width:15px;height:15px;vertical-align:-2px;margin-left:7px">'
          '<rect x="5" y="8" width="14" height="11" rx="3"/>'
          '<path d="M12 8V4.5"/><circle cx="12" cy="3.4" r="1" fill="currentColor" stroke="none"/>'
          '<circle cx="9.3" cy="12.5" r="1.15" fill="currentColor" stroke="none"/>'
@@ -382,6 +382,23 @@ STYLE = """
  .iband{display:flex;flex-direction:column;gap:3px;background:var(--softblue2);border:1px solid var(--deep);
    border-radius:12px;padding:13px 16px;margin-bottom:12px}
  .iband b{font-size:14.5px} .iband span{font-size:12px;color:var(--soft)}
+ .folwrap{position:relative}
+ .fmenu{position:absolute;top:16px;right:7px;width:24px;height:24px;border:none;background:none;cursor:pointer;
+   padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+   opacity:0;transition:opacity .15s}
+ .folwrap:hover .fmenu,.folwrap.open .fmenu{opacity:1}
+ .fmenu span{display:block;width:13px;height:1.6px;background:var(--soft);border-radius:2px;transition:transform .18s}
+ .fmenu:hover span{background:var(--ink)}
+ .folwrap.open .fmenu span:first-child{transform:translateY(2.8px) rotate(45deg)}
+ .folwrap.open .fmenu span:last-child{transform:translateY(-2.8px) rotate(-45deg)}
+ .fdrop{display:none;position:absolute;right:6px;top:40px;z-index:30;background:var(--sf);
+   border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:124px;
+   box-shadow:0 14px 34px rgba(0,0,0,.55)}
+ .folwrap.open .fdrop{display:block}
+ .fdrop button{display:block;width:100%;text-align:left;border:none;background:none;color:var(--ink);
+   font-size:12.5px;font-weight:600;padding:9px 13px;cursor:pointer;border-radius:0}
+ .fdrop button:hover{background:var(--softblue2)}
+ .fdrop button.danger{color:var(--acc)}
  </style>"""
 
 
@@ -439,6 +456,15 @@ def ws_summary(ws: Path) -> dict:
     return {"files": len(files), "runs": len(runs), "rec": rec, "markets": markets}
 
 
+RAIL_JS = ('<script>document.querySelectorAll(".fmenu").forEach(function(b){'
+           'b.onclick=function(e){e.preventDefault();e.stopPropagation();'
+           'var w=b.closest(".folwrap");'
+           'document.querySelectorAll(".folwrap.open").forEach(function(o){if(o!==w)o.classList.remove("open")});'
+           'w.classList.toggle("open")}});'
+           'document.addEventListener("click",function(e){'
+           'if(!e.target.closest(".folwrap"))document.querySelectorAll(".folwrap.open").forEach('
+           'function(o){o.classList.remove("open")})});</script>')
+
 NEWWS_DLG = (
     '<dialog id="newws" style="border:1px solid var(--line);border-radius:14px;padding:22px;max-width:380px">'
     '<form method="post" action="/new" style="display:flex;flex-direction:column;gap:12px">'
@@ -458,15 +484,22 @@ def rail_html(current: str) -> str:
         meta = f'{s["files"]} docs · {s["runs"]} run(s)'
         if s["rec"]:
             meta += f' · <span style="color:var(--acc)">{html.escape(s["rec"])}</span>'
-        items += (f'<a class="fol{" on" if ws.name == current else ""}" href="/w/{ws.name}">'
-                  f'<div class="ftab"></div><div class="fbody"><b>{ws.name}</b>'
-                  f'<div class="meta">{meta}</div></div></a>')
+        items += (
+            f'<div class="folwrap"><a class="fol{" on" if ws.name == current else ""}" href="/w/{ws.name}">'
+            f'<div class="ftab"></div><div class="fbody"><b>{ws.name}</b>'
+            f'<div class="meta">{meta}</div></div></a>'
+            f'<button class="fmenu" aria-label="exercise menu"><span></span><span></span></button>'
+            f'<div class="fdrop">'
+            f'<form method="post" action="/w/{ws.name}/duplicate"><button>Duplicate</button></form>'
+            f'<form method="post" action="/w/{ws.name}/delete" '
+            f'onsubmit="return confirm(\'Delete {ws.name} and everything in it?\')">'
+            f'<button class="danger">Delete</button></form></div></div>')
     return (f'<aside class="rail"><header><span class="mono">EXERCISES</span>'
             '<button onclick="document.getElementById(\'newws\').showModal()">+ New</button></header>'
             f'<div class="exlist">{items}</div>'
             f'<button class="railset" onclick="navKey()">{GEARS}<span>Settings</span></button>'
             f'<footer>RUNWAY DESK · {len(wss)} EXERCISE{"S" if len(wss) != 1 else ""}</footer></aside>'
-            + NEWWS_DLG)
+            + NEWWS_DLG + RAIL_JS)
 
 
 # ---------------------------------------------------------------- home
@@ -618,7 +651,7 @@ def workspace(ws_name):
     body = f"""
     <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
       <h1 style="font-size:26px">{ws.name}</h1>
-      <a href="/w/{ws.name}/chat" class="btn">{ROBOT}Ask the data</a>
+      <a href="/w/{ws.name}/chat" class="btn">Ask the data{ROBOT}</a>
       <div class="tabsbar">
         <button class="tabbtn" id="tb-files" onclick="setTab('files')">Files</button>
         <button class="tabbtn" id="tb-runs" onclick="setTab('runs')">Runs</button>
@@ -958,6 +991,31 @@ def run_file(ws_name, run_name, name):
     if name not in allowed or not f.exists():
         return redirect(f"/w/{ws.name}")
     return send_file(f)
+
+
+@app.post("/w/<ws_name>/duplicate")
+def ws_duplicate(ws_name):
+    ws = ws_dir(ws_name)
+    if not ws.exists():
+        return redirect("/")
+    base, new, i = f"{ws.name}-copy", f"{ws.name}-copy", 2
+    while ws_dir(new).exists():
+        new, i = f"{base}-{i}", i + 1
+    nd = ws_dir(new)
+    (nd / "raw").mkdir(parents=True)
+    (nd / "runs").mkdir()
+    for p in (ws / "raw").glob("*"):
+        if p.is_file():
+            shutil.copy2(p, nd / "raw" / p.name)
+    return redirect(f"/w/{new}")
+
+
+@app.post("/w/<ws_name>/delete")
+def ws_delete(ws_name):
+    ws = ws_dir(ws_name)
+    if ws.exists():
+        shutil.rmtree(ws)
+    return redirect("/")
 
 
 @app.post("/w/<ws_name>/runs/<run_name>/delete")
