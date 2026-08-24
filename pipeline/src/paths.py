@@ -31,7 +31,14 @@ def ws_dir(name: str) -> Path:
 def list_workspaces() -> list[Path]:
     if not WORKSPACES.exists():
         return []
-    return sorted((p for p in WORKSPACES.iterdir() if p.is_dir()), key=lambda p: p.name)
+    try:
+        import json
+        order = json.loads((WORKSPACES / ".order.json").read_text())
+    except Exception:  # noqa: BLE001
+        order = []
+    rank = {n: i for i, n in enumerate(order)}
+    return sorted((p for p in WORKSPACES.iterdir() if p.is_dir()),
+                  key=lambda p: (rank.get(p.name, len(rank)), p.name))
 
 
 def set_workspace(name: str, new_run: bool = False) -> Path:

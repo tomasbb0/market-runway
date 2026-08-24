@@ -557,6 +557,8 @@ STYLE = """
    transform:translateX(-50%);border-radius:2px;background:transparent;transition:background .15s}
  .colgrip:hover::after,.colgrip.dragging::after,
  .rowgrip:hover::after,.rowgrip.dragging::after{background:rgba(255,255,255,.28)}
+ .folwrap.lift{opacity:.45}
+ .folwrap[draggable=true]{cursor:grab}
  </style>"""
 
 
@@ -637,6 +639,22 @@ RAIL_JS = ('<script>document.querySelectorAll(".fmenu").forEach(function(b){'
            'document.addEventListener("click",function(e){'
            'if(!e.target.closest(".folwrap"))document.querySelectorAll(".folwrap.open").forEach('
            'function(o){o.classList.remove("open")})});'
+           "var DRAGW=null;"
+           "document.querySelectorAll('.folwrap').forEach(function(w){"
+           "w.setAttribute('draggable','true');"
+           "var lk=w.querySelector('a.fol');if(lk)lk.setAttribute('draggable','false');"
+           "w.addEventListener('dragstart',function(e){DRAGW=w;w.classList.add('lift');"
+           "e.dataTransfer.effectAllowed='move';try{e.dataTransfer.setData('text/plain',w.dataset.ws)}catch(x){}});"
+           "w.addEventListener('dragend',function(){w.classList.remove('lift');"
+           "if(DRAGW){DRAGW=null;"
+           "var names=[].map.call(document.querySelectorAll('.folwrap'),function(x){return x.dataset.ws});"
+           "fetch('/reorder',{method:'POST',headers:{'Content-Type':'application/json'},"
+           "body:JSON.stringify({order:names})})}});"
+           "w.addEventListener('dragover',function(e){if(!DRAGW||DRAGW===w)return;e.preventDefault();"
+           "var r=w.getBoundingClientRect();"
+           "w.parentNode.insertBefore(DRAGW,e.clientY<r.top+r.height/2?w:w.nextSibling)});});"
+           "var exl=document.querySelector('.exlist');"
+           "if(exl)exl.addEventListener('dragover',function(e){if(DRAGW)e.preventDefault()});"
            "var cg=document.getElementById('colgrip');"
            "if(cg){var dk=cg.parentElement;"
            "try{var sw=parseInt(localStorage.getItem('mr-railw'));"
@@ -759,7 +777,7 @@ def rail_html(current: str, run: str = None, view: str = "") -> str:
         if s["rec"]:
             meta += f' · <span style="color:var(--acc)">{html.escape(s["rec"])}</span>'
         items += (
-            f'<div class="folwrap"><a class="fol{" on" if ws.name == current else ""}" href="/w/{ws.name}">'
+            f'<div class="folwrap" data-ws="{ws.name}"><a class="fol{" on" if ws.name == current else ""}" href="/w/{ws.name}">'
             f'<div class="ftab"></div><div class="fbody"><b>{ws.name}</b>'
             f'<div class="meta">{meta}</div></div></a>'
             f'<button class="fmenu" aria-label="exercise menu"><span></span><span></span></button>'
@@ -1360,6 +1378,17 @@ def run_file(ws_name, run_name, name):
     if name not in allowed or not f.exists():
         return redirect(f"/w/{ws.name}")
     return send_file(f)
+
+
+@app.post("/reorder")
+def reorder():
+    names = (request.get_json(force=True) or {}).get("order", [])
+    valid = [n for n in names if isinstance(n, str) and ws_dir(Path(n).name).exists()]
+    try:
+        (WORKSPACES / ".order.json").write_text(json.dumps(valid))
+    except OSError:
+        pass
+    return jsonify({"ok": True})
 
 
 @app.post("/w/<ws_name>/rename")
