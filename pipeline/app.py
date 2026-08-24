@@ -525,10 +525,8 @@ STYLE = """
  .rchead{cursor:pointer;user-select:none}
  .rcws{margin-left:6px;color:var(--soft);letter-spacing:0;text-transform:none;
    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
- .railchat.closed .rchead{justify-content:center}
- .railchat.closed .rcws,.railchat.closed .rcfbtn{display:none}
- .railchat.closed .rcgrip{cursor:default}
- .railchat.closed .rcgrip::after{opacity:0}
+ .railchat.closed .rchead{justify-content:center;height:100%;padding:0 14px;align-items:center}
+ .railchat.closed .rcws,.railchat.closed .rcfbtn,.railchat.closed .rcgrip{display:none}
  .rcfilter{position:absolute;top:38px;left:8px;right:8px;z-index:40;background:var(--sf);
    border:1px solid var(--line);border-radius:10px;max-height:230px;overflow-y:auto;display:none;
    box-shadow:0 16px 40px rgba(16,28,49,.25)}
@@ -769,9 +767,9 @@ RAILCHAT_JS = ('<script>(function(){'
     "var svH=parseInt(localStorage.getItem('rch-__WS__'))||280;"
     "var cl=localStorage.getItem('rc-__WS__')==='1';"
     "function setH(h){rc.style.height=h+'px'}"
-    "rc.classList.toggle('closed',cl);setH(cl?42:svH);"
+    "rc.classList.toggle('closed',cl);setH(cl?40:svH);"
     "hd.addEventListener('click',function(e){if(e.target.closest('.rcfbtn'))return;"
-    "cl=!cl;rc.classList.toggle('closed',cl);setH(cl?42:svH);fp.classList.remove('open');"
+    "cl=!cl;rc.classList.toggle('closed',cl);setH(cl?40:svH);fp.classList.remove('open');"
     "try{localStorage.setItem('rc-__WS__',cl?'1':'0')}catch(e){}});"
     "fb.addEventListener('click',function(e){e.stopPropagation();"
     "fp.classList.toggle('open');paint()});"
