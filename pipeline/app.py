@@ -307,8 +307,8 @@ STYLE = """
  .runrow .stamp{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--soft)}
  .runrow .rec{font-weight:600}
  .hint{font-size:13px;color:var(--soft)}
- .two{display:grid;grid-template-columns:minmax(280px,340px) 1fr;gap:18px;align-items:start}
- @media(max-width:860px){.two{grid-template-columns:1fr}}
+ .two{display:grid;grid-template-columns:var(--runw,minmax(280px,340px)) 18px 1fr;gap:0;align-items:start}
+ @media(max-width:860px){.two{grid-template-columns:1fr}.rowgrip{display:none}}
  pre.log{background:#0c1522;border:1px solid var(--line);color:#e8e2d9;border-radius:12px;padding:16px;font:12.5px 'IBM Plex Mono',monospace;overflow-x:auto;line-height:1.55;white-space:pre-wrap}
  .pb{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin:12px 0 4px}
  .pb i{display:block;height:100%;width:4%;background:linear-gradient(90deg,var(--acc),#7ae9ff);
@@ -379,8 +379,8 @@ STYLE = """
  .chatinput{display:flex;gap:10px;position:sticky;bottom:0;background:var(--bg);padding:12px 0}
  .chatinput input[type=text]{flex:1}
 /* v1 desk layout — exercises rail + results stage (ported from market-runway) */
- .desk{display:grid;grid-template-columns:270px 1fr;gap:18px;align-items:start}
- @media(max-width:900px){.desk{grid-template-columns:1fr}}
+ .desk{display:grid;grid-template-columns:var(--railw,270px) 18px 1fr;gap:0;align-items:start}
+ @media(max-width:900px){.desk{grid-template-columns:1fr}.colgrip{display:none}}
  .pane2{display:flex;flex-direction:column;gap:14px;min-width:0}
  .rail{background:var(--sf);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;
    box-shadow:0 18px 50px -30px rgba(0,0,0,.8);position:sticky;top:14px;max-height:calc(100vh - 90px)}
@@ -538,7 +538,8 @@ STYLE = """
  /* inline report expansion in the Runs window */
  .two{transition:grid-template-columns .35s ease}
  .two > form.card{min-width:0;overflow:hidden;transition:opacity .3s ease,padding .35s ease}
- #pane-runs.wide{grid-template-columns:0fr 1fr}
+ #pane-runs.wide{grid-template-columns:0fr 0px 1fr}
+ #pane-runs.wide .rowgrip{pointer-events:none}
  #pane-runs.wide > form.card{opacity:0;padding:0;border-width:0}
  .repwrap{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}
  .repwrap iframe{flex:1;width:100%;border:1px solid var(--line);border-radius:10px;
@@ -551,6 +552,11 @@ STYLE = """
  .brand em{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;letter-spacing:0;
    font-size:15.5px;color:var(--acc);margin-left:7px}
  .brand:hover em{color:var(--softblue)}
+ .colgrip,.rowgrip{cursor:col-resize;touch-action:none;position:relative}
+ .colgrip::after,.rowgrip::after{content:"";position:absolute;top:0;bottom:0;left:50%;width:2.5px;
+   transform:translateX(-50%);border-radius:2px;background:transparent;transition:background .15s}
+ .colgrip:hover::after,.colgrip.dragging::after,
+ .rowgrip:hover::after,.rowgrip.dragging::after{background:rgba(255,255,255,.28)}
  </style>"""
 
 
@@ -598,7 +604,9 @@ def page(title, body, crumbs="", rail=None, shell=False):
     if rail:
         innav = nav(crumbs).replace("<nav>", '<nav class="innav">', 1)
         body = (f'<section class="deskpanel">{innav}'
-                f'<div class="desk">{rail}<div class="pane2">{body}</div></div></section>')
+                f'<div class="desk">{rail}'
+                '<div class="colgrip" id="colgrip" title="Drag to resize"></div>'
+                f'<div class="pane2">{body}</div></div></section>')
         return (f'<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex">'
                 f'<title>{html.escape(title)}</title>{STYLE}<body class="lightbg">'
                 f'<div class="wrap fluid">{body}</div></body>')
@@ -628,7 +636,20 @@ RAIL_JS = ('<script>document.querySelectorAll(".fmenu").forEach(function(b){'
            'w.classList.toggle("open")}});'
            'document.addEventListener("click",function(e){'
            'if(!e.target.closest(".folwrap"))document.querySelectorAll(".folwrap.open").forEach('
-           'function(o){o.classList.remove("open")})});</script>')
+           'function(o){o.classList.remove("open")})});'
+           "var cg=document.getElementById('colgrip');"
+           "if(cg){var dk=cg.parentElement;"
+           "try{var sw=parseInt(localStorage.getItem('mr-railw'));"
+           "if(sw)dk.style.setProperty('--railw',sw+'px')}catch(e){}"
+           "cg.addEventListener('pointerdown',function(e){e.preventDefault();"
+           "var x0=e.clientX,w0=dk.querySelector('.railcol').offsetWidth;cg.classList.add('dragging');"
+           "function mv(ev){dk.style.setProperty('--railw',"
+           "Math.max(200,Math.min(430,w0+(ev.clientX-x0)))+'px')}"
+           "function up(){cg.classList.remove('dragging');"
+           "try{localStorage.setItem('mr-railw',dk.querySelector('.railcol').offsetWidth)}catch(e){}"
+           "window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up)}"
+           "window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up)});}"
+           '</script>')
 
 RAILCHAT_JS = ('<script>(function(){'
     "var q=document.getElementById('rcq'),ms=document.getElementById('rcmsgs');if(!q)return;"
@@ -979,6 +1000,7 @@ def workspace(ws_name):
         <span class="hint">read → extract → unify → dedupe → compare → check → conclude
          · <button class="ghost" name="ai" value="off" style="font-size:11px;padding:0">run with AI fully off</button></span>
       </form>
+      <div class="rowgrip" id="rowgrip" title="Drag to resize"></div>
       <div class="card"><h2>Runs</h2><div class="runscroll">{runrows}</div></div>
     </section>
     <script>
@@ -1046,6 +1068,18 @@ def workspace(ws_name):
      }}
      window.addEventListener('popstate',()=>{{if(repOpen)closeRep(false)}});
      if(location.hash.indexOf('#report-')===0){{setTab('runs');openRep(location.hash.slice(8))}}
+     const rg=document.getElementById('rowgrip');
+     if(rg){{const two=document.getElementById('pane-runs');
+      try{{const s=parseInt(localStorage.getItem('mr-runw-'+WS));
+       if(s)two.style.setProperty('--runw',s+'px')}}catch(e){{}}
+      rg.addEventListener('pointerdown',e=>{{e.preventDefault();
+       const x0=e.clientX,w0=two.querySelector('form.card').offsetWidth;rg.classList.add('dragging');
+       const mv=ev=>{{two.style.setProperty('--runw',
+         Math.max(220,Math.min(560,w0+(ev.clientX-x0)))+'px')}};
+       const up=()=>{{rg.classList.remove('dragging');
+        try{{localStorage.setItem('mr-runw-'+WS,two.querySelector('form.card').offsetWidth)}}catch(e){{}}
+        window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up)}};
+       window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up)}});}}
     </script>"""
     return page(f"{ws.name} — Market Runway", body, f"/ {ws.name}", rail=rail_html(ws.name, view="the workspace Files and Runs view"))
 
