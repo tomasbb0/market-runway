@@ -466,8 +466,8 @@ def nav(crumbs=""):
 def page(title, body, crumbs="", rail=None):
     if rail:
         innav = nav(crumbs).replace("<nav>", '<nav class="innav">', 1)
-        body = (f'<div class="desk">{rail}<div class="pane2">'
-                f'<section class="deskpanel">{innav}{body}</section></div></div>')
+        body = (f'<section class="deskpanel">{innav}'
+                f'<div class="desk">{rail}<div class="pane2">{body}</div></div></section>')
         return (f'<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex">'
                 f'<title>{html.escape(title)}</title>{STYLE}<div class="wrap fluid">{body}</div>')
     return (f'<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex">'
