@@ -223,7 +223,7 @@ STYLE = """
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Noto+Serif:ital,wght@0,400;0,600;1,300;1,400;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
- :root{--bg:#101c31;--sf:#22334f;--ink:#f4f7fc;--deep:#2f4a73;--soft:#93a9c9;--line:#33486b;
+ :root{--bg:#101c31;--sf:#293b5a;--ink:#f4f7fc;--deep:#2f4a73;--soft:#93a9c9;--line:#33486b;
    --acc:#00d4ff;--accdark:#00a3d9;--softblue:#b8cdea;--softblue2:#152a4a;--bordeaux:#a34d6e;
    --tan:#9fb6d9;--cream2:#0e1930;--ok:#b8cdea;--okbg:#152a4a;--warnbg:#3d2f16;--failbg:#3d1c16}
  *{box-sizing:border-box}
@@ -240,7 +240,7 @@ STYLE = """
  body.lightbg #pane-files{flex:1;min-height:0;display:flex;flex-direction:column}
  body.lightbg #fl-list{flex:1;min-height:0;overflow-y:auto}
  body.lightbg #fl-grid{flex:1;min-height:0;overflow-y:auto;align-content:start}
- body.lightbg #pane-runs{flex:1;min-height:0}
+ body.lightbg #pane-runs{flex:1;min-height:0;align-items:stretch}
  body.lightbg #pane-runs .card{min-height:0;display:flex;flex-direction:column;overflow:hidden}
  body.lightbg .runscroll{flex:1;min-height:0;overflow-y:auto}
  body.lightbg .stage2{height:auto;flex:1;min-height:0}
