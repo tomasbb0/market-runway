@@ -583,6 +583,14 @@ STYLE = """
    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
    -webkit-mask-composite:xor;
    mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
+ /* experiment: outer slab hidden — windows float directly on the white ground */
+ .deskpanel{background:none;background-image:none;border-color:transparent;box-shadow:none;
+   -webkit-backdrop-filter:none;backdrop-filter:none;
+   --sf:#ffffff;--bg:#f7fafd;--ink:#17263f;--soft:#5c7392;--line:#d4deec;--cream2:#e6edf6;
+   --softblue:#3a5a80;--softblue2:#e2eaf5;--tan:#6b81a3;--acc:#0090c8;--accdark:#006e99;
+   --okbg:#ddefe3;--warnbg:#f6ead9;--failbg:#f8e3dc;color:var(--ink)}
+ .deskpanel::before,.deskpanel::after{display:none}
+ .card,.rail,.railchat,.stage2{border-color:rgba(23,38,63,.10)}
  </style>"""
 
 
