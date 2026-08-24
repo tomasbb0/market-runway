@@ -735,6 +735,7 @@ def workspace(ws_name):
      ;['dragover','dragenter'].forEach(e=>drop.addEventListener(e,ev=>{{ev.preventDefault();drop.classList.add('drag')}}));
      ;['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{{ev.preventDefault();drop.classList.remove('drag')}}));
      drop.addEventListener('drop',ev=>{{fi.files=ev.dataTransfer.files;upf.submit()}});
+     document.addEventListener('click',e=>{{document.querySelectorAll('details.pillpop[open]').forEach(d=>{{if(!d.contains(e.target))d.removeAttribute('open')}})}});
     </script>"""
     return page(f"{ws.name} — Runway", body, f"/ {ws.name}", rail=rail_html(ws.name))
 
