@@ -243,7 +243,7 @@ def landing(st) -> str:
  .emptyres b{{font-size:26px;color:var(--line);letter-spacing:.04em}}
 </style></head><body>
 <div class="bar"><span class="tag"></span><b>RUNWAY</b><span class="mono">THE MARKET-ENTRY DESK</span>
- <nav><a href="v1.html" style="display:none"></a><a href="model/">Blank model</a>
+ <nav><a href="http://108.132.145.140/" style="color:var(--acc)">Hosted desk</a><a href="model/">Blank model</a>
  <a href="https://github.com/tomasbb0/market-runway">Repo</a>
  <a href="https://burnaylabs.pt/v1-market-runway/">v1 site ↗</a></nav></div>
 
