@@ -329,7 +329,14 @@ STYLE = """
  .chatbox{display:flex;flex-direction:column;gap:12px;max-width:820px;margin:0 auto}
  .msg{border-radius:14px;padding:12px 16px;max-width:88%;font-size:14.5px;white-space:pre-wrap}
  .msg.user{background:var(--deep);color:#fff;align-self:flex-end}
- .msg.ai{background:var(--sf);border:1px solid var(--line);align-self:flex-start}
+ .msg.ai{background:none;border:none;padding:12px 2px;max-width:100%;align-self:flex-start}
+ .thinking{align-self:flex-start;padding:12px 2px;font-weight:600;font-size:13.5px;
+   background:linear-gradient(90deg,var(--soft) 25%,var(--ink) 50%,var(--soft) 75%);
+   background-size:200% 100%;-webkit-background-clip:text;background-clip:text;
+   color:transparent;-webkit-text-fill-color:transparent;animation:think 1.3s linear infinite}
+ @keyframes think{from{background-position:200% 0}to{background-position:0% 0}}
+ @media(prefers-reduced-motion:reduce){.thinking{animation:none;color:var(--soft);
+   -webkit-text-fill-color:var(--soft)}}
  .msg.ai .ov{background:var(--cream2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;
    font:12.5px 'IBM Plex Mono',monospace;margin-top:8px;white-space:pre-wrap}
  .chatinput{display:flex;gap:10px;position:sticky;bottom:0;background:var(--bg);padding:12px 0}
@@ -1199,11 +1206,14 @@ def chat_page(ws_name):
      async function send(){{
        const q=document.getElementById('q');const text=q.value.trim();if(!text)return;q.value='';
        render('user',text);hist.push({{role:'user',content:text}});
+       const th=document.createElement('div');th.className='thinking';th.textContent='Thinking';
+       msgs.appendChild(th);th.scrollIntoView({{behavior:'smooth',block:'end'}});
        const keyEl=document.getElementById('key');
        const r=await fetch('/w/{ws.name}/chat/send',{{method:'POST',headers:{{'Content-Type':'application/json'}},
          body:JSON.stringify({{messages:hist,model:document.getElementById('model').value,
                               key:keyEl?keyEl.value:null}})}});
-       const j=await r.json();
+       const j=await r.json().catch(()=>({{error:'network error — try again'}}));
+       th.remove();
        if(j.error){{render('ai','⚠ '+j.error);return}}
        render('ai',j.text);hist.push({{role:'assistant',content:j.text}});
      }}
