@@ -223,15 +223,15 @@ STYLE = """
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Noto+Serif:ital,wght@0,400;0,600;1,300;1,400;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
- :root{--bg:#101828;--sf:#243449;--ink:#f9f7f5;--deep:#374b60;--soft:#8fa3b8;--line:#2e4157;
-   --acc:#00d4ff;--accdark:#00a3d9;--softblue:#bdd2e0;--softblue2:#14263a;--bordeaux:#a34d6e;
-   --tan:#c9a689;--cream2:#0c1522;--ok:#bdd2e0;--okbg:#14263a;--warnbg:#3d2f16;--failbg:#3d1c16}
+ :root{--bg:#101c31;--sf:#22334f;--ink:#f4f7fc;--deep:#2f4a73;--soft:#93a9c9;--line:#33486b;
+   --acc:#00d4ff;--accdark:#00a3d9;--softblue:#b8cdea;--softblue2:#152a4a;--bordeaux:#a34d6e;
+   --tan:#9fb6d9;--cream2:#0e1930;--ok:#b8cdea;--okbg:#152a4a;--warnbg:#3d2f16;--failbg:#3d1c16}
  *{box-sizing:border-box}
  body{margin:0;color:var(--ink);font:15.5px/1.55 'Instrument Sans',system-ui,sans-serif;
    background:var(--bg) fixed;
-   background-image:radial-gradient(900px 600px at 12% -10%,rgba(55,75,96,.55),transparent 60%),
+   background-image:radial-gradient(900px 600px at 12% -10%,rgba(47,74,115,.5),transparent 60%),
      radial-gradient(800px 560px at 105% 8%,rgba(0,212,255,.06),transparent 55%)}
- body.lightbg{background:#ffffff;background-image:none;height:100vh;overflow:hidden}
+ body.lightbg{background:#f7f9fc;background-image:none;height:100vh;overflow:hidden}
  body.lightbg .wrap{height:100%;box-sizing:border-box;padding:22px}
  body.lightbg .deskpanel{flex:1;min-height:0}
  body.lightbg .desk{flex:1;min-height:0;align-items:stretch}
@@ -291,7 +291,7 @@ STYLE = """
  .runrow .stamp{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--soft)}
  .runrow .rec{font-weight:600}
  .hint{font-size:13px;color:var(--soft)}
- .two{display:grid;grid-template-columns:1.25fr 1fr;gap:18px;align-items:start}
+ .two{display:grid;grid-template-columns:minmax(280px,340px) 1fr;gap:18px;align-items:start}
  @media(max-width:860px){.two{grid-template-columns:1fr}}
  pre.log{background:#0c1522;border:1px solid var(--line);color:#e8e2d9;border-radius:12px;padding:16px;font:12.5px 'IBM Plex Mono',monospace;overflow-x:auto;line-height:1.55;white-space:pre-wrap}
  .pb{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin:12px 0 4px}
@@ -331,11 +331,11 @@ STYLE = """
    display:grid;place-items:center;line-height:1;padding:0}
  .viewtog button.on{background:var(--softblue2);color:var(--ink);border-color:var(--deep)}
  .fgridV{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
- .ftile{aspect-ratio:1;border:none;background:#122032;border-radius:11px;position:relative;
+ .ftile{aspect-ratio:1;border:none;background:#14233c;border-radius:11px;position:relative;
    padding:12px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
    text-align:center;clip-path:polygon(0 0,calc(100% - 24px) 0,100% 24px,100% 100%,0 100%)}
  .ftile::after{content:"";position:absolute;top:0;right:0;width:24px;height:24px;
-   background:#101f30;clip-path:polygon(0 0,0 100%,100% 100%)}
+   background:#101b2f;clip-path:polygon(0 0,0 100%,100% 100%)}
  .ftile:hover::after{background:var(--deep)}
  .ftile .chip{white-space:normal;max-width:100%;line-height:1.6;border-radius:10px}
  .ftile .fmt{font:600 11px 'IBM Plex Mono',monospace;background:var(--softblue2);color:var(--softblue);
@@ -439,7 +439,7 @@ STYLE = """
  .xtitle em{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;
    text-transform:lowercase;color:var(--softblue)}
  .wrap.fluid{max-width:none;padding:22px 22px 60px}
- .deskpanel{position:relative;background:rgba(40,57,80,.95);border:1px solid var(--line);border-radius:16px;
+ .deskpanel{position:relative;background:rgba(24,39,64,.96);border:1px solid var(--line);border-radius:16px;
    padding:16px 18px 18px;display:flex;flex-direction:column;gap:14px;
    box-shadow:0 24px 60px -35px rgba(0,0,0,.8);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
  nav.innav{position:relative;background:none;border-bottom:none;padding:2px 4px 8px;margin:0}
