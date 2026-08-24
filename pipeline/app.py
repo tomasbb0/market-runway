@@ -453,6 +453,15 @@ STYLE = """
  body.lightbg #msgs{flex:1;min-height:0;overflow-y:auto;padding-right:4px}
  body.lightbg .chatinput{position:static;background:none;padding:6px 0 0}
  body.lightbg pre.log{flex:1;min-height:0;overflow:auto;margin:0}
+ .msg.ai{white-space:normal}
+ .msg.ai p{margin:0 0 10px} .msg.ai p:last-child{margin-bottom:0}
+ .msg.ai ul,.msg.ai ol{margin:0 0 10px;padding-left:22px} .msg.ai li{margin:2px 0}
+ .msg.ai code{font-family:'IBM Plex Mono',monospace;font-size:12.5px;background:var(--cream2);
+   border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+ .msg.ai pre{background:var(--cream2);border:1px solid var(--line);border-radius:9px;
+   padding:10px 12px;overflow-x:auto;margin:0 0 10px}
+ .msg.ai pre code{background:none;border:none;padding:0}
+ .msg.ai h3{margin:0 0 8px;font-size:15px}
  </style>"""
 
 
@@ -1291,11 +1300,33 @@ def chat_page(ws_name):
        sel.hidden=false;if(badge)badge.textContent=PROVIDERS[p].label+' key detected';}}
      const msgs=document.getElementById('msgs');let hist=[];
      function esc(s){{const d=document.createElement('div');d.textContent=s;return d.innerHTML}}
+     function inline(t){{return t
+       .replace(/`([^`\\n]+)`/g,'<code>$1</code>')
+       .replace(/\\*\\*([^*]+)\\*\\*/g,'<strong>$1</strong>')
+       .replace(/(^|[^*])\\*([^*\\n]+)\\*(?!\\*)/g,'$1<em>$2</em>')}}
+     function md(src){{
+       const parts=esc(src).split(/```(?:\\w*\\n)?/);let out='';
+       parts.forEach((seg,i)=>{{
+         if(i%2){{out+='<pre><code>'+seg.replace(/\\n$/,'')+'</code></pre>';return}}
+         const blocks=seg.split(/\\n{{2,}}/);
+         blocks.forEach(b=>{{
+           if(!b.trim())return;
+           const lines=b.split('\\n');
+           if(lines.every(l=>/^\\s*[-•]\\s+/.test(l)))
+             out+='<ul>'+lines.map(l=>'<li>'+inline(l.replace(/^\\s*[-•]\\s+/,''))+'</li>').join('')+'</ul>';
+           else if(lines.every(l=>/^\\s*\\d+[.)]\\s+/.test(l)))
+             out+='<ol>'+lines.map(l=>'<li>'+inline(l.replace(/^\\s*\\d+[.)]\\s+/,''))+'</li>').join('')+'</ol>';
+           else if(/^#{{1,3}}\\s/.test(lines[0])&&lines.length===1)
+             out+='<h3>'+inline(lines[0].replace(/^#+\\s*/,''))+'</h3>';
+           else out+='<p>'+lines.map(inline).join('<br>')+'</p>';
+         }});
+       }});
+       return out}}
      function render(role,text){{
        const div=document.createElement('div');div.className='msg '+(role==='user'?'user':'ai');
        const m=text.match(/```override\\n([\\s\\S]*?)```/);
        let bodyTxt=text.replace(/```override\\n[\\s\\S]*?```/,'').trim();
-       div.innerHTML=esc(bodyTxt);
+       div.innerHTML=role==='user'?esc(bodyTxt):md(bodyTxt);
        if(m){{const ov=document.createElement('div');ov.className='ov';ov.textContent=m[1].trim();
          const b=document.createElement('button');b.className='primary';b.style.marginTop='8px';
          b.textContent='Apply override & re-run';b.onclick=()=>applyOv(m[1].trim(),b);
