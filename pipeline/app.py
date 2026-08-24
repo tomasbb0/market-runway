@@ -487,11 +487,9 @@ STYLE = """
  .rcgrip{flex:0 0 10px;cursor:ns-resize;touch-action:none}
  .rcgrip::after{content:"";display:block;width:38px;height:3px;border-radius:2px;
    background:var(--line);margin:4px auto 0}
- .rctog{margin-left:auto;border:none;background:none;color:var(--soft);cursor:pointer;
+ .rcfbtn{margin-left:auto;border:none;background:none;color:var(--soft);cursor:pointer;
    padding:2px;display:grid;place-items:center}
- .rctog:hover{color:var(--ink)}
- .rctog svg{width:14px;height:14px;transition:transform .3s}
- .railchat.closed .rctog svg{transform:rotate(180deg)}
+ .rcfbtn:hover{color:var(--ink)} .rcfbtn svg{width:14px;height:14px}
  .rchead{padding:10px 14px 6px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;
    letter-spacing:.14em;color:var(--tan);text-transform:uppercase;display:flex;align-items:center}
  .rcmsgs{flex:1;min-height:0;overflow-y:auto;padding:4px 14px 8px;display:flex;flex-direction:column;
@@ -515,6 +513,43 @@ STYLE = """
  .card .ftile::after{background:#dbe4f0}
  .card .ftile:hover::after{background:#c7d4e6}
  .railchat .rcmsgs .u{color:#fff}
+ .railchat{position:relative}
+ .rchead{cursor:pointer;user-select:none}
+ .rcws{margin-left:6px;color:var(--soft);letter-spacing:0;text-transform:none;
+   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+ .railchat.closed .rchead{justify-content:center}
+ .railchat.closed .rcws,.railchat.closed .rcfbtn{display:none}
+ .railchat.closed .rcgrip{cursor:default}
+ .railchat.closed .rcgrip::after{opacity:0}
+ .rcfilter{position:absolute;top:38px;left:8px;right:8px;z-index:40;background:var(--sf);
+   border:1px solid var(--line);border-radius:10px;max-height:230px;overflow-y:auto;display:none;
+   box-shadow:0 16px 40px rgba(16,28,49,.25)}
+ .rcfilter.open{display:block}
+ .rcfhead{padding:8px 12px 3px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;
+   letter-spacing:.14em;color:var(--tan);text-transform:uppercase}
+ .rcfrow{display:flex;align-items:center;gap:6px;padding:7px 12px;font-size:12.5px;
+   cursor:pointer;color:var(--ink);text-decoration:none}
+ .rcfrow:hover,.rcfrow.on{background:var(--softblue2)}
+ .rcfrow .nm2{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .rcren{margin-left:auto;border:none;background:none;color:var(--soft);cursor:pointer;
+   padding:2px;opacity:0;display:grid;place-items:center}
+ .rcfrow:hover .rcren{opacity:1} .rcren:hover{color:var(--ink)}
+ /* inline report expansion in the Runs window */
+ .two{transition:grid-template-columns .35s ease}
+ .two > form.card{min-width:0;overflow:hidden;transition:opacity .3s ease,padding .35s ease}
+ #pane-runs.wide{grid-template-columns:0fr 1fr}
+ #pane-runs.wide > form.card{opacity:0;padding:0;border-width:0}
+ .repwrap{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}
+ .repwrap iframe{flex:1;width:100%;border:1px solid var(--line);border-radius:10px;
+   background:#fff;min-height:300px}
+ /* glass texture on the backdrop slab */
+ .deskpanel::before{content:"";position:absolute;inset:0;border-radius:16px;pointer-events:none;
+   opacity:.045;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+ .deskpanel{background-image:linear-gradient(165deg,rgba(255,255,255,.045),transparent 45%)}
+ .brand{text-decoration:none;color:var(--ink);font-weight:700;font-size:13px;letter-spacing:.09em}
+ .brand em{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;letter-spacing:0;
+   font-size:15.5px;color:var(--acc);margin-left:7px}
+ .brand:hover em{color:var(--softblue)}
  </style>"""
 
 
@@ -546,8 +581,9 @@ def nav(crumbs=""):
         'st.style.color=j.ok?"#2F7D4F":"#c12d00";st.textContent=j.detail;'
         'if(j.ok)setTimeout(function(){location.reload()},900);}'
         '</script>')
-    return (f'<nav><span class="dot"></span><b><a href="/" style="text-decoration:none;color:inherit">Market Runway</a></b>'
-            f'<span class="crumb">{crumbs}</span><span class="right">{key_chip}</span></nav>')
+    return (f'<nav><span class="dot"></span>'
+            '<a href="/" class="brand">MARKET RUNWAY<em>Model</em></a>'
+            f'<span class="right">{key_chip}</span></nav>')
 
 
 def page(title, body, crumbs="", rail=None, shell=False):
@@ -594,48 +630,75 @@ RAIL_JS = ('<script>document.querySelectorAll(".fmenu").forEach(function(b){'
            'function(o){o.classList.remove("open")})});</script>')
 
 RAILCHAT_JS = ('<script>(function(){'
-    "var q=document.getElementById('rcq'),ms=document.getElementById('rcmsgs');"
-    'if(!q)return;var hist=[];'
-    "try{hist=JSON.parse(localStorage.getItem('rchist-__WS__'))||[]}catch(e){hist=[]}"
-    "function saveH(){try{localStorage.setItem('rchist-__WS__',"
-    "JSON.stringify(hist.slice(-40)))}catch(e){}}"
+    "var q=document.getElementById('rcq'),ms=document.getElementById('rcmsgs');if(!q)return;"
+    "var rc=document.querySelector('.railchat'),gp=document.querySelector('.rcgrip'),"
+    "hd=document.getElementById('rchead'),fb=document.getElementById('rcfbtn'),"
+    "fp=document.getElementById('rcfilter'),lbl=document.getElementById('rcthread');"
+    "var RUNC='__RUN__'||null;var store=null;"
+    "try{store=JSON.parse(localStorage.getItem('rcconv-__WS__'))}catch(e){}"
+    "if(!store||!store.threads)store={threads:{general:{name:'General',msgs:[]}}};"
+    "try{var oh=JSON.parse(localStorage.getItem('rchist-__WS__'));"
+    "if(oh&&oh.length){store.threads.general.msgs=oh;localStorage.removeItem('rchist-__WS__')}}catch(e){}"
+    "function save(){try{localStorage.setItem('rcconv-__WS__',JSON.stringify(store))}catch(e){}}"
+    "function th(k){if(!store.threads[k]){"
+    "var d=document.querySelector('.rcfrow[data-thread=\"'+k+'\"]');"
+    "store.threads[k]={name:(d&&d.dataset.def)||(k==='general'?'General':'Run '+k),msgs:[]}}"
+    "return store.threads[k]}"
+    "var cur=RUNC?RUNC:'general';th(cur);"
     "function fmt(s){var d=document.createElement('div');d.textContent=s;var h=d.innerHTML;"
     "return h.replace(/\\*\\*([^*]+)\\*\\*/g,'<strong>$1</strong>')"
     ".replace(/`([^`\\n]+)`/g,'<code>$1</code>')}"
     "function add(cls,htm){var d=document.createElement('div');d.className=cls;d.innerHTML=htm;"
-    'ms.appendChild(d);ms.scrollTop=ms.scrollHeight;return d}'
-    "hist.forEach(function(m){add(m.role==='user'?'u':'a',fmt(m.content))});"
-    'window.rcSend=async function(){'
-    "var t=q.value.trim();if(!t)return;q.value='';"
+    "ms.appendChild(d);ms.scrollTop=ms.scrollHeight;return d}"
+    "function paint(){ms.innerHTML='';var t=th(cur);lbl.textContent='· '+t.name;"
+    "document.querySelectorAll('.rcfrow[data-thread]').forEach(function(r){"
+    "r.classList.toggle('on',r.dataset.thread===cur);"
+    "var s=store.threads[r.dataset.thread];"
+    "if(s&&s.name)r.querySelector('.nm2').textContent=s.name});"
+    "if(!t.msgs.length)add('a','<span style=\"color:var(--soft)\">'+(cur==='general'?"
+    "'General conversation for this exercise.':'New conversation about this report.')+'</span>');"
+    "t.msgs.forEach(function(m){add(m.role==='user'?'u':'a',fmt(m.content))})}"
+    "paint();"
+    "window.rcSend=async function(){var t=q.value.trim();if(!t)return;q.value='';"
     "var kk=t.replace(/\\s+/g,'');"
-    "if(/^(sk-|AIza)[A-Za-z0-9_-]{15,}$/.test(kk)){"
-    "add('u','key ····'+kk.slice(-4));"
+    "if(/^(sk-|AIza)[A-Za-z0-9_-]{15,}$/.test(kk)){add('u','key ····'+kk.slice(-4));"
     "var kth=document.createElement('div');kth.className='thinking';kth.textContent='Checking key';"
     "ms.appendChild(kth);ms.scrollTop=ms.scrollHeight;"
     "fetch('/keycheck',{method:'POST',headers:{'Content-Type':'application/json'},"
     "body:JSON.stringify({key:kk})}).then(function(r){return r.json()}).then(function(j){"
     "kth.remove();var msg=(j.ok?'Key saved — ':'⚠ ')+j.detail;add('a',fmt(msg));"
-    "if(j.ok){hist.push({role:'assistant',content:msg});saveH();"
+    "if(j.ok){th(cur).msgs.push({role:'assistant',content:msg});save();"
     "setTimeout(function(){location.reload()},900)}});return}"
-    "add('u',fmt(t));hist.push({role:'user',content:t});saveH();"
-    "var th=document.createElement('div');th.className='thinking';th.textContent='Thinking';"
-    'ms.appendChild(th);ms.scrollTop=ms.scrollHeight;'
+    "var T=th(cur);add('u',fmt(t));T.msgs.push({role:'user',content:t});save();"
+    "var tk=document.createElement('div');tk.className='thinking';tk.textContent='Thinking';"
+    "ms.appendChild(tk);ms.scrollTop=ms.scrollHeight;"
     "try{var r=await fetch('/w/__WS__/chat/send',{method:'POST',"
     "headers:{'Content-Type':'application/json'},"
-    "body:JSON.stringify({messages:hist,run:'__RUN__'||null,context:'__VIEW__'})});"
-    'var j=await r.json();th.remove();'
+    "body:JSON.stringify({messages:T.msgs.slice(-20),"
+    "run:cur!=='general'?cur:null,context:'__VIEW__ · conversation: '+T.name})});"
+    "var j=await r.json();tk.remove();"
     "if(j.error){add('a','⚠ '+fmt(j.error));return}"
-    "add('a',fmt(j.text));hist.push({role:'assistant',content:j.text});saveH();}"
-    "catch(e){th.remove();add('a','⚠ network error — try again')}};"
+    "add('a',fmt(j.text));T.msgs.push({role:'assistant',content:j.text});save();}"
+    "catch(e){tk.remove();add('a','⚠ network error — try again')}};"
     "q.addEventListener('keydown',function(e){if(e.key==='Enter')rcSend()});"
-    "var rc=document.querySelector('.railchat'),tg=document.getElementById('rctog'),"
-    "gp=document.querySelector('.rcgrip');"
     "var svH=parseInt(localStorage.getItem('rch-__WS__'))||280;"
     "var cl=localStorage.getItem('rc-__WS__')==='1';"
     "function setH(h){rc.style.height=h+'px'}"
-    "if(rc){rc.classList.toggle('closed',cl);setH(cl?42:svH);}"
-    "if(tg){tg.onclick=function(){cl=!cl;rc.classList.toggle('closed',cl);setH(cl?42:svH);"
-    "try{localStorage.setItem('rc-__WS__',cl?'1':'0')}catch(e){}};}"
+    "rc.classList.toggle('closed',cl);setH(cl?42:svH);"
+    "hd.addEventListener('click',function(e){if(e.target.closest('.rcfbtn'))return;"
+    "cl=!cl;rc.classList.toggle('closed',cl);setH(cl?42:svH);fp.classList.remove('open');"
+    "try{localStorage.setItem('rc-__WS__',cl?'1':'0')}catch(e){}});"
+    "fb.addEventListener('click',function(e){e.stopPropagation();"
+    "fp.classList.toggle('open');paint()});"
+    "document.addEventListener('click',function(e){"
+    "if(!e.target.closest('.railchat'))fp.classList.remove('open')});"
+    "fp.addEventListener('click',function(e){"
+    "var rn=e.target.closest('.rcren');"
+    "if(rn){e.stopPropagation();var k=rn.dataset.ren;var t0=th(k);"
+    "var nn=prompt('Name this conversation',t0.name);"
+    "if(nn){t0.name=nn.trim()||t0.name;save();paint()}return}"
+    "var row=e.target.closest('.rcfrow[data-thread]');"
+    "if(row){cur=row.dataset.thread;th(cur);fp.classList.remove('open');paint()}});"
     "if(gp){gp.addEventListener('pointerdown',function(e){if(cl)return;e.preventDefault();"
     "var y0=e.clientY,h0=rc.offsetHeight;rc.classList.add('dragging');"
     "function mv(ev){setH(Math.max(120,Math.min(window.innerHeight*0.75,h0+(y0-ev.clientY))))}"
@@ -683,21 +746,41 @@ def rail_html(current: str, run: str = None, view: str = "") -> str:
             f'<form method="post" action="/w/{ws.name}/delete" '
             f'onsubmit="return confirm(\'Delete {ws.name} and everything in it?\')">'
             f'<button class="danger">Delete</button></form></div></div>')
+    PEN = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" '
+           'stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px">'
+           '<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>')
+    filter_rows = ""
+    for w2 in wss:
+        filter_rows += f'<div class="rcfhead">{w2.name}</div>'
+        if w2.name == current:
+            filter_rows += ('<div class="rcfrow" data-thread="general" data-def="General">'
+                            '<span class="nm2">General</span>'
+                            f'<button class="rcren" data-ren="general" title="Rename">{PEN}</button></div>')
+            for r2 in list_runs(w2):
+                ts2 = datetime.strptime(r2.name, "%Y%m%d-%H%M%S").strftime("%d %b · %H:%M")
+                filter_rows += (f'<div class="rcfrow" data-thread="{r2.name}" data-def="Run {ts2}">'
+                                f'<span class="nm2">Run {ts2}</span>'
+                                f'<button class="rcren" data-ren="{r2.name}" title="Rename">{PEN}</button></div>')
+        else:
+            filter_rows += f'<a class="rcfrow" href="/w/{w2.name}">General</a>'
+            for r2 in list_runs(w2):
+                ts2 = datetime.strptime(r2.name, "%Y%m%d-%H%M%S").strftime("%d %b · %H:%M")
+                filter_rows += f'<a class="rcfrow" href="/w/{w2.name}/results/{r2.name}">Run {ts2}</a>'
     return ('<div class="railcol">'
             f'<aside class="rail"><header><span class="mono">EXERCISES</span>'
             '<button onclick="document.getElementById(\'newws\').showModal()">+ New</button></header>'
             f'<div class="exlist">{items}</div></aside>'
             f'<div class="railchat"><div class="rcgrip" title="Drag to resize"></div>'
-            f'<div class="rchead">ASK THE DATA{ROBOT}'
-            f'<span style="letter-spacing:0;text-transform:none;color:var(--soft);margin-left:6px">'
-            f'{html.escape(current)}</span>'
-            '<button class="rctog" id="rctog" aria-label="Collapse chat">'
+            f'<div class="rchead" id="rchead" title="Click to open or close">ASK THE DATA{ROBOT}'
+            '<span class="rcws" id="rcthread"></span>'
+            '<button class="rcfbtn" id="rcfbtn" title="Conversations" aria-label="Filter conversations">'
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" '
             'stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>'
             "</button></div>"
-            '<div class="rcmsgs" id="rcmsgs"><div class="a" style="color:var(--soft)">Grounded on '
-            + ("the open report" if run else "this exercise") + ". Ask anything.</div></div>"
-            '<div class="rcin"><input type="text" id="rcq" placeholder="Type" autocomplete="off" style="padding:7px 11px;font-size:12.5px">'
+            f'<div class="rcfilter" id="rcfilter">{filter_rows}</div>'
+            '<div class="rcmsgs" id="rcmsgs"></div>'
+            '<div class="rcin"><input type="text" id="rcq" placeholder="Type" autocomplete="off" '
+            'style="padding:7px 11px;font-size:12.5px">'
             '<button class="primary" style="font-size:12px;padding:6px 12px" onclick="rcSend()">Ask</button>'
             '</div></div></div>'
             + NEWWS_DLG + RAIL_JS
@@ -857,7 +940,6 @@ def workspace(ws_name):
     body = f"""
     <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
       <h1 class="xtitle">{fancy_title(ws.name)}</h1>
-      <a href="/w/{ws.name}/chat" class="btn">Ask the data{ROBOT}</a>
       <div class="tabsbar">
         <button class="tabbtn" id="tb-files" onclick="setTab('files')">Files</button>
         <button class="tabbtn" id="tb-runs" onclick="setTab('runs')">Runs</button>
@@ -933,6 +1015,36 @@ def workspace(ws_name):
        inp.addEventListener('keydown',e=>{{if(e.key==='Enter')done(true);
         if(e.key==='Escape')done(false)}});
        inp.addEventListener('blur',()=>done(true));}});}}
+     document.querySelectorAll('.runrow a.btn').forEach(a=>{{a.addEventListener('click',ev=>{{
+       if(ev.metaKey||ev.ctrlKey)return;const parts=a.getAttribute('href').split('/results/');
+       if(parts.length<2)return;ev.preventDefault();openRep(parts[1]);}});}});
+     let repOpen=null;
+     function openRep(run){{
+       if(!/^[0-9]{{8}}-[0-9]{{6}}$/.test(run))return;
+       const pr=document.getElementById('pane-runs');pr.classList.add('wide');
+       history.pushState({{rep:run}},'','#report-'+run);
+       setTimeout(()=>{{if(repOpen)return;
+         const card=pr.querySelector('div.card');
+         const w=document.createElement('div');w.className='repwrap';
+         w.innerHTML='<div><button class="btn" id="repback">← Back to runs</button></div>'
+           +'<iframe src="/w/'+WS+'/report/'+run+'" title="report"></iframe>';
+         card.querySelector('h2').style.display='none';
+         const rs=card.querySelector('.runscroll');if(rs)rs.style.display='none';
+         card.appendChild(w);repOpen=w;
+         document.getElementById('repback').onclick=()=>closeRep(true);
+       }},360);
+     }}
+     function closeRep(push){{
+       const pr=document.getElementById('pane-runs');
+       if(repOpen){{repOpen.remove();repOpen=null;
+         const card=pr.querySelector('div.card');
+         card.querySelector('h2').style.display='';
+         const rs=card.querySelector('.runscroll');if(rs)rs.style.display='';}}
+       pr.classList.remove('wide');
+       if(push&&location.hash.indexOf('#report-')===0)history.pushState({{}},'',location.pathname);
+     }}
+     window.addEventListener('popstate',()=>{{if(repOpen)closeRep(false)}});
+     if(location.hash.indexOf('#report-')===0){{setTab('runs');openRep(location.hash.slice(8))}}
     </script>"""
     return page(f"{ws.name} — Market Runway", body, f"/ {ws.name}", rail=rail_html(ws.name, view="the workspace Files and Runs view"))
 
@@ -1090,7 +1202,7 @@ def run_view(ws_name, token):
                 idle = 0.0
         ok = bool(t["ok"])
         actions = (f'<a class="btn primary" href="/w/{ws.name}/results/{t["run"]}">Open the report →</a>'
-                   f'<a class="btn" href="/w/{ws.name}/chat">Ask the data</a>' if ok and t["run"] else "")
+                   '' if ok and t["run"] else "")
         yield ('</pre><div style="display:flex;gap:10px;margin-top:12px">' + actions
                + f'<a class="btn" href="/w/{ws.name}">← workspace</a></div>'
                + '<script>document.getElementById("rt").textContent='
@@ -1104,7 +1216,7 @@ def run_view(ws_name, token):
 
 
 SEG_JS = ('<script>(function(){var KEY="seg-__WS__";'
-          'var segs=["evidence","deck","dataset","chat"];'
+          'var segs=["evidence","deck","dataset"];'
           'function show(s){segs.forEach(function(x){'
           'document.getElementById("sb-"+x).style.display=x===s?"flex":"none";'
           'document.getElementById("sg-"+x).classList.toggle("on",x===s);});'
@@ -1186,10 +1298,9 @@ def results_view(ws_name, run_name):
     dataset = ('<div class="facts">'
                + "".join(f'<div><span>{k}</span><b>{html.escape(str(v))}</b></div>' for k, v in facts)
                + f'</div><div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">{dls}</div>')
-    chat = f'<iframe data-src="/w/{ws.name}/chat?embed=1" title="chat"></iframe>' 
     segbar = "".join(f'<button id="sg-{k}">{lbl}</button>' for k, lbl in
                      (("evidence", "Evidence report"), ("deck", "Deck"),
-                      ("dataset", "Dataset"), ("chat", "Ask the data")))
+                      ("dataset", "Dataset")))
     body = (f'<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'
             f'<div style="flex:1"><div class="eyebrow">{ws.name} · results</div>'
             f'<h1 class="xtitle" style="margin-top:4px;font-size:clamp(20px,2.2vw,26px)">Run {ts}</h1></div>'
@@ -1200,7 +1311,7 @@ def results_view(ws_name, run_name):
             f'<div class="segbody" id="sb-evidence">{ev}</div>'
             f'<div class="segbody" id="sb-deck" style="display:none">{deck}</div>'
             f'<div class="segbody" id="sb-dataset" style="display:none">{dataset}</div>'
-            f'<div class="segbody" id="sb-chat" style="display:none">{chat}</div></div>'
+            '</div>'
             + SEG_JS.replace("__WS__", ws.name))
     return page(f"Results — {ws.name}", body, f"/ {ws.name} / results", rail=rail_html(ws.name, run=run.name, view=f"the results windows of run {run.name}"))
 
