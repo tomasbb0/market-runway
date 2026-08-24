@@ -407,6 +407,13 @@ STYLE = """
    font-size:12.5px;font-weight:600;padding:9px 13px;cursor:pointer;border-radius:0}
  .fdrop button:hover{background:var(--softblue2)}
  .fdrop button.danger{color:#ff6d5a}
+ .addrow{display:flex;align-items:center;justify-content:center;border:1.5px dashed var(--line);
+   border-radius:9px;padding:10px;color:var(--soft);cursor:pointer;margin-top:8px;
+   font-size:17px;font-weight:600;line-height:1}
+ .addrow:hover{color:var(--acc);border-color:var(--acc)}
+ .ftile.addtile{border:1.5px dashed var(--line);color:var(--soft);cursor:pointer;
+   font-size:26px;font-weight:600;line-height:1}
+ .ftile.addtile:hover{color:var(--acc);border-color:var(--acc)}
  </style>"""
 
 
@@ -594,6 +601,9 @@ def workspace(ws_name):
                   f'<span class="chip {cls}">{html.escape(label)}</span></div>')
     if not rows:
         rows = tiles = '<div class="hint" style="padding:8px 4px">No documents yet — drop the pack above.</div>'
+    addcard = 'onclick="document.getElementById(\'fi\').click()" title="Add documents"'
+    rows += f'<div class="addrow" {addcard}>+</div>'
+    tiles += f'<div class="ftile addtile" {addcard}>+</div>'
     unassigned = [f for f, (_, c) in roles.items() if c == "warn"]
     warn_banner = (f'<div class="banner">⚠ {len(unassigned)} file(s) are <b>not being analysed</b> '
                    f'(no role matched): {", ".join(html.escape(u) for u in unassigned)}. Rename to include '
