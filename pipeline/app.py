@@ -600,6 +600,15 @@ STYLE = """
    color:var(--soft);border-radius:6px}
  .eyebtn:hover{color:var(--ink)}
  .rail header button{margin-left:8px}
+ /* standard buttons inside light windows: solid blue with white type */
+ .card .btn:not(.primary),.stage2 .btn:not(.primary),.rail .btn:not(.primary),
+ .railchat .btn:not(.primary),dialog button:not(.primary){
+   background:var(--softblue);border-color:var(--softblue);color:#fff}
+ .card .btn:not(.primary):hover,.stage2 .btn:not(.primary):hover,.rail .btn:not(.primary):hover,
+ .railchat .btn:not(.primary):hover,dialog button:not(.primary):hover{
+   background:var(--deep);border-color:var(--deep);color:#fff}
+ .card .pdfdl{background:var(--softblue);border-color:var(--softblue);color:#fff}
+ .card .pdfdl:hover{background:var(--deep);border-color:var(--deep);color:#fff}
  </style>"""
 
 
