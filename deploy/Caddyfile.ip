@@ -1,0 +1,7 @@
+# Phase 1: serve on the static IP over HTTP. Swap for Caddyfile.domain once DNS exists.
+:80 {
+	reverse_proxy app:8765
+	request_body {
+		max_size 40MB
+	}
+}

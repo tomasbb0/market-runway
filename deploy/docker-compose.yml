@@ -1,0 +1,25 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    env_file: /opt/runway/.env
+    restart: unless-stopped
+    volumes:
+      - runway-workspaces:/app/pipeline/workspaces
+      - runway-cache:/app/pipeline/cache
+    expose: ["8765"]
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    volumes:
+      - /opt/runway/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on: [app]
+volumes:
+  runway-workspaces:
+  runway-cache:
+  caddy-data:
+  caddy-config:

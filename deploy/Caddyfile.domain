@@ -1,0 +1,8 @@
+# Phase 2: automatic HTTPS once desk.burnaylabs.pt resolves to the host.
+desk.burnaylabs.pt {
+	reverse_proxy app:8765
+	request_body {
+		max_size 40MB
+	}
+	encode gzip
+}
