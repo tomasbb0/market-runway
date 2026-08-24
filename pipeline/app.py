@@ -317,7 +317,7 @@ STYLE = """
    display:grid;place-items:center;line-height:1;padding:0}
  .viewtog button.on{background:var(--softblue2);color:var(--ink);border-color:var(--deep)}
  .fgridV{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
- .ftile{aspect-ratio:1;border:none;background:var(--cream2);border-radius:11px;position:relative;
+ .ftile{aspect-ratio:1;border:none;background:#122032;border-radius:11px;position:relative;
    padding:12px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
    text-align:center;clip-path:polygon(0 0,calc(100% - 24px) 0,100% 24px,100% 100%,0 100%)}
  .ftile::after{content:"";position:absolute;top:0;right:0;width:24px;height:24px;
@@ -429,6 +429,11 @@ STYLE = """
    padding:16px 18px 18px;display:flex;flex-direction:column;gap:14px;
    box-shadow:0 24px 60px -35px rgba(0,0,0,.8);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
  nav.innav{position:relative;background:none;border-bottom:none;padding:2px 4px 8px;margin:0}
+ .xtitle{cursor:text;border-bottom:1.5px dashed transparent}
+ .xtitle:hover{border-bottom-color:var(--deep)}
+ input.titled{font:700 26px 'Instrument Sans';text-transform:uppercase;letter-spacing:-.02em;
+   background:var(--sf);color:var(--ink);border:1px solid var(--deep);border-radius:8px;
+   padding:2px 10px;min-width:0;max-width:48vw}
  </style>"""
 
 
@@ -759,6 +764,21 @@ def workspace(ws_name):
      ;['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{{ev.preventDefault();drop.classList.remove('drag')}}));
      drop.addEventListener('drop',ev=>{{fi.files=ev.dataTransfer.files;upf.submit()}});
      document.addEventListener('click',e=>{{document.querySelectorAll('details.pillpop[open]').forEach(d=>{{if(!d.contains(e.target))d.removeAttribute('open')}})}});
+     const XT=document.querySelector('.xtitle');
+     if(XT){{XT.title='Click to rename';
+      XT.addEventListener('click',()=>{{
+       if(document.querySelector('input.titled'))return;
+       const inp=document.createElement('input');inp.className='titled';inp.value=WS;
+       XT.replaceWith(inp);inp.focus();inp.select();let fin=false;
+       const done=save=>{{if(fin)return;fin=true;const v=inp.value.trim();
+        if(save&&v&&v!==WS){{const f=document.createElement('form');f.method='post';
+         f.action='/w/'+WS+'/rename';const i=document.createElement('input');
+         i.type='hidden';i.name='name';i.value=v;f.appendChild(i);
+         document.body.appendChild(f);f.submit();}}
+        else inp.replaceWith(XT);}};
+       inp.addEventListener('keydown',e=>{{if(e.key==='Enter')done(true);
+        if(e.key==='Escape')done(false)}});
+       inp.addEventListener('blur',()=>done(true));}});}}
     </script>"""
     return page(f"{ws.name} — Runway", body, f"/ {ws.name}", rail=rail_html(ws.name))
 
@@ -1039,6 +1059,16 @@ def run_file(ws_name, run_name, name):
     if name not in allowed or not f.exists():
         return redirect(f"/w/{ws.name}")
     return send_file(f)
+
+
+@app.post("/w/<ws_name>/rename")
+def ws_rename(ws_name):
+    ws = ws_dir(ws_name)
+    new = slugify(request.form.get("name", ""))
+    if ws.exists() and new and new != ws.name and not ws_dir(new).exists():
+        ws.rename(ws_dir(new))
+        return redirect(f"/w/{new}")
+    return redirect(f"/w/{ws.name}")
 
 
 @app.post("/w/<ws_name>/duplicate")
