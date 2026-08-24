@@ -542,8 +542,8 @@ STYLE = """
  #pane-runs.wide .rowgrip{pointer-events:none}
  #pane-runs.wide > form.card{opacity:0;padding:0;border-width:0}
  .repwrap{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}
- .repwrap iframe{flex:1;width:100%;border:1px solid var(--line);border-radius:10px;
-   background:#fff;min-height:300px}
+ .repwrap iframe{flex:1;width:100%;border:none;border-radius:10px;
+   background:transparent;min-height:300px}
  /* glass texture on the backdrop slab */
  .deskpanel::before{content:"";position:absolute;inset:0;border-radius:16px;pointer-events:none;
    opacity:.10;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
@@ -1068,7 +1068,7 @@ def workspace(ws_name):
          const card=pr.querySelector('div.card');
          const w=document.createElement('div');w.className='repwrap';
          w.innerHTML='<div><button class="btn" id="repback">← Back to runs</button></div>'
-           +'<iframe src="/w/'+WS+'/report/'+run+'" title="report"></iframe>';
+           +'<iframe src="/w/'+WS+'/results/'+run+'?embed=1" title="report"></iframe>';
          card.querySelector('h2').style.display='none';
          const rs=card.querySelector('.runscroll');if(rs)rs.style.display='none';
          card.appendChild(w);repOpen=w;
@@ -1269,7 +1269,7 @@ def run_view(ws_name, token):
 
 
 SEG_JS = ('<script>(function(){var KEY="seg-__WS__";'
-          'var segs=["evidence","deck","dataset"];'
+          'var segs=["evidence","deck","dataset","insights"];'
           'function show(s){segs.forEach(function(x){'
           'document.getElementById("sb-"+x).style.display=x===s?"flex":"none";'
           'document.getElementById("sg-"+x).classList.toggle("on",x===s);});'
@@ -1351,9 +1351,41 @@ def results_view(ws_name, run_name):
     dataset = ('<div class="facts">'
                + "".join(f'<div><span>{k}</span><b>{html.escape(str(v))}</b></div>' for k, v in facts)
                + f'</div><div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">{dls}</div>')
+    gaps = st.get("gaps", [])
+    audit = st.get("audit", [])
+    agree = sum(1 for x in audit if x.get("verdict") == "AGREE")
+    dis = [x for x in audit if x.get("verdict") == "DISAGREE"]
+    unass = st.get("files", {}).get("unassigned", [])
+    audit_line = (f"{len(audit)} values re-checked by the model · {agree} agree · {len(dis)} disagree"
+                  if audit else "no AI audit in this run (Glide or AI off)")
+    gap_cards = "".join(
+        f'<div><span>{g["id"]}</span><b>{html.escape(g["field"])}</b>'
+        f'<p>{html.escape(g["market"])} — {html.escape(g["why"])}</p></div>'
+        for g in gaps) or '<div><span>—</span><b>None</b><p>No open evidence gaps.</p></div>'
+    ins = (f'<div class="iband"><b>Model audit</b><span>{audit_line}</span></div>'
+           + "".join(f'<div class="banner" style="margin-bottom:10px">DISAGREE {x["scope"]}.{x["param"]}: '
+                     f'det={x["det"]} vs llm={x["llm"]}</div>' for x in dis[:6])
+           + '<p class="hint" style="margin:4px 0 8px">Evidence gaps — data the pack does not establish:</p>'
+           + f'<div class="steps">{gap_cards}</div>'
+           + (f'<p class="hint" style="margin-top:10px">Unrecognised files (not analysed): '
+              f'{html.escape(", ".join(unass))}</p>' if unass else ""))
     segbar = "".join(f'<button id="sg-{k}">{lbl}</button>' for k, lbl in
                      (("evidence", "Evidence report"), ("deck", "Deck"),
-                      ("dataset", "Dataset")))
+                      ("dataset", "Dataset"), ("insights", "Insights")))
+    if request.args.get("embed"):
+        doc = (f'<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex">'
+               f'<title>Results</title>{STYLE}'
+               '<body style="background:transparent;margin:0">'
+               '<style>.segbody iframe{min-height:68vh}</style>'
+               '<div class="stage2" style="background:none;border:none;box-shadow:none;padding:0;'
+               'height:auto;min-height:0;-webkit-backdrop-filter:none;backdrop-filter:none">'
+               f'<div class="seg">{segbar}</div>'
+               f'<div class="segbody" id="sb-evidence">{ev}</div>'
+               f'<div class="segbody" id="sb-deck" style="display:none">{deck}</div>'
+               f'<div class="segbody" id="sb-dataset" style="display:none">{dataset}</div>'
+               f'<div class="segbody" id="sb-insights" style="display:none">{ins}</div></div>'
+               + SEG_JS.replace("__WS__", ws.name) + '</body>')
+        return doc
     body = (f'<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'
             f'<div style="flex:1"><div class="eyebrow">{ws.name} · results</div>'
             f'<h1 class="xtitle" style="margin-top:4px;font-size:clamp(20px,2.2vw,26px)">Run {ts}</h1></div>'
@@ -1364,7 +1396,7 @@ def results_view(ws_name, run_name):
             f'<div class="segbody" id="sb-evidence">{ev}</div>'
             f'<div class="segbody" id="sb-deck" style="display:none">{deck}</div>'
             f'<div class="segbody" id="sb-dataset" style="display:none">{dataset}</div>'
-            '</div>'
+            f'<div class="segbody" id="sb-insights" style="display:none">{ins}</div></div>'
             + SEG_JS.replace("__WS__", ws.name))
     return page(f"Results — {ws.name}", body, f"/ {ws.name} / results", rail=rail_html(ws.name, run=run.name, view=f"the results windows of run {run.name}"))
 

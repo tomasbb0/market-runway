@@ -13,8 +13,8 @@ from .util import load_yaml
 from .paths import ws_dir, latest_run, DEFAULT_WS
 
 # iLoF brand palette (ilof.tech): cream / deep blue / vivid orange / bordeaux / tan
-C = {"bg": "#f9f7f5", "surface": "#FFFFFF", "ink": "#1d2939", "soft": "#667085",
-     "line": "#e6e1da", "accent": "#374b60", "accent2": "#1d2939", "accsoft": "#e6eef3",
+C = {"bg": "#f2f6fb", "surface": "#FFFFFF", "ink": "#17263f", "soft": "#5c7392",
+     "line": "#d4deec", "accent": "#2f4a73", "accent2": "#17263f", "accsoft": "#e2eaf5",
      "warn": "#ad836c", "warnsoft": "#f6ead9", "fail": "#c12d00", "failsoft": "#f8e3dc",
      "okgreen": "#374b60", "hot": "#00a3d9"}
 
