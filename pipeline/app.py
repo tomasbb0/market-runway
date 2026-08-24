@@ -347,9 +347,22 @@ def workspace(ws_name):
         runrows = '<div class="hint" style="padding:8px 4px">No runs yet.</div>'
 
     key = sk()["value"]
-    key_field = ('' if key else
-                 '<input type="password" name="api_key" placeholder="API key, optional (Anthropic / OpenAI / Gemini; auto-detected)" '
-                 'autocomplete="off" style="width:100%;font-family:\'IBM Plex Mono\',monospace;font-size:12.5px">')
+    key_field = (
+        '<input type="password" name="api_key" id="kf" autocomplete="off" '
+        + ('placeholder="key set for this session — paste another to replace" '
+           if key else 'placeholder="API key, optional (Anthropic / OpenAI / Gemini; auto-detected)" ')
+        + 'style="width:100%;font-family:monospace;font-size:12.5px" '
+        'onchange="checkKey(this)">'
+        '<div class="hint" id="kstat" style="min-height:15px"></div>'
+        '<script>async function checkKey(el){'
+        'const v=el.value.trim();const st=document.getElementById("kstat");'
+        'if(!v){st.textContent="";el.style.borderColor="";return}'
+        'st.textContent="checking…";st.style.color="";'
+        'const r=await fetch("/keycheck",{method:"POST",headers:{"Content-Type":"application/json"},'
+        'body:JSON.stringify({key:v})});const j=await r.json();'
+        'el.style.borderColor=j.ok?"#2F7D4F":"#c12d00";'
+        'st.style.color=j.ok?"#2F7D4F":"#c12d00";st.textContent=j.detail;}'
+        '</script>')
     body = f"""
     <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
       <h1 style="font-size:26px">{ws.name}</h1>
@@ -451,10 +464,13 @@ def run_ws(ws_name):
         sk()["value"] = submitted
         sk()["provider"] = detect_provider(submitted)
     env = dict(os.environ)
-    if sk()["value"] and sk().get("provider") == "anthropic":
-        env["ANTHROPIC_API_KEY"] = sk()["value"]
-    else:
-        env.pop("ANTHROPIC_API_KEY", None)
+    env.pop("ANTHROPIC_API_KEY", None)
+    env.pop("RUNWAY_KEY", None); env.pop("RUNWAY_PROVIDER", None)
+    if sk()["value"] and sk().get("provider"):
+        env["RUNWAY_KEY"] = sk()["value"]
+        env["RUNWAY_PROVIDER"] = sk()["provider"]
+        if sk()["provider"] == "anthropic":
+            env["ANTHROPIC_API_KEY"] = sk()["value"]
     proc = subprocess.run([PY, str(ROOT / "run.py"), "--ai", ai, "--workspace", ws.name],
                           capture_output=True, text=True, cwd=ROOT, timeout=900, env=env)
     log = ANSI.sub("", proc.stdout + proc.stderr)
@@ -540,7 +556,7 @@ def chat_page(ws_name):
     else:
         picker = '<select id="model" hidden></select><span id="prov" class="hint"></span>'
         keyrow = ('<input type="password" id="key" placeholder="API key — Anthropic, OpenAI or Gemini" '
-                  'style="font-family:\'IBM Plex Mono\',monospace;font-size:12.5px" oninput="detect()">')
+                  'style="font-family:monospace;font-size:12.5px" oninput="detect()" onchange="verifyKey(this)">')
     banner = (f'grounded on run <b class="mono">{run_name}</b>; answers come only from the validated dataset'
               if run_name else "no runs yet. Run the pipeline first, then chat about its results")
     body = f"""
@@ -565,6 +581,14 @@ def chat_page(ws_name):
        if(k.startsWith('sk-ant-'))return 'anthropic';
        if(/^AIza[0-9A-Za-z_-]{{30,}}$/.test(k))return 'google';
        if(k.startsWith('sk-'))return 'openai';return null}}
+     async function verifyKey(el){{
+       const v=el.value.trim();const badge=document.getElementById('prov');if(!v||!badge)return;
+       badge.textContent='checking…';badge.style.color='';
+       const r=await fetch('/keycheck',{{method:'POST',headers:{{'Content-Type':'application/json'}},
+         body:JSON.stringify({{key:v}})}});const j=await r.json();
+       el.style.borderColor=j.ok?'#2F7D4F':'#c12d00';
+       badge.style.color=j.ok?'#2F7D4F':'#c12d00';badge.textContent=j.detail;
+     }}
      function detect(){{const el=document.getElementById('key');if(!el)return;
        const p=detectProvider(el.value);const sel=document.getElementById('model');
        const badge=document.getElementById('prov');
@@ -662,6 +686,37 @@ def apply_override(ws_name):
         return jsonify({"ok": True, "run": run.name})
     except Exception as e:  # noqa: BLE001
         return jsonify({"ok": False, "error": str(e)})
+
+
+@app.post("/keycheck")
+def keycheck():
+    import urllib.error
+    import urllib.request
+    key = (request.get_json(force=True).get("key") or "").strip()
+    p = detect_provider(key)
+    if not p:
+        return jsonify({"ok": False, "detail": "key format not recognised (sk-ant-… / sk-… / AIza…)"})
+    urls = {
+        "anthropic": ("https://api.anthropic.com/v1/models",
+                      {"x-api-key": key, "anthropic-version": "2023-06-01"}),
+        "openai": ("https://api.openai.com/v1/models", {"Authorization": f"Bearer {key}"}),
+        "google": (f"https://generativelanguage.googleapis.com/v1beta/models?key={key}", {}),
+    }
+    url, hdrs = urls[p]
+    try:
+        req = urllib.request.Request(url, headers=hdrs)
+        with urllib.request.urlopen(req, timeout=15) as r:
+            out = json.load(r)
+        n = len(out.get("data", out.get("models", [])))
+        sk()["value"] = key
+        sk()["provider"] = p
+        return jsonify({"ok": True, "provider": p, "label": PROVIDERS[p]["label"],
+                        "detail": f"{PROVIDERS[p]['label']} · key valid · {n} models visible"})
+    except urllib.error.HTTPError as e2:
+        why = "invalid or unauthorised key" if e2.code in (401, 403) else f"provider returned HTTP {e2.code}"
+        return jsonify({"ok": False, "detail": f"{PROVIDERS[p]['label']} · {why}"})
+    except Exception as e2:  # noqa: BLE001
+        return jsonify({"ok": False, "detail": f"could not reach {PROVIDERS[p]['label']}: {type(e2).__name__}"})
 
 
 @app.post("/clearkey")
