@@ -600,6 +600,8 @@ STYLE = """
    color:var(--soft);border-radius:6px}
  .eyebtn:hover{color:var(--ink)}
  .rail header button{margin-left:8px}
+ .headbar{padding:10px 18px}
+ .headbar h1{font-size:clamp(20px,2.2vw,28px)}
  </style>"""
 
 
@@ -1025,7 +1027,7 @@ def workspace(ws_name):
         '</script>')
 
     body = f"""
-    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <div class="card headbar" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
       <h1 class="xtitle">{fancy_title(ws.name)}</h1>
       <div class="tabsbar">
         <button class="tabbtn" id="tb-files" onclick="setTab('files')">Files</button>
@@ -1437,7 +1439,7 @@ def results_view(ws_name, run_name):
                f'<div class="segbody" id="sb-insights" style="display:none">{ins}</div></div>'
                + SEG_JS.replace("__WS__", ws.name) + '</body>')
         return doc
-    body = (f'<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'
+    body = (f'<div class="card headbar" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'
             f'<div style="flex:1"><div class="eyebrow">{ws.name} · results</div>'
             f'<h1 class="xtitle" style="margin-top:4px;font-size:clamp(20px,2.2vw,26px)">Run {ts}</h1></div>'
             f'<a class="btn" href="/w/{ws.name}">← workspace</a></div>'
