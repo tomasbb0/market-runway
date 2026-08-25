@@ -254,7 +254,7 @@ STYLE = """
    background:var(--bg) fixed;
    background-image:radial-gradient(900px 600px at 12% -10%,rgba(47,74,115,.5),transparent 60%),
      radial-gradient(800px 560px at 105% 8%,rgba(0,212,255,.06),transparent 55%)}
- body.lightbg{background:#0a1220;height:100vh;overflow:hidden;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)' opacity='0.045'/%3E%3C/svg%3E"),linear-gradient(rgba(120,170,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(120,170,255,.06) 1px,transparent 1px),linear-gradient(rgba(120,170,255,.11) 1px,transparent 1px),linear-gradient(90deg,rgba(120,170,255,.11) 1px,transparent 1px),radial-gradient(950px 640px at 12% -10%,rgba(0,212,255,.13),transparent 60%),radial-gradient(860px 600px at 104% 10%,rgba(64,110,180,.16),transparent 58%),radial-gradient(700px 520px at 50% 115%,rgba(0,212,255,.09),transparent 60%);background-size:auto,24px 24px,24px 24px,120px 120px,120px 120px,auto,auto,auto}
+ body.lightbg{background:#0a1220;height:100vh;overflow:hidden;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)' opacity='0.045'/%3E%3C/svg%3E"),linear-gradient(rgba(120,170,255,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(120,170,255,.09) 1px,transparent 1px),linear-gradient(rgba(120,170,255,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(120,170,255,.16) 1px,transparent 1px),radial-gradient(950px 640px at 12% -10%,rgba(0,212,255,.22),transparent 60%),radial-gradient(860px 600px at 104% 10%,rgba(64,110,180,.26),transparent 58%),radial-gradient(700px 520px at 50% 115%,rgba(0,212,255,.16),transparent 60%);background-size:auto,24px 24px,24px 24px,120px 120px,120px 120px,auto,auto,auto}
  body.lightbg .wrap{height:100%;box-sizing:border-box;padding:22px}
  body.lightbg .deskpanel{flex:1;min-height:0}
  body.lightbg .desk{flex:1;min-height:0;align-items:stretch}
@@ -517,8 +517,9 @@ STYLE = """
    --sf:#16233c;--bg:#0d1728;--ink:#eef4ff;--soft:#8fa6c6;--line:rgba(140,180,255,.16);
    --cream2:#0d1930;--softblue:#9fc0e8;--softblue2:#13233f;--tan:#7f9cc4;
    --acc:#00d4ff;--accdark:#00a3d9;--okbg:#11304a;--warnbg:#3d2f16;--failbg:#3d1c16;
-   background:rgba(255,255,255,.13);color:var(--ink);
-   -webkit-backdrop-filter:blur(20px) saturate(1.3);backdrop-filter:blur(20px) saturate(1.3)}
+   background:rgba(255,255,255,.26);color:var(--ink);
+   -webkit-backdrop-filter:blur(18px) saturate(1.45) brightness(1.35);
+   backdrop-filter:blur(18px) saturate(1.45) brightness(1.35)}
  dialog{background:#16233c}
  .card .chip.warn,.rail .chip.warn,.stage2 .chip.warn,.railchat .chip.warn{color:#f2d9a7}
  .card .chip.fail,.rail .chip.fail,.stage2 .chip.fail,.railchat .chip.fail{color:#f2b3a7}
