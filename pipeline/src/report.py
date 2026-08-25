@@ -57,7 +57,7 @@ def cash_svg(results, ranking):
         f'<text x="{x(i)}" y="{H-16}" text-anchor="middle" class="tick">Y{i}</text>' for i in range(6))
     return f'''<svg viewBox="0 0 {W} {H}" role="img" aria-label="Five-year cash position per market">
       <line x1="{PAD}" y1="{zero_y:.1f}" x2="{W-14}" y2="{zero_y:.1f}" stroke="{C["fail"]}" stroke-dasharray="5 4" stroke-width="1"/>
-      <text x="{PAD+2}" y="{zero_y-5:.1f}" class="tick" fill="{C["fail"]}">€0 — insolvency</text>
+      <text x="{PAD+2}" y="{zero_y-5:.1f}" class="tick" fill="{C["fail"]}">€0 · insolvency</text>
       {''.join(lines)}
       <text text-anchor="end" y="10" class="lbl">{''.join(labels)}</text>
       {ticks}
@@ -108,7 +108,7 @@ def build(state_path=None) -> str:
         for m in markets:
             e = ds[m].get(p)
             if not e:
-                cells += "<td>—</td>"
+                cells += "<td>-</td>"
                 continue
             v = e["value"]
             if p in ("participation", "fit_positivity"):
@@ -144,7 +144,7 @@ def build(state_path=None) -> str:
     for f_ in interesting:
         fac_sample += (f'<tr><td class="mono">{f_["facility_uid"]}</td><td>{html.escape(f_["institution"])} · Unit {f_["unit"]}</td>'
                        f'<td>{f_["country"]}</td><td>{f_["type"]} <span class="mono soft">({f_["type_votes"]})</span></td>'
-                       f'<td>{f_["capacity_annual"] or "—"}'
+                       f'<td>{f_["capacity_annual"] or "-"}'
                        + (f' <span class="mono soft">[{f_["capacity_min"]:.0f}–{f_["capacity_max"]:.0f}]</span>' if f_["capacity_conflict"] else "")
                        + f'</td><td>{f_["n_source_records"]}</td></tr>')
 
@@ -159,7 +159,7 @@ def build(state_path=None) -> str:
     rank_rows = ""
     for i, m in enumerate(ranking):
         r = res[m]
-        be = f"Year {r['break_even_year']}" if r["break_even_year"] else "—"
+        be = f"Year {r['break_even_year']}" if r["break_even_year"] else "-"
         flag = '<span class="pill fail">insolvent</span>' if r["insolvent"] else '<span class="pill ok">survives</span>'
         rank_rows += (f'<tr class="{"winner" if i == 0 else ""}"><td>{i+1}</td><td><b>{m}</b></td>'
                       f'<td>{r["params"]["addressable_fit_positive"]:,.0f}</td><td>€{r["params"]["price_per_test"]:,.0f}</td>'
@@ -189,7 +189,7 @@ def build(state_path=None) -> str:
 
     page = f'''<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Helix Optics — Market-Entry Pipeline Report</title>
+<title>Helix Optics: Market-Entry Pipeline Report</title>
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Noto+Serif:ital,wght@0,600;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -275,7 +275,7 @@ def build(state_path=None) -> str:
  cash trough {eur_m(nl["min_cash"])}, five-year end cash {eur_m(nl["end_cash"])}. The only market of the four that
  does not exhaust the €4.0M runway. Each 100 patients triaged saves the Dutch system €{nl["system_saving_per_100"]:,}.</div>
 
-<section><h2>1 · Ingestion — every file, its fate</h2><div class="grid">{ing_cards}</div></section>
+<section><h2>1 · Ingestion: every file, its fate</h2><div class="grid">{ing_cards}</div></section>
 
 <section><h2>2–3 · Canonical dataset (method-badged)</h2>
  <div class="tablewrap"><table><thead><tr><th>Parameter</th>{"".join(f"<th>{m}</th>" for m in markets)}</tr></thead>
@@ -283,7 +283,7 @@ def build(state_path=None) -> str:
  <div class="rule">Precedence: national screening report → landscape table → other. Full provenance per value in
  <span class="mono">markets.csv</span>; manual corrections belong in <span class="mono">overrides.yaml</span>, never in outputs.</div></section>
 
-<section><h2>4 · Facilities — one row per real unit</h2>
+<section><h2>4 · Facilities: one row per real unit</h2>
  <div class="tiles">
   <div class="tile"><b>{s["raw_records"]:,}</b><span>raw register records</span></div>
   <div class="tile"><b>{s["unique_facilities"]}</b><span>real facilities</span></div>
@@ -306,22 +306,22 @@ def build(state_path=None) -> str:
 
 <section><h2>6 · Validation findings</h2>{find_rows}</section>
 
-<section><h2>Evidence gaps — and the research workflow, deliberately off</h2>{gap_cards}
+<section><h2>Evidence gaps, and the research workflow (deliberately off)</h2>{gap_cards}
  <div class="rule">The pack is treated as the <b>closed source of truth</b>: no external data was mixed in.
- In production the Research action launches a sourcing workflow whose finds land in quarantine —
+ In production the Research action launches a sourcing workflow whose finds land in quarantine -
  parsed and previewed, entering the dataset only after human approval (provenance <i>EXTERNAL/approved-by</i>).</div></section>
 
-<section><h2>7 · Conclusion — the five-year engine, all four markets</h2>
+<section><h2>7 · Conclusion: the five-year engine, all four markets</h2>
  {cash_svg(res, ranking)}
  <div class="tablewrap"><table><thead><tr><th>#</th><th>Market</th><th>Addressable FIT+/yr</th><th>Price</th>
   <th>Break-even</th><th>Cash trough</th><th>End cash Y5</th><th></th></tr></thead><tbody>{rank_rows}</tbody></table></div>
- <h2 style="margin-top:18px">{rec} — year by year</h2>
+ <h2 style="margin-top:18px">{rec}, year by year</h2>
  <div class="tablewrap"><table><thead><tr><th>Year</th><th>Ramp</th><th>Tests</th><th>Revenue</th><th>COGS/test</th>
   <th>Gross margin</th><th>EBITDA</th><th>Cash</th></tr></thead><tbody>{yr_rows}</tbody></table></div>
  <div class="rule">Same engine as the Excel model (assumptions editable there); ramp anchored on the pack's benchmark
- — a comparable assay reached ~20% of eligible FIT-positive volume within 3 years of reimbursement. Germany's
+: a comparable assay reached ~20% of eligible FIT-positive volume within 3 years of reimbursement. Germany's
  pre-reimbursement revenue is held at zero per its national report; its 24-month pathway consumes the runway before
- first revenue — the largest market is unaffordable now, not unattractive forever.</div></section>
+ first revenue; the largest market is unaffordable now, not unattractive forever.</div></section>
 
 <footer>generated by the pipeline · inputs {len(man["inputs"])} files sha-pinned · deterministic core, AI at the edges, evidence everywhere</footer>
 </div><script>document.addEventListener('click',function(e){{document.querySelectorAll('details[open]').forEach(function(d){{if(!d.contains(e.target))d.removeAttribute('open')}})}});</script></body></html>'''

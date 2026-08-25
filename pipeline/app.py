@@ -385,7 +385,7 @@ STYLE = """
    font:12.5px 'Spline Sans Mono',monospace;margin-top:8px;white-space:pre-wrap}
  .chatinput{display:flex;gap:10px;position:sticky;bottom:0;background:var(--bg);padding:12px 0}
  .chatinput input[type=text]{flex:1}
-/* v1 desk layout — exercises rail + results stage (ported from market-runway) */
+/* v1 desk layout - exercises rail + results stage (ported from market-runway) */
  .desk{display:grid;grid-template-columns:var(--railw,270px) 18px 1fr;gap:0;align-items:start}
  @media(max-width:900px){.desk{grid-template-columns:1fr}.colgrip{display:none}}
  .pane2{display:flex;flex-direction:column;gap:14px;min-width:0}
@@ -512,13 +512,13 @@ STYLE = """
    border:1px solid var(--line);border-radius:4px;padding:0 4px}
  .rcin{display:flex;gap:6px;padding:10px 12px;border-top:1px solid var(--line)}
  .rcin input{flex:1;font-size:12.5px;min-width:0}
- /* light inner windows on the dark shell — tokens flip inside these containers */
+ /* light inner windows on the dark shell: tokens flip inside these containers */
  .card,.rail,.railchat,.stage2,dialog{
    --sf:#ffffff;--bg:#f7fafd;--ink:#17263f;--soft:#5c7392;--line:#d4deec;
    --cream2:#e6edf6;--softblue:#3a5a80;--softblue2:#e2eaf5;--tan:#6b81a3;
    --acc:#0090c8;--accdark:#006e99;--okbg:#ddefe3;--warnbg:#f6ead9;--failbg:#f8e3dc;
-   background:rgba(247,250,253,.85);color:var(--ink);
-   -webkit-backdrop-filter:blur(14px) saturate(1.15);backdrop-filter:blur(14px) saturate(1.15)}
+   background:rgba(247,250,253,.62);color:var(--ink);
+   -webkit-backdrop-filter:blur(20px) saturate(1.3);backdrop-filter:blur(20px) saturate(1.3)}
  dialog{background:#ffffff}
  .card .chip.warn,.rail .chip.warn,.stage2 .chip.warn,.railchat .chip.warn{color:#7a5510}
  .card .chip.fail,.rail .chip.fail,.stage2 .chip.fail,.railchat .chip.fail{color:#b3341c}
@@ -591,7 +591,7 @@ STYLE = """
    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
    -webkit-mask-composite:xor;
    mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
- /* experiment: outer slab hidden — windows float directly on the white ground */
+ /* experiment: outer slab hidden: windows float directly on the white ground */
  .deskpanel{background:none;background-image:none;border-color:transparent;box-shadow:none;
    -webkit-backdrop-filter:none;backdrop-filter:none;
    --sf:#ffffff;--bg:#f7fafd;--ink:#17263f;--soft:#5c7392;--line:#d4deec;--cream2:#e6edf6;
@@ -617,7 +617,7 @@ def nav(crumbs=""):
                 '<button class="ghost" title="Forget the API key">clear</button></form>'
                 if key else
                 '<button class="chip skip" id="addkey" style="cursor:pointer;border:none" '
-                'onclick="navKey()">no API key — add</button>')
+                'onclick="navKey()">no API key · add</button>')
     key_chip += (
         '<div id="navkeypanel" style="display:none;position:absolute;top:52px;right:22px;z-index:50;'
         'background:var(--sf);border:1px solid var(--line);border-radius:12px;padding:14px;width:300px;'
@@ -755,7 +755,7 @@ RAILCHAT_JS = ('<script>(function(){'
     "ms.appendChild(kth);ms.scrollTop=ms.scrollHeight;"
     "fetch('/keycheck',{method:'POST',headers:{'Content-Type':'application/json'},"
     "body:JSON.stringify({key:kk})}).then(function(r){return r.json()}).then(function(j){"
-    "kth.remove();var msg=(j.ok?'Key saved — ':'⚠ ')+j.detail;add('a',fmt(msg));"
+    "kth.remove();var msg=(j.ok?'Key saved: ':'⚠ ')+j.detail;add('a',fmt(msg));"
     "if(j.ok){th(cur).msgs.push({role:'assistant',content:msg});save();"
     "setTimeout(function(){location.reload()},900)}});return}"
     "var T=th(cur);add('u',fmt(t));T.msgs.push({role:'user',content:t});save();"
@@ -768,7 +768,7 @@ RAILCHAT_JS = ('<script>(function(){'
     "var j=await r.json();tk.remove();"
     "if(j.error){add('a','⚠ '+fmt(j.error));return}"
     "add('a',fmt(j.text));T.msgs.push({role:'assistant',content:j.text});save();}"
-    "catch(e){tk.remove();add('a','⚠ network error — try again')}};"
+    "catch(e){tk.remove();add('a','⚠ network error - try again')}};"
     "q.addEventListener('keydown',function(e){if(e.key==='Enter')rcSend()});"
     "var svH=parseInt(localStorage.getItem('rch-__WS__'))||280;"
     "var cl=localStorage.getItem('rc-__WS__')==='1';"
@@ -831,7 +831,7 @@ def fancy_title(name: str) -> str:
 
 
 def rail_html(current: str, run: str = None, view: str = "") -> str:
-    """The v1 exercises rail — every workspace as a little folder."""
+    """The v1 exercises rail: every workspace as a little folder."""
     wss = list_workspaces()
     items = ""
     for ws in wss:
@@ -871,7 +871,7 @@ def rail_html(current: str, run: str = None, view: str = "") -> str:
                 filter_rows += f'<a class="rcfrow" href="/w/{w2.name}/results/{r2.name}">Run {ts2}</a>'
     return ('<div class="railcol">'
             f'<aside class="rail"><header><span class="mono">EXERCISES</span>'
-            f'<a class="eyebtn" href="/" title="Overview — all exercises">{EYE}</a>'
+            f'<a class="eyebtn" href="/" title="Overview - all exercises">{EYE}</a>'
             '<button onclick="document.getElementById(\'newws\').showModal()">+ New</button></header>'
             f'<div class="exlist">{items}</div></aside>'
             f'<div class="railchat"><div class="rcgrip" title="Drag to resize"></div>'
@@ -921,7 +921,7 @@ def home():
           <button type="button" onclick="this.closest('dialog').close()">Cancel</button>
           <button class="primary">Create</button></div>
       </form></dialog>"""
-    return page("Market Runway — workspaces", body, shell=True)
+    return page("Market Runway · workspaces", body, shell=True)
 
 
 @app.post("/new")
@@ -947,9 +947,9 @@ def _manifest_roles(ws: Path) -> dict:
     for k, v in man["shared_docs"].items():
         roles[v["file"]] = (k.replace("_", " "), "role")
     for f in man["skipped"]:
-        roles[f] = ("reference — not analysed", "skip")
+        roles[f] = ("reference - not analysed", "skip")
     for f in man["unassigned"]:
-        roles[f] = ("unassigned — not analysed", "warn")
+        roles[f] = ("unassigned - not analysed", "warn")
     return roles
 
 
@@ -976,7 +976,7 @@ def workspace(ws_name):
                   f'<span class="nm" title="{html.escape(p.name)}">{html.escape(p.name)}</span>'
                   f'<span class="chip {cls}">{html.escape(label).replace(" · ", "<br>")}</span></div>')
     if not rows:
-        rows = tiles = '<div class="hint" style="padding:8px 4px">No documents yet — drop the pack above.</div>'
+        rows = tiles = '<div class="hint" style="padding:8px 4px">No documents yet. Drop the pack above.</div>'
     addcard = 'onclick="document.getElementById(\'fi\').click()" title="Add documents"'
     rows += f'<div class="addrow" {addcard}>+</div>'
     tiles += f'<div class="ftile addtile" {addcard}>+</div>'
@@ -987,7 +987,7 @@ def workspace(ws_name):
 
     runrows = ""
     for run in list_runs(ws):
-        rec, chip = "—", '<span class="chip skip">no result</span>'
+        rec, chip = "-", '<span class="chip skip">no result</span>'
         if (run / "state.json").exists():
             try:
                 st = json.load(open(run / "state.json"))
@@ -1030,7 +1030,7 @@ def workspace(ws_name):
     key = sk()["value"]
     key_field = (
         '<input type="password" name="api_key" id="kf" autocomplete="off" '
-        + ('placeholder="key set for this session — paste another to replace" '
+        + ('placeholder="key set for this session. Paste another to replace" '
            if key else 'placeholder="API key, optional (Anthropic / OpenAI / Gemini; auto-detected)" ')
         + 'style="width:100%;font-family:monospace;font-size:12.5px" '
         'onchange="checkKey(this)">'
@@ -1066,8 +1066,8 @@ def workspace(ws_name):
           <button class="ghost">Clean all</button></form>
       </div>
       <form method="post" action="/w/{ws.name}/files/upload" enctype="multipart/form-data" id="upf" style="margin-top:12px">
-        <label class="drop" id="drop">Drop documents here — or click to choose
-          <small>PDF · XLSX · HTML · CSV — roles auto-detected; anything unrecognised is flagged, never ignored</small>
+        <label class="drop" id="drop">Drop documents here, or click to choose
+          <small>PDF · XLSX · HTML · CSV · roles auto-detected; anything unrecognised is flagged, never ignored</small>
           <input type="file" name="docs" multiple id="fi"></label>
       </form>
       <div id="fl-list" style="margin-top:12px">{rows}</div>
@@ -1167,7 +1167,7 @@ def workspace(ws_name):
         window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up)}};
        window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up)}});}}
     </script>"""
-    return page(f"{ws.name} — Market Runway", body, f"/ {ws.name}", rail=rail_html(ws.name, view="the workspace Files and Runs view"))
+    return page(f"{ws.name} · Market Runway", body, f"/ {ws.name}", rail=rail_html(ws.name, view="the workspace Files and Runs view"))
 
 
 @app.post("/w/<ws_name>/files/upload")
@@ -1295,7 +1295,7 @@ def run_view(ws_name, token):
         return out
 
     def generate():
-        full = page("Run — Market Runway", "@@CUT@@", f"/ {ws.name} / run", rail=rail_html(ws.name, view="a live pipeline run streaming"))
+        full = page("Run · Market Runway", "@@CUT@@", f"/ {ws.name} / run", rail=rail_html(ws.name, view="a live pipeline run streaming"))
         head, tail = full.split("@@CUT@@")
         yield head + (
             f'<div><div class="eyebrow">{ws.name} · pipeline run · {mode_label}</div>'
@@ -1373,7 +1373,7 @@ def results_view(ws_name, run_name):
         try:
             return f"€{v/1e6:.1f}M"
         except Exception:  # noqa: BLE001
-            return "—"
+            return "-"
 
     def be(r):
         return (f"break-even Y{r['break_even_year']}" if r and r.get("break_even_year")
@@ -1382,17 +1382,17 @@ def results_view(ws_name, run_name):
     win = res.get(rec) if rec else None
     runner = ranking[1] if len(ranking) > 1 else None
     rr = res.get(runner) if runner else None
-    seq = " → ".join(ranking) if ranking else "—"
+    seq = " → ".join(ranking) if ranking else "-"
     if con.get("skipped"):
         seq += " · not modelled: " + ", ".join(con["skipped"])
     slides = [
         ("S1", "Recommendation",
-         (f"enter {rec} first — {be(win)}, trough {eur_m(win['min_cash'])}" if win else "no market modelled")),
+         (f"enter {rec} first: {be(win)}, trough {eur_m(win['min_cash'])}" if win else "no market modelled")),
         ("S2", "The counter-case",
          (f"{runner}: {be(rr)}, trough {eur_m(rr['min_cash'])}, end cash {eur_m(rr['end_cash'])}"
           if rr else "no runner-up modelled")),
         ("S3", "The winning market",
-         (f"{rec}: end cash {eur_m(win['end_cash'])}, minimum cash {eur_m(win['min_cash'])}" if win else "—")),
+         (f"{rec}: end cash {eur_m(win['end_cash'])}, minimum cash {eur_m(win['min_cash'])}" if win else "-")),
         ("S4", "Sensitivity",
          (" · ".join(f"{m}: {'insolvent' if res[m].get('insolvent') else 'fundable'}" for m in ranking)
           or "full grids in the evidence report")),
@@ -1413,11 +1413,11 @@ def results_view(ws_name, run_name):
     facts = [
         ("Files", len(st.get("ingestion", []))),
         ("Markets modelled", len(res)),
-        ("Values extracted", f'{ext.get("total", "—")} · {ext.get("deterministic", 0)} det / {ext.get("ai", 0)} AI'),
+        ("Values extracted", f'{ext.get("total", "-")} · {ext.get("deterministic", 0)} det / {ext.get("ai", 0)} AI'),
         ("Checks", f'{sum(1 for x in fnd if x["status"] == "PASS")} / {len(fnd)} passed'),
-        ("Recommendation", rec or "—"),
-        ("Break-even", f"Y{win['break_even_year']}" if win and win.get("break_even_year") else "—"),
-        ("Cash trough", eur_m(win["min_cash"]) if win else "—"),
+        ("Recommendation", rec or "-"),
+        ("Break-even", f"Y{win['break_even_year']}" if win and win.get("break_even_year") else "-"),
+        ("Cash trough", eur_m(win["min_cash"]) if win else "-"),
         ("LLM calls", f'{man.get("llm_calls", 0)} · €{man.get("llm_cost_eur", 0):.2f}'),
     ]
     dls = "".join(f'<a class="btn" style="font-size:12px" href="/w/{ws.name}/runs/{run.name}/f/{n}">{n}</a>'
@@ -1435,12 +1435,12 @@ def results_view(ws_name, run_name):
                   if audit else "no AI audit in this run (Glide or AI off)")
     gap_cards = "".join(
         f'<div><span>{g["id"]}</span><b>{html.escape(g["field"])}</b>'
-        f'<p>{html.escape(g["market"])} — {html.escape(g["why"])}</p></div>'
-        for g in gaps) or '<div><span>—</span><b>None</b><p>No open evidence gaps.</p></div>'
+        f'<p>{html.escape(g["market"])} · {html.escape(g["why"])}</p></div>'
+        for g in gaps) or '<div><span>-</span><b>None</b><p>No open evidence gaps.</p></div>'
     ins = (f'<div class="iband"><b>Model audit</b><span>{audit_line}</span></div>'
            + "".join(f'<div class="banner" style="margin-bottom:10px">DISAGREE {x["scope"]}.{x["param"]}: '
                      f'det={x["det"]} vs llm={x["llm"]}</div>' for x in dis[:6])
-           + '<p class="hint" style="margin:4px 0 8px">Evidence gaps — data the pack does not establish:</p>'
+           + '<p class="hint" style="margin:4px 0 8px">Evidence gaps: what the pack does not establish</p>'
            + f'<div class="steps">{gap_cards}</div>'
            + (f'<p class="hint" style="margin-top:10px">Unrecognised files (not analysed): '
               f'{html.escape(", ".join(unass))}</p>' if unass else ""))
@@ -1467,13 +1467,13 @@ def results_view(ws_name, run_name):
             f'<a class="btn" href="/w/{ws.name}">← workspace</a></div>'
             f'<div class="stage2"><div class="seg">{segbar}</div>'
             f'<p class="recnote">Computed by the pipeline on this desk · every number from this run’s '
-            f'state.json — nothing hand-edited.</p>'
+            f'state.json - nothing hand-edited.</p>'
             f'<div class="segbody" id="sb-evidence">{ev}</div>'
             f'<div class="segbody" id="sb-deck" style="display:none">{deck}</div>'
             f'<div class="segbody" id="sb-dataset" style="display:none">{dataset}</div>'
             f'<div class="segbody" id="sb-insights" style="display:none">{ins}</div></div>'
             + SEG_JS.replace("__WS__", ws.name))
-    return page(f"Results — {ws.name}", body, f"/ {ws.name} / results", rail=rail_html(ws.name, run=run.name, view=f"the results windows of run {run.name}"))
+    return page(f"Results · {ws.name}", body, f"/ {ws.name} / results", rail=rail_html(ws.name, run=run.name, view=f"the results windows of run {run.name}"))
 
 
 @app.get("/w/<ws_name>/report/<run_name>/pdf")
@@ -1572,7 +1572,7 @@ def research(ws_name, run_name, gap_id):
     ws = ws_dir(ws_name)
     key, prov = sk()["value"], sk().get("provider")
     if not key or not prov:
-        return jsonify({"ok": False, "error": "No API key — add one via the chip top-right, then retry."})
+        return jsonify({"ok": False, "error": "No API key. Add one via the chip top-right, then retry."})
     run = ws / "runs" / Path(run_name).name
     try:
         state = json.load(open(run / "state.json"))
@@ -1587,7 +1587,7 @@ def research(ws_name, run_name, gap_id):
         f"Plan: {plan}\n"
         f"Give: (1) a best estimate or range with units and reasoning, (2) three named sources or report "
         f"types to verify it (organisations/publications, no URLs needed), (3) a confidence level. "
-        f"Under 180 words. End with exactly: DRAFT — quarantined; not merged into the dataset.")
+        f"Under 180 words. End with exactly: DRAFT: quarantined; not merged into the dataset.")
     model = next(iter(PROVIDERS[prov]["models"]))
     try:
         text = _chat_call(prov, key, model, "You answer concisely and factually.", 
@@ -1619,7 +1619,7 @@ def report(ws_name, run_name):
             "const j=await r.json();const d=document.createElement('div');d.className='rsx';"
             "d.textContent=j.ok?(j.text+'\\n\\n['+j.meta+']'):('⚠ '+j.error);"
             "b.closest('.gap').appendChild(d);"
-            "b.textContent=j.ok?'Researched — draft below':'Research this';if(!j.ok)b.disabled=false;});"
+            "b.textContent=j.ok?'Researched: draft below':'Research this';if(!j.ok)b.disabled=false;});"
             "</script></body>")
         doc = doc.replace("</body>", hook, 1)
     if request.args.get("bare"):
@@ -1652,9 +1652,9 @@ def _grounding(ws: Path, run_name: str = None) -> tuple[str, str]:
 
 
 SYSTEM = """You are Runway's analyst assistant for a market-entry assessment.
-GROUNDING RULES — absolute:
+GROUNDING RULES - absolute:
 - Answer ONLY from the JSON dataset below (the pipeline's validated output). If something is not
-  in it, say "not in the validated dataset" — never guess, never use outside knowledge for figures.
+  in it, say "not in the validated dataset"; never guess, never use outside knowledge for figures.
 - Cite where a figure came from (its `source` and `method`) when giving numbers.
 - Be concise and concrete. Currency is EUR.
 - If the user asks to CHANGE a value, do not claim it is changed. Instead emit a proposal block:
@@ -1682,7 +1682,7 @@ def chat_page(ws_name):
         keyrow = ''
     else:
         picker = '<select id="model" hidden></select><span id="prov" class="hint"></span>'
-        keyrow = ('<input type="password" id="key" placeholder="API key — Anthropic, OpenAI or Gemini" '
+        keyrow = ('<input type="password" id="key" placeholder="API key (Anthropic, OpenAI or Gemini)" '
                   'style="font-family:monospace;font-size:12.5px" oninput="detect()" onchange="verifyKey(this)">')
     banner = (f'grounded on run <b class="mono">{run_name}</b>; answers come only from the validated dataset'
               if run_name else "no runs yet. Run the pipeline first, then chat about its results")
@@ -1690,7 +1690,7 @@ def chat_page(ws_name):
     <div class="chatbox">
      <div><div class="eyebrow">{ws.name} · ask the data</div>
       <h1 style="font-size:24px">Chat with the <em>validated</em> dataset</h1>
-      <div class="hint" style="margin-top:6px">{banner}. To change a value, just say so — I'll draft an override
+      <div class="hint" style="margin-top:6px">{banner}. To change a value, just say so - I'll draft an override
       you can apply (it re-runs the pipeline, badged MANUAL, fully audited).</div></div>
      <div id="msgs" style="display:flex;flex-direction:column;gap:10px"></div>
      <div class="chatinput">
@@ -1769,7 +1769,7 @@ def chat_page(ws_name):
          const kr=await fetch('/keycheck',{{method:'POST',headers:{{'Content-Type':'application/json'}},
            body:JSON.stringify({{key:kk}})}});
          const kj=await kr.json();
-         const msg=(kj.ok?'Key saved — ':'⚠ ')+kj.detail;render('ai',msg);
+         const msg=(kj.ok?'Key saved: ':'⚠ ')+kj.detail;render('ai',msg);
          if(kj.ok){{hist.push({{role:'assistant',content:msg}});saveH();
            setTimeout(()=>location.reload(),900)}}
          return;
@@ -1781,7 +1781,7 @@ def chat_page(ws_name):
        const r=await fetch('/w/{ws.name}/chat/send',{{method:'POST',headers:{{'Content-Type':'application/json'}},
          body:JSON.stringify({{messages:hist,model:document.getElementById('model').value,
                               key:keyEl?keyEl.value:null}})}});
-       const j=await r.json().catch(()=>({{error:'network error — try again'}}));
+       const j=await r.json().catch(()=>({{error:'network error - try again'}}));
        th.remove();
        if(j.error){{render('ai','⚠ '+j.error);return}}
        render('ai',j.text);hist.push({{role:'assistant',content:j.text}});saveH();
@@ -1791,14 +1791,14 @@ def chat_page(ws_name):
        const r=await fetch('/w/{ws.name}/override',{{method:'POST',headers:{{'Content-Type':'application/json'}},
          body:JSON.stringify({{block}})}});
        const j=await r.json();
-       btn.textContent=j.ok?'Applied ✓ — open the new report':'Failed: '+j.error;
+       btn.textContent=j.ok?'Applied ✓ · open the new report':'Failed: '+j.error;
        if(j.ok){{btn.onclick=()=>location.href='/w/{ws.name}/report/'+j.run;btn.disabled=false}}
      }}
     </script>"""
     if request.args.get("embed"):
-        doc = page(f"Chat — {ws.name}", body, f"/ {ws.name} / chat")
+        doc = page(f"Chat · {ws.name}", body, f"/ {ws.name} / chat")
         return re.sub(r"<nav>.*?</nav>", "", doc, count=1, flags=re.S)
-    return page(f"Chat — {ws.name}", body, f"/ {ws.name} / chat", rail=rail_html(ws.name, view="the full-page chat"))
+    return page(f"Chat · {ws.name}", body, f"/ {ws.name} / chat", rail=rail_html(ws.name, view="the full-page chat"))
 
 
 @app.post("/w/<ws_name>/chat/send")
