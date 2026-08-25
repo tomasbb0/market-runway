@@ -494,9 +494,14 @@ STYLE = """
  .rcgrip{flex:0 0 10px;cursor:ns-resize;touch-action:none}
  .rcgrip::after{content:"";display:block;width:38px;height:3px;border-radius:2px;
    background:var(--line);margin:4px auto 0}
- .rcfbtn{margin-left:auto;border:none;background:none;color:var(--soft);cursor:pointer;
-   padding:2px;display:grid;place-items:center}
- .rcfbtn:hover{color:var(--ink)} .rcfbtn svg{width:14px;height:14px}
+ .rcfbtn{margin-left:auto;border:none;background:none;cursor:pointer;padding:0;
+   width:24px;height:24px;display:flex;flex-direction:column;align-items:center;
+   justify-content:center;gap:4px}
+ .rcfbtn span{display:block;width:13px;height:1.6px;background:var(--soft);border-radius:2px;
+   transition:transform .18s}
+ .rcfbtn:hover span{background:var(--ink)}
+ .railchat.fopen .rcfbtn span:first-child{transform:translateY(2.8px) rotate(45deg)}
+ .railchat.fopen .rcfbtn span:last-child{transform:translateY(-2.8px) rotate(-45deg)}
  .rchead{padding:10px 14px 6px;font-family:'Spline Sans Mono',monospace;font-size:9.5px;
    letter-spacing:.14em;color:var(--tan);text-transform:uppercase;display:flex;align-items:center}
  .rcmsgs{flex:1;min-height:0;overflow-y:auto;padding:4px 14px 8px;display:flex;flex-direction:column;
@@ -770,19 +775,22 @@ RAILCHAT_JS = ('<script>(function(){'
     "function setH(h){rc.style.height=h+'px'}"
     "rc.classList.toggle('closed',cl);setH(cl?40:svH);"
     "hd.addEventListener('click',function(e){if(e.target.closest('.rcfbtn'))return;"
-    "cl=!cl;rc.classList.toggle('closed',cl);setH(cl?40:svH);fp.classList.remove('open');"
+    "cl=!cl;rc.classList.toggle('closed',cl);setH(cl?40:svH);"
+    "fp.classList.remove('open');rc.classList.remove('fopen');"
     "try{localStorage.setItem('rc-__WS__',cl?'1':'0')}catch(e){}});"
     "fb.addEventListener('click',function(e){e.stopPropagation();"
-    "fp.classList.toggle('open');paint()});"
+    "fp.classList.toggle('open');"
+    "rc.classList.toggle('fopen',fp.classList.contains('open'));paint()});"
     "document.addEventListener('click',function(e){"
-    "if(!e.target.closest('.railchat'))fp.classList.remove('open')});"
+    "if(!e.target.closest('.railchat')){fp.classList.remove('open');rc.classList.remove('fopen')}});"
     "fp.addEventListener('click',function(e){"
     "var rn=e.target.closest('.rcren');"
     "if(rn){e.stopPropagation();var k=rn.dataset.ren;var t0=th(k);"
     "var nn=prompt('Name this conversation',t0.name);"
     "if(nn){t0.name=nn.trim()||t0.name;save();paint()}return}"
     "var row=e.target.closest('.rcfrow[data-thread]');"
-    "if(row){cur=row.dataset.thread;th(cur);fp.classList.remove('open');paint()}});"
+    "if(row){cur=row.dataset.thread;th(cur);fp.classList.remove('open');"
+    "rc.classList.remove('fopen');paint()}});"
     "if(gp){gp.addEventListener('pointerdown',function(e){if(cl)return;e.preventDefault();"
     "var y0=e.clientY,h0=rc.offsetHeight;rc.classList.add('dragging');"
     "function mv(ev){setH(Math.max(120,Math.min(window.innerHeight*0.75,h0+(y0-ev.clientY))))}"
@@ -858,9 +866,8 @@ def rail_html(current: str, run: str = None, view: str = "") -> str:
             f'<div class="railchat"><div class="rcgrip" title="Drag to resize"></div>'
             f'<div class="rchead" id="rchead" title="Click to open or close">ASK THE DATA{ROBOT}'
             '<span class="rcws" id="rcthread"></span>'
-            '<button class="rcfbtn" id="rcfbtn" title="Conversations" aria-label="Filter conversations">'
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" '
-            'stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>'
+            '<button class="rcfbtn" id="rcfbtn" title="Conversations" aria-label="Conversations">'
+            '<span></span><span></span>'
             "</button></div>"
             f'<div class="rcfilter" id="rcfilter">{filter_rows}</div>'
             '<div class="rcmsgs" id="rcmsgs"></div>'
