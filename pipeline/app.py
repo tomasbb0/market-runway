@@ -517,7 +517,7 @@ STYLE = """
    --sf:#ffffff;--bg:#f7fafd;--ink:#17263f;--soft:#5c7392;--line:#d4deec;
    --cream2:#e6edf6;--softblue:#3a5a80;--softblue2:#e2eaf5;--tan:#6b81a3;
    --acc:#0090c8;--accdark:#006e99;--okbg:#ddefe3;--warnbg:#f6ead9;--failbg:#f8e3dc;
-   background:rgba(247,250,253,.62);color:var(--ink);
+   background:rgba(255,255,255,.55);color:var(--ink);
    -webkit-backdrop-filter:blur(20px) saturate(1.3);backdrop-filter:blur(20px) saturate(1.3)}
  dialog{background:#ffffff}
  .card .chip.warn,.rail .chip.warn,.stage2 .chip.warn,.railchat .chip.warn{color:#7a5510}
