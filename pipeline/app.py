@@ -811,12 +811,23 @@ NEWWS_DLG = (
 
 
 def fancy_title(name: str) -> str:
-    """First word caps in the sans face; the rest lowercase in the serif italic."""
+    """Case-driven: UPPERCASE tokens render dark caps; lowercase tokens serif italic."""
     parts = [p for p in re.split(r"[-_ ]+", name.strip()) if p]
-    if len(parts) > 1:
-        return (html.escape(parts[0].upper())
-                + " <em>" + html.escape(" ".join(parts[1:]).lower()) + "</em>")
-    return html.escape(name)
+    out, buf, mode = [], [], None
+
+    def flush():
+        if buf:
+            seg = html.escape(" ".join(buf))
+            out.append(seg if mode == "up" else f"<em>{seg}</em>")
+
+    for tok in parts:
+        m = "low" if any(c.islower() for c in tok) else "up"
+        if m != mode:
+            flush()
+            buf, mode = [], m
+        buf.append(tok)
+    flush()
+    return " ".join(out) or html.escape(name)
 
 
 def rail_html(current: str, run: str = None, view: str = "") -> str:

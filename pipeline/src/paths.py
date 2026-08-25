@@ -20,7 +20,7 @@ _current = {"ws": None, "run": None}
 
 
 def slugify(name: str) -> str:
-    s = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+    s = re.sub(r"[^A-Za-z0-9]+", "-", name).strip("-")
     return s or "workspace"
 
 
