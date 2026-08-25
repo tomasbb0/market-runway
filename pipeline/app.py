@@ -514,18 +514,18 @@ STYLE = """
  .rcin input{flex:1;font-size:12.5px;min-width:0}
  /* light inner windows on the dark shell: tokens flip inside these containers */
  .card,.rail,.railchat,.stage2,dialog{
-   --sf:#16233c;--bg:#0d1728;--ink:#eef4ff;--soft:#8fa6c6;--line:rgba(140,180,255,.16);
-   --cream2:#0d1930;--softblue:#9fc0e8;--softblue2:#13233f;--tan:#7f9cc4;
-   --acc:#00d4ff;--accdark:#00a3d9;--okbg:#11304a;--warnbg:#3d2f16;--failbg:#3d1c16;
-   background:rgba(255,255,255,.26);color:var(--ink);
-   -webkit-backdrop-filter:blur(18px) saturate(1.45) brightness(1.35);
-   backdrop-filter:blur(18px) saturate(1.45) brightness(1.35)}
- dialog{background:#16233c}
- .card .chip.warn,.rail .chip.warn,.stage2 .chip.warn,.railchat .chip.warn{color:#f2d9a7}
- .card .chip.fail,.rail .chip.fail,.stage2 .chip.fail,.railchat .chip.fail{color:#f2b3a7}
- .card .ftile{background:#101d33}
- .card .ftile::after{background:#0b1526}
- .card .ftile:hover::after{background:#16294a}
+   --sf:#ffffff;--bg:#f7fafd;--ink:#17263f;--soft:#5c7392;--line:#d4deec;
+   --cream2:#e6edf6;--softblue:#3a5a80;--softblue2:#e2eaf5;--tan:#6b81a3;
+   --acc:#0090c8;--accdark:#006e99;--okbg:#ddefe3;--warnbg:#f6ead9;--failbg:#f8e3dc;
+   background:rgba(255,255,255,.66);color:var(--ink);
+   -webkit-backdrop-filter:blur(18px) saturate(1.35) brightness(1.2);
+   backdrop-filter:blur(18px) saturate(1.35) brightness(1.2)}
+ dialog{background:#ffffff}
+ .card .chip.warn,.rail .chip.warn,.stage2 .chip.warn,.railchat .chip.warn{color:#7a5510}
+ .card .chip.fail,.rail .chip.fail,.stage2 .chip.fail,.railchat .chip.fail{color:#b3341c}
+ .card .ftile{background:#ffffff}
+ .card .ftile::after{background:#dbe4f0}
+ .card .ftile:hover::after{background:#c7d4e6}
  .railchat .rcmsgs .u{color:#fff}
  .railchat{position:relative}
  .rchead{cursor:pointer;user-select:none}
@@ -599,7 +599,7 @@ STYLE = """
    --softblue:#9fc0e8;--softblue2:#13233f;--tan:#7f9cc4;--acc:#00d4ff;--accdark:#00a3d9;
    --okbg:#11304a;--warnbg:#3d2f16;--failbg:#3d1c16;color:var(--ink)}
  .deskpanel::before,.deskpanel::after{display:none}
- .card,.rail,.railchat,.stage2{border-color:rgba(160,200,255,.14)}
+ .card,.rail,.railchat,.stage2{border-color:rgba(255,255,255,.5)}
  .segbody iframe[data-autoh]{min-height:0;border:none;background:transparent;border-radius:0}
  .eyebtn{margin-left:auto;display:grid;place-items:center;width:24px;height:24px;
    color:var(--soft);border-radius:6px}
