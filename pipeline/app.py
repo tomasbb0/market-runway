@@ -244,13 +244,13 @@ def _chat_call(provider: str, key: str, model: str, system: str, msgs: list) -> 
 # ---------------------------------------------------------------- iLoF skin
 STYLE = """
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Noto+Serif:ital,wght@0,400;0,600;1,300;1,400;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,400;0,600;0,700;1,400&family=Newsreader:ital,wght@1,300;1,400&family=Spline+Sans+Mono:wght@400;600&display=swap">
 <style>
  :root{--bg:#101c31;--sf:#293b5a;--ink:#f4f7fc;--deep:#2f4a73;--soft:#93a9c9;--line:#33486b;
    --acc:#00d4ff;--accdark:#00a3d9;--softblue:#b8cdea;--softblue2:#152a4a;--bordeaux:#a34d6e;
    --tan:#9fb6d9;--cream2:#0e1930;--ok:#b8cdea;--okbg:#152a4a;--warnbg:#3d2f16;--failbg:#3d1c16}
  *{box-sizing:border-box}
- body{margin:0;color:var(--ink);font:15px/1.6 'Instrument Sans',system-ui,sans-serif;
+ body{margin:0;color:var(--ink);font:15px/1.6 'Hanken Grotesk',system-ui,sans-serif;
    background:var(--bg) fixed;
    background-image:radial-gradient(900px 600px at 12% -10%,rgba(47,74,115,.5),transparent 60%),
      radial-gradient(800px 560px at 105% 8%,rgba(0,212,255,.06),transparent 55%)}
@@ -269,16 +269,16 @@ STYLE = """
  body.lightbg .stage2{height:auto;flex:1;min-height:0}
  @media(max-width:900px){body.lightbg{height:auto;overflow:auto}
    body.lightbg .pane2{overflow:visible}}
- a{color:var(--deep)} .serif{font-family:'Noto Serif',serif} .mono{font-family:'IBM Plex Mono',monospace}
+ a{color:var(--deep)} .serif{font-family:'Newsreader',serif} .mono{font-family:'Spline Sans Mono',monospace}
  nav{display:flex;align-items:center;gap:10px;padding:16px 26px;border-bottom:1px solid var(--line);background:var(--sf)}
  nav .dot{width:11px;height:11px;border-radius:50%;background:var(--acc)}
  nav b{font-size:16px;letter-spacing:-.01em} nav .crumb{color:var(--soft);font-size:14px}
  nav .right{margin-left:auto;display:flex;gap:14px;align-items:center;font-size:13.5px}
  .wrap{max-width:1060px;margin:0 auto;padding:34px 24px 80px;display:flex;flex-direction:column;gap:22px}
  h1{font-size:32px;margin:0;letter-spacing:-.02em;font-weight:700}
- h1 em{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;color:var(--acc)}
+ h1 em{font-family:'Newsreader',serif;font-style:italic;font-weight:300;color:var(--acc)}
  h2{font-size:15px;font-weight:700;margin:0 0 12px;letter-spacing:-.01em}
- .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--tan)}
+ .eyebrow{font-family:'Spline Sans Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--tan)}
  .card{background:var(--sf);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
  .folder{display:block;background:var(--sf);border:1px solid var(--line);border-radius:14px;padding:18px;
@@ -288,15 +288,15 @@ STYLE = """
  .folder .body{background:var(--cream2);border-radius:0 8px 8px 8px;padding:12px 12px 10px;min-height:74px}
  .folder b{font-size:15.5px} .folder .meta{font-size:12.5px;color:var(--soft);margin-top:4px;line-height:1.5}
  .folder.new{border-style:dashed;color:var(--soft)} .folder.new:hover{color:var(--acc)}
- button,.btn{font:600 13.5px 'Instrument Sans';border-radius:9px;border:1px solid var(--line);
+ button,.btn{font:600 13.5px 'Hanken Grotesk';border-radius:9px;border:1px solid var(--line);
    padding:9px 16px;background:var(--sf);color:var(--ink);cursor:pointer;text-decoration:none;display:inline-block}
  button.primary,.btn.primary{background:var(--acc);border-color:var(--acc);color:#fff}
  button.primary:hover,.btn.primary:hover{background:var(--accdark)}
  button.ghost{border:none;background:none;color:var(--soft);padding:4px 6px}
  button.ghost:hover{color:var(--accdark)}
- input[type=text],input[type=password],select{font:14px 'Instrument Sans';border:1px solid var(--line);
+ input[type=text],input[type=password],select{font:14px 'Hanken Grotesk';border:1px solid var(--line);
    border-radius:9px;padding:9px 12px;background:var(--sf);color:var(--ink)}
- .chip{font-family:'IBM Plex Mono',monospace;font-size:10.5px;border-radius:99px;padding:2px 9px;white-space:nowrap}
+ .chip{font-family:'Spline Sans Mono',monospace;font-size:10.5px;border-radius:99px;padding:2px 9px;white-space:nowrap}
  .chip.role{background:var(--softblue2);color:var(--softblue)}
  .chip.warn{background:var(--warnbg);color:#f2d9a7}
  .chip.skip{background:var(--cream2);color:var(--soft)}
@@ -304,19 +304,19 @@ STYLE = """
  .chip.ok{background:var(--okbg);color:var(--softblue)}
  .filerow{display:flex;align-items:center;gap:10px;padding:7px 4px;border-bottom:1px solid var(--cream2);font-size:13.5px}
  .filerow:last-child{border-bottom:none}
- .filerow .name{font-family:'IBM Plex Mono',monospace;font-size:12.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .filerow .name{font-family:'Spline Sans Mono',monospace;font-size:12.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  .filerow .sz{color:var(--soft);font-size:12px}
  .drop{display:block;border:1.5px dashed var(--deep);border-radius:11px;background:var(--softblue2);
    padding:20px;text-align:center;cursor:pointer;color:var(--softblue);font-weight:600}
  .drop.drag{background:#1d3450} .drop input{display:none} .drop small{display:block;font-weight:400;color:var(--soft);margin-top:3px}
  .runrow{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--cream2);font-size:13.5px}
  .runrow:last-child{border-bottom:none}
- .runrow .stamp{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--soft)}
+ .runrow .stamp{font-family:'Spline Sans Mono',monospace;font-size:12px;color:var(--soft)}
  .runrow .rec{font-weight:600}
  .hint{font-size:13px;color:var(--soft)}
  .two{display:grid;grid-template-columns:var(--runw,minmax(280px,340px)) 18px 1fr;gap:0;align-items:start}
  @media(max-width:860px){.two{grid-template-columns:1fr}.rowgrip{display:none}}
- pre.log{background:#0c1522;border:1px solid var(--line);color:#e8e2d9;border-radius:12px;padding:16px;font:12.5px 'IBM Plex Mono',monospace;overflow-x:auto;line-height:1.55;white-space:pre-wrap}
+ pre.log{background:#0c1522;border:1px solid var(--line);color:#e8e2d9;border-radius:12px;padding:16px;font:12.5px 'Spline Sans Mono',monospace;overflow-x:auto;line-height:1.55;white-space:pre-wrap}
  .pb{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin:12px 0 4px}
  .pb i{display:block;height:100%;width:4%;background:linear-gradient(90deg,var(--acc),#7ae9ff);
    border-radius:99px;transition:width .5s ease;position:relative;overflow:hidden}
@@ -338,7 +338,7 @@ STYLE = """
  pre.log .ok{color:#9fd0b8}pre.log .fail{color:#ff9d7a}pre.log .warn{color:#ecd9a0}
  .banner{background:var(--softblue2);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:11px;padding:13px 16px;font-size:13.5px}
  .tabsbar{display:flex;gap:6px;margin-left:auto}
- .tabbtn{font:600 13.5px 'Instrument Sans';border:1px solid var(--line);background:var(--sf);
+ .tabbtn{font:600 13.5px 'Hanken Grotesk';border:1px solid var(--line);background:var(--sf);
    color:var(--softblue);border-radius:9px;padding:9px 20px;cursor:pointer}
  .tabbtn.on{background:var(--acc);color:#fff;border-color:var(--acc)}
  .modes{display:flex;flex-direction:column;gap:12px}
@@ -346,10 +346,10 @@ STYLE = """
    background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 18px;width:100%;
    color:var(--ink);transition:border-color .15s,transform .15s}
  .mode:hover{border-color:var(--acc);transform:translateY(-1px)}
- .mode b{font:700 14.5px 'Instrument Sans'} .mode span{font-size:12px;color:var(--soft);line-height:1.5}
+ .mode b{font:700 14.5px 'Hanken Grotesk'} .mode span{font-size:12px;color:var(--soft);line-height:1.5}
  .mode.after{border-color:var(--deep)} .mode.after b{color:var(--acc)}
  .viewtog{display:flex;gap:6px}
- .viewtog button{font:600 12px 'IBM Plex Mono',monospace;border:1px solid var(--line);background:transparent;
+ .viewtog button{font:600 12px 'Spline Sans Mono',monospace;border:1px solid var(--line);background:transparent;
    color:var(--soft);border-radius:7px;width:30px;height:26px;cursor:pointer;
    display:grid;place-items:center;line-height:1;padding:0}
  .viewtog button.on{background:var(--softblue2);color:var(--ink);border-color:var(--deep)}
@@ -361,9 +361,9 @@ STYLE = """
    background:#101b2f;clip-path:polygon(0 0,0 100%,100% 100%)}
  .ftile:hover::after{background:var(--deep)}
  .ftile .chip{white-space:normal;max-width:100%;line-height:1.6;border-radius:10px}
- .ftile .fmt{font:600 11px 'IBM Plex Mono',monospace;background:var(--softblue2);color:var(--softblue);
+ .ftile .fmt{font:600 11px 'Spline Sans Mono',monospace;background:var(--softblue2);color:var(--softblue);
    border:1px solid var(--line);border-radius:8px;padding:8px 10px}
- .ftile .nm{font:10.5px 'IBM Plex Mono',monospace;max-width:100%;overflow:hidden;display:-webkit-box;
+ .ftile .nm{font:10.5px 'Spline Sans Mono',monospace;max-width:100%;overflow:hidden;display:-webkit-box;
    -webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-all}
  .ftile form{position:absolute;top:5px;left:5px}
  .ftile .ghost{opacity:0} .ftile:hover .ghost{opacity:1}
@@ -382,7 +382,7 @@ STYLE = """
  @media(prefers-reduced-motion:reduce){.thinking{animation:none;color:var(--soft);
    -webkit-text-fill-color:var(--soft)}}
  .msg.ai .ov{background:var(--cream2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;
-   font:12.5px 'IBM Plex Mono',monospace;margin-top:8px;white-space:pre-wrap}
+   font:12.5px 'Spline Sans Mono',monospace;margin-top:8px;white-space:pre-wrap}
  .chatinput{display:flex;gap:10px;position:sticky;bottom:0;background:var(--bg);padding:12px 0}
  .chatinput input[type=text]{flex:1}
 /* v1 desk layout — exercises rail + results stage (ported from market-runway) */
@@ -406,7 +406,7 @@ STYLE = """
  .railset{display:flex;align-items:center;gap:9px;padding:12px 14px;border:none;border-top:1px solid var(--line);
    background:none;color:var(--softblue);cursor:pointer;font-weight:600;font-size:13px;text-align:left;width:100%}
  .railset:hover{color:var(--ink)} .railset svg{width:15px;height:15px}
- .rail footer{padding:10px 14px;border-top:1px solid var(--line);font-family:'IBM Plex Mono',monospace;
+ .rail footer{padding:10px 14px;border-top:1px solid var(--line);font-family:'Spline Sans Mono',monospace;
    font-size:10px;letter-spacing:.1em;color:var(--soft)}
  .stage2{background:var(--sf);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;
    flex-direction:column;min-height:420px;height:calc(100vh - 295px)}
@@ -414,7 +414,7 @@ STYLE = """
  .seg button{font-weight:600;font-size:12px;border:1px solid var(--line);background:transparent;
    color:var(--softblue);border-radius:99px;padding:7px 14px;cursor:pointer}
  .seg button.on{background:var(--softblue2);border-color:var(--deep);color:var(--ink)}
- .recnote{margin:0 0 10px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--soft);letter-spacing:.02em}
+ .recnote{margin:0 0 10px;font-family:'Spline Sans Mono',monospace;font-size:11.5px;color:var(--soft);letter-spacing:.02em}
  .segbody{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column}
  .segbody iframe{flex:1;width:100%;border:1px solid var(--line);border-radius:10px;background:var(--sf);min-height:320px}
  .openfull{font-weight:600;font-size:12px;color:var(--softblue);text-decoration:none;align-self:flex-end;margin-bottom:8px}
@@ -422,12 +422,12 @@ STYLE = """
  .facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1px;background:var(--line);
    border:1px solid var(--line);border-radius:12px;overflow:hidden}
  .facts div{background:var(--bg);padding:16px}
- .facts span{display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;
+ .facts span{display:block;font-family:'Spline Sans Mono',monospace;font-size:10px;letter-spacing:.14em;
    color:var(--soft);text-transform:uppercase}
  .facts b{font-size:20px;letter-spacing:-.01em}
  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
  .steps>div{background:var(--cream2);border:1px solid var(--line);border-radius:12px;padding:14px}
- .steps span{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;color:var(--tan)}
+ .steps span{font-family:'Spline Sans Mono',monospace;font-size:10px;letter-spacing:.14em;color:var(--tan)}
  .steps b{display:block;margin:4px 0 6px;font-size:14.5px}
  .steps p{margin:0;font-size:12.5px;color:var(--soft);line-height:1.5}
  .iband{display:flex;flex-direction:column;gap:3px;background:var(--softblue2);border:1px solid var(--deep);
@@ -459,7 +459,7 @@ STYLE = """
  .ftile.addtile::after{display:none}
  .ftile.addtile:hover{color:var(--acc);border-color:var(--acc)}
  .xtitle{text-transform:uppercase;letter-spacing:-.02em;font-size:clamp(24px,3vw,34px);font-weight:700}
- .xtitle em{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;
+ .xtitle em{font-family:'Newsreader',serif;font-style:italic;font-weight:300;
    text-transform:lowercase;color:var(--acc)}
  .wrap.fluid{max-width:none;padding:22px 22px 60px}
  .deskpanel{position:relative;background:rgba(24,39,64,.96);border:1px solid var(--line);border-radius:16px;
@@ -468,7 +468,7 @@ STYLE = """
  nav.innav{position:relative;background:none;border-bottom:none;padding:2px 4px 8px;margin:0}
  .xtitle{cursor:text;border-bottom:1.5px dashed transparent}
  .xtitle:hover{border-bottom-color:var(--deep)}
- input.titled{font:700 28px 'Instrument Sans';text-transform:uppercase;letter-spacing:-.02em;
+ input.titled{font:700 28px 'Hanken Grotesk';text-transform:uppercase;letter-spacing:-.02em;
    background:var(--sf);color:var(--ink);border:1px solid var(--deep);border-radius:8px;
    padding:2px 10px;min-width:0;max-width:48vw}
  .homescroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:22px}
@@ -479,7 +479,7 @@ STYLE = """
  .msg.ai{white-space:normal}
  .msg.ai p{margin:0 0 10px} .msg.ai p:last-child{margin-bottom:0}
  .msg.ai ul,.msg.ai ol{margin:0 0 10px;padding-left:22px} .msg.ai li{margin:2px 0}
- .msg.ai code{font-family:'IBM Plex Mono',monospace;font-size:12.5px;background:var(--cream2);
+ .msg.ai code{font-family:'Spline Sans Mono',monospace;font-size:12.5px;background:var(--cream2);
    border:1px solid var(--line);border-radius:5px;padding:1px 5px}
  .msg.ai pre{background:var(--cream2);border:1px solid var(--line);border-radius:9px;
    padding:10px 12px;overflow-x:auto;margin:0 0 10px}
@@ -497,13 +497,13 @@ STYLE = """
  .rcfbtn{margin-left:auto;border:none;background:none;color:var(--soft);cursor:pointer;
    padding:2px;display:grid;place-items:center}
  .rcfbtn:hover{color:var(--ink)} .rcfbtn svg{width:14px;height:14px}
- .rchead{padding:10px 14px 6px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;
+ .rchead{padding:10px 14px 6px;font-family:'Spline Sans Mono',monospace;font-size:9.5px;
    letter-spacing:.14em;color:var(--tan);text-transform:uppercase;display:flex;align-items:center}
  .rcmsgs{flex:1;min-height:0;overflow-y:auto;padding:4px 14px 8px;display:flex;flex-direction:column;
    gap:8px;font-size:12.5px;line-height:1.5}
  .rcmsgs .u{align-self:flex-end;background:var(--deep);color:#fff;border-radius:10px;padding:6px 10px;max-width:92%}
  .rcmsgs .a{align-self:flex-start;max-width:100%}
- .rcmsgs .a code{font-family:'IBM Plex Mono',monospace;font-size:11.5px;background:var(--cream2);
+ .rcmsgs .a code{font-family:'Spline Sans Mono',monospace;font-size:11.5px;background:var(--cream2);
    border:1px solid var(--line);border-radius:4px;padding:0 4px}
  .rcin{display:flex;gap:6px;padding:10px 12px;border-top:1px solid var(--line)}
  .rcin input{flex:1;font-size:12.5px;min-width:0}
@@ -532,7 +532,7 @@ STYLE = """
    border:1px solid var(--line);border-radius:10px;max-height:230px;overflow-y:auto;display:none;
    box-shadow:0 16px 40px rgba(16,28,49,.25)}
  .rcfilter.open{display:block}
- .rcfhead{padding:8px 12px 3px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;
+ .rcfhead{padding:8px 12px 3px;font-family:'Spline Sans Mono',monospace;font-size:9.5px;
    letter-spacing:.14em;color:var(--tan);text-transform:uppercase}
  .rcfrow{display:flex;align-items:center;gap:6px;padding:7px 12px;font-size:12.5px;
    cursor:pointer;color:var(--ink);text-decoration:none}
@@ -555,7 +555,7 @@ STYLE = """
    opacity:.10;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
  .deskpanel{background-image:radial-gradient(720px 420px at 16% -4%,rgba(0,212,255,.11),transparent 60%),radial-gradient(640px 420px at 96% 104%,rgba(47,74,115,.5),transparent 65%),linear-gradient(165deg,rgba(255,255,255,.05),transparent 45%)}
  .brand{text-decoration:none;color:var(--ink);font-weight:700;font-size:13px;letter-spacing:.09em}
- .brand em{font-family:'Noto Serif',serif;font-style:italic;font-weight:300;letter-spacing:0;
+ .brand em{font-family:'Newsreader',serif;font-style:italic;font-weight:300;letter-spacing:0;
    font-size:15.5px;color:var(--acc);margin-left:7px}
  .brand:hover em{color:var(--softblue)}
  .colgrip,.rowgrip{cursor:col-resize;touch-action:none;position:relative}
@@ -632,7 +632,7 @@ def nav(crumbs=""):
         'st.style.color=j.ok?"#2F7D4F":"#c12d00";st.textContent=j.detail;'
         'if(j.ok)setTimeout(function(){location.reload()},900);}'
         '</script>')
-    return (f'<nav><span class="dot"></span>'
+    return (f'<nav>'
             '<a href="/" class="brand">MARKET RUNWAY<em>Model</em></a>'
             f'<span class="right">{key_chip}</span></nav>')
 
