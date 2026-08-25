@@ -609,6 +609,38 @@ STYLE = """
  </style>"""
 
 
+TURBO = ('<script>if(!window.__turbo){window.__turbo=1;'
+  "window.__tp=location.pathname+location.search;"
+  "window.__nav=function(href,push){document.documentElement.style.cursor='progress';"
+  "fetch(href).then(function(r){return r.text()}).then(function(t){"
+  "var d=new DOMParser().parseFromString(t,'text/html');"
+  "var nw=d.querySelector('.wrap');var ow=document.querySelector('.wrap');"
+  "if(!nw||!ow){location.href=href;return}"
+  "document.title=d.title||document.title;"
+  "ow.replaceWith(nw);"
+  "nw.querySelectorAll('script').forEach(function(s){"
+  "var n=document.createElement('script');"
+  "n.textContent='{'+s.textContent+'\n}';"
+  "s.parentNode.replaceChild(n,s)});"
+  "if(push!==false)history.pushState({t:1},'',href);"
+  "window.__tp=location.pathname+location.search;"
+  "window.scrollTo(0,0);document.documentElement.style.cursor=''})"
+  ".catch(function(){location.href=href})};"
+  "document.addEventListener('click',function(e){"
+  "if(e.defaultPrevented)return;"
+  "var a=e.target.closest('a[href]');if(!a)return;"
+  "if(e.metaKey||e.ctrlKey||e.shiftKey||a.target||a.hasAttribute('download'))return;"
+  "var h=a.getAttribute('href');"
+  "if(!h||h.charAt(0)==='#')return;"
+  "if(h.indexOf('://')>-1||h.charAt(0)!=='/')return;"
+  "if(/\/pdf$|\/f\//.test(h))return;"
+  "e.preventDefault();window.__nav(h,true)});"
+  "window.addEventListener('popstate',function(){"
+  "if(location.pathname+location.search===window.__tp)return;"
+  "window.__nav(location.pathname+location.search+location.hash,false)});"
+  '}</script>')
+
+
 def nav(crumbs=""):
     key = sk()["value"]
     prov = PROVIDERS.get(sk().get("provider") or "", {}).get("label", "key")
@@ -649,7 +681,7 @@ def page(title, body, crumbs="", rail=None, shell=False):
                 f'<div class="homescroll">{body}</div></section>')
         return (f'<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex">'
                 f'<title>{html.escape(title)}</title>{STYLE}<body class="lightbg">'
-                f'<div class="wrap fluid">{body}</div></body>')
+                f'<div class="wrap fluid">{body}</div>{TURBO}</body>')
     if rail:
         innav = nav(crumbs).replace("<nav>", '<nav class="innav">', 1)
         body = (f'<section class="deskpanel">{innav}'
@@ -658,9 +690,9 @@ def page(title, body, crumbs="", rail=None, shell=False):
                 f'<div class="pane2">{body}</div></div></section>')
         return (f'<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex">'
                 f'<title>{html.escape(title)}</title>{STYLE}<body class="lightbg">'
-                f'<div class="wrap fluid">{body}</div></body>')
+                f'<div class="wrap fluid">{body}</div>{TURBO}</body>')
     return (f'<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex">'
-            f'<title>{html.escape(title)}</title>{STYLE}{nav(crumbs)}<div class="wrap">{body}</div>')
+            f'<title>{html.escape(title)}</title>{STYLE}{nav(crumbs)}<div class="wrap">{body}</div>{TURBO}')
 
 
 def ws_summary(ws: Path) -> dict:
@@ -702,7 +734,7 @@ RAIL_JS = ('<script>document.querySelectorAll(".fmenu").forEach(function(b){'
            "w.parentNode.insertBefore(DRAGW,e.clientY<r.top+r.height/2?w:w.nextSibling)});});"
            "var exl=document.querySelector('.exlist');"
            "if(exl)exl.addEventListener('dragover',function(e){if(DRAGW)e.preventDefault()});"
-           "document.addEventListener('DOMContentLoaded',function(){"
+           "function __initcol(){"
            "var cg=document.getElementById('colgrip');"
            "if(cg){var dk=cg.parentElement;"
            "try{var sw=parseInt(localStorage.getItem('mr-railw'));"
@@ -715,7 +747,8 @@ RAIL_JS = ('<script>document.querySelectorAll(".fmenu").forEach(function(b){'
            "try{localStorage.setItem('mr-railw',dk.querySelector('.railcol').offsetWidth)}catch(e){}"
            "window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up)}"
            "window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up)});}"
-           "});"
+           "}if(document.readyState==='loading'){"
+           "document.addEventListener('DOMContentLoaded',__initcol)}else{__initcol()}"
            '</script>')
 
 RAILCHAT_JS = ('<script>(function(){'
