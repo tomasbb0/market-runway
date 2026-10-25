@@ -245,7 +245,7 @@ def landing(st) -> str:
 <div class="bar"><span class="tag"></span><b>RUNWAY</b><span class="mono">THE MARKET-ENTRY DESK</span>
  <nav><a href="http://108.132.145.140/" style="color:var(--acc)">Hosted desk</a><a href="model/">Blank model</a>
  <a href="https://github.com/tomasbb0/market-runway">Repo</a>
- <a href="https://burnaylabs.pt/v1-market-runway/">v1 site<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;vertical-align:-2px;margin-left:5px"><path d="M7 17L17 7M9 7h8v8"/></svg></a></nav></div>
+ <a href="https://bytarc.com/v1-market-runway/">v1 site<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;vertical-align:-2px;margin-left:5px"><path d="M7 17L17 7M9 7h8v8"/></svg></a></nav></div>
 
 <div class="desk">
  <aside class="rail">
